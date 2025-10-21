@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">E-RD</string>
     <string name="app_version">1.0.0</string>
-    <string name="author">Alejandro</string>
+    <string name="app_author">Alejandro</string>
+    <string name="logueate">Logueate</string>
+    <string name="forget_password">Olvidaste tu\ncontraseña?</string>
+    <string name="any_account">no tienes una cuenta?\nRegistrate</string>
 </resources>
