@@ -39,7 +39,15 @@ class MainActivity : ComponentActivity() {
 fun Navigation(modifier: Modifier = Modifier, navController: NavHostController) {
     NavHost(navController = navController, startDestination = "splash") {
         composable(route = "splash") {
-            SplashScreen(modifier = modifier)
+            SplashScreen(modifier = modifier) {
+                navController.navigate(route = "home") {
+                    popUpTo(route = "splash") {
+                        inclusive = true
+                    }
+                }
+            }
         }
+
+
     }
 }

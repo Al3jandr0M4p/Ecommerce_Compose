@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Ecommerce_Compose</string>
+    <string name="app_name">E-RD</string>
+    <string name="app_version">1.0.0</string>
+    <string name="author">Alejandro</string>
 </resources>
