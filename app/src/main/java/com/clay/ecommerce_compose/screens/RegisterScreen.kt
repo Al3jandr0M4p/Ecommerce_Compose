@@ -2,10 +2,8 @@ package com.clay.ecommerce_compose.screens
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,8 +18,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -34,14 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 
 /**
@@ -56,7 +51,7 @@ import com.clay.ecommerce_compose.R
  *
  * */
 @Composable
-fun HeaderComp(imgUrl: Int, descriptionContent: String, modifier: Modifier = Modifier) {
+fun HeaderRegisterComp(imgUrl: Int, descriptionContent: String, modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(id = imgUrl),
         contentDescription = descriptionContent,
@@ -76,7 +71,7 @@ fun HeaderComp(imgUrl: Int, descriptionContent: String, modifier: Modifier = Mod
  *
  * */
 @Composable
-fun BottomComp(modifier: Modifier = Modifier, loginButtonAction: () -> Unit) {
+fun BottomRegisterComp(modifier: Modifier = Modifier, loginButtonAction: () -> Unit) {
     Button(
         onClick = loginButtonAction,
         modifier = modifier,
@@ -88,7 +83,7 @@ fun BottomComp(modifier: Modifier = Modifier, loginButtonAction: () -> Unit) {
         shape = RoundedCornerShape(size = 10.dp),
         contentPadding = PaddingValues()
     ) {
-        Text(text = "Iniciar Sesion", fontSize = 18.sp)
+        Text(text = "Registrate", style = MaterialTheme.typography.labelMedium, fontSize = 18.sp)
     }
 }
 
@@ -108,7 +103,7 @@ fun BottomComp(modifier: Modifier = Modifier, loginButtonAction: () -> Unit) {
  *
  * */
 @Composable
-fun LoginTextFields(
+fun RegisterTextFields(
     email: String,
     onEmailChange: (String) -> Unit,
     password: String,
@@ -177,11 +172,7 @@ fun LoginTextFields(
  *
  * */
 @Composable
-fun LoginScreen(
-    modifier: Modifier = Modifier,
-    loginButtonAction: () -> Unit = {},
-    navController: NavHostController
-) {
+fun RegisterScreen(modifier: Modifier = Modifier, loginButtonAction: () -> Unit = {}) {
     var email by remember { mutableStateOf(value = "") }
     var password by remember { mutableStateOf(value = "") }
     var showPassword by remember { mutableStateOf(value = false) }
@@ -205,14 +196,9 @@ fun LoginScreen(
                 .padding(vertical = 20.dp, horizontal = 16.dp)
         ) {
             Text(
-                text = "Bienvenido,",
+                text = "Registrate",
                 fontSize = 30.sp,
-                fontFamily = FontFamily.Default,
-            )
-            Text(
-                text = stringResource(id = R.string.logueate),
-                fontSize = 20.sp,
-                fontFamily = FontFamily.Default
+                style = MaterialTheme.typography.bodyLarge
             )
         }
 
@@ -222,7 +208,7 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(all = 20.dp)
         ) {
-            LoginTextFields(
+            RegisterTextFields(
                 email = email,
                 onEmailChange = { email = it },
                 password = password,
@@ -231,27 +217,7 @@ fun LoginScreen(
                 onShowPasswordChange = { showPassword = !showPassword }
             )
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                TextButton(onClick = { navController.navigate(route = "register") }) {
-                    Text(
-                        text = stringResource(id = R.string.any_account),
-                        color = Color.Gray,
-                        fontSize = 15.sp
-                    )
-                }
-                TextButton(onClick = {}) {
-                    Text(
-                        text = stringResource(id = R.string.forget_password),
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
-            BottomComp(
+            BottomRegisterComp(
                 loginButtonAction = loginButtonAction,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -260,4 +226,10 @@ fun LoginScreen(
         }
     }
 
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RegisterScreenPreview() {
+    RegisterScreen()
 }

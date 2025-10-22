@@ -13,7 +13,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.clay.ecommerce_compose.screens.LoginScreen
+import com.clay.ecommerce_compose.screens.RegisterScreen
 import com.clay.ecommerce_compose.screens.SplashScreen
+import com.clay.ecommerce_compose.screens.cliente.DetailsScreen
+import com.clay.ecommerce_compose.screens.cliente.UserHomeScreen
 import com.clay.ecommerce_compose.ui.theme.Ecommerce_ComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -38,9 +42,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Navigation(modifier: Modifier = Modifier, navController: NavHostController) {
     NavHost(navController = navController, startDestination = "splash") {
+
         composable(route = "splash") {
             SplashScreen(modifier = modifier) {
-                navController.navigate(route = "home") {
+                navController.navigate(route = "login") {
                     popUpTo(route = "splash") {
                         inclusive = true
                     }
@@ -48,6 +53,44 @@ fun Navigation(modifier: Modifier = Modifier, navController: NavHostController) 
             }
         }
 
+        composable(route = "login") {
+            LoginScreen(
+                modifier = modifier,
+                loginButtonAction = { navController.navigate(route = "userHome") },
+                navController = navController
+            )
+        }
+
+        composable(route = "register") {
+            RegisterScreen(modifier = modifier) {
+                navController.navigate(route = "login")
+            }
+        }
+
+        composable(route = "userHome") {
+            UserHomeScreen(modifier = modifier, navController = navController)
+        }
+
+        composable(route = "details/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toInt()
+            DetailsScreen(id = id, navController = navController)
+        }
+
+//        composable(route = "adminHome") {
+//            UserHomeScreen(modifier = modifier)
+//        }
+
+//        composable(route = "negocio") {
+//            UserHomeScreen(modifier = modifier)
+//        }
+//
+//        composable(route = "sellerHome") {
+//            UserHomeScreen(modifier = modifier)
+//        }
+//
+//        composable(route = "deliveryHome") {
+//            UserHomeScreen(modifier = modifier)
+//        }
 
     }
 }
