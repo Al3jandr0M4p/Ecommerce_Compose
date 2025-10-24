@@ -1,5 +1,10 @@
-package com.clay.ecommerce_compose.screens.cliente
+package com.clay.ecommerce_compose.ui.screens.cliente
 
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.LocationManager
+import android.widget.Toast
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,7 +32,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
@@ -55,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -62,80 +70,204 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.Tabs
 import com.clay.ecommerce_compose.data.getCategoriesList
 import com.clay.ecommerce_compose.data.getChips
 import com.clay.ecommerce_compose.data.getRestaurants
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.delay
 
 
-/**
- *
- *
- * Composable del header el cual me permite renderizar
- * y crear un Header adaptable al usuario y especifico
- * para mi aplicacion
- *
- * @author Alejandro
- * */
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun HeaderUserHome() {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp)
-    ) {
-        Text(
-            text = "Tu ubicacion",
-            style = MaterialTheme.typography.labelMedium,
-            fontSize = 20.sp,
-            modifier = Modifier.clickable {
-                /* TODO not yet implemented */
-            })
+fun HeaderUserHome(navController: NavHostController) {
+    val context = LocalContext.current
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
 
-        Row {
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = "User Perfil",
-                    modifier = Modifier
-                        .size(size = 30.dp)
-                )
+    var locationText by remember { mutableStateOf(value = "Tu ubicacion") }
+    var showLocationBanner by remember { mutableStateOf(value = false) }
+    val permissionState = rememberPermissionState(
+        permission = android.Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
+    LaunchedEffect(Unit) {
+        val locationManager =
+            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        while (true) {
+            val hasPermission = permissionState.status.isGranted
+            val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+            if (hasPermission) {
+                if (isGpsEnabled) {
+                    showLocationBanner = false
+
+                    if (ContextCompat.checkSelfPermission(
+                            context,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                            if (location != null) {
+                                val geocoder = Geocoder(context)
+                                try {
+                                    val addresses = geocoder.getFromLocation(
+                                        location.latitude,
+                                        location.longitude,
+                                        1
+                                    )
+                                    if (!addresses.isNullOrEmpty()) {
+                                        val city = addresses[0].locality ?: ""
+                                        val subLocality = addresses[0].subLocality ?: ""
+                                        locationText = if (subLocality.isNotEmpty()) {
+                                            "$subLocality, $city"
+                                        } else {
+                                            city
+                                        }
+                                    } else {
+                                        locationText = "Ubicacion no disponible"
+                                    }
+                                } catch (e: Exception) {
+                                    locationText = "Ubicacion no disponible"
+                                }
+                            } else {
+                                locationText = "Ubicacion no disponible"
+                            }
+                        }
+                    }
+
+                } else {
+                    locationText = "GPS desactivado"
+                    showLocationBanner = true
+                }
+            } else {
+                locationText = "Permisos de ubicacion necesarios"
+                showLocationBanner = true
             }
-            IconButton(onClick = {}) {
-                Box(
-                    modifier = Modifier.size(size = 24.dp),
-                    contentAlignment = Alignment.Center
+
+            delay(1500)
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (showLocationBanner) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color(color = 0xFFFFC107))
+                    .clickable {
+                        if (!permissionState.status.isGranted) {
+                            permissionState.launchPermissionRequest()
+                        } else {
+                            val intent = android.content.Intent(
+                                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
+                            )
+                            context.startActivity(intent)
+                        }
+                    }
+                    .padding(vertical = 20.dp, horizontal = 18.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = "Cart Shopping",
-                        modifier = Modifier.size(size = 60.dp)
+                    Icon(imageVector = Icons.Default.Place, contentDescription = null)
+
+                    Text(
+                        text = "La opcion de compartir ubicacion esta\ndesactivada. Haz clic aqui para activarla",
+                        color = Color.Black,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Left,
                     )
 
-                    Box(
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp)
+        ) {
+            Text(
+                text = locationText,
+                style = MaterialTheme.typography.labelMedium,
+                fontSize = 20.sp,
+                modifier = Modifier.clickable {
+                    if (!permissionState.status.isGranted) {
+                        permissionState.launchPermissionRequest()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Tu ubicación ya esta activa",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                }
+            )
+
+
+            Row {
+                IconButton(onClick = {
+                    navController.navigate(route = "profile")
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = "User Perfil",
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = 6.dp, y = (-6).dp),
+                            .size(size = 30.dp)
+                    )
+                }
+                IconButton(onClick = {
+                    navController.navigate(route = "cart")
+                }) {
+                    Box(
+                        modifier = Modifier.size(size = 24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ShoppingCart,
+                            contentDescription = "Cart Shopping",
+                            modifier = Modifier.size(size = 60.dp)
+                        )
+
                         Box(
                             modifier = Modifier
-                                .size(size = 18.dp)
-                                .background(
-                                    color = Color(color = 0xff0e8244),
-                                    shape = RoundedCornerShape(size = 12.dp)
-                                ),
-                            contentAlignment = Alignment.Center
+                                .align(Alignment.TopEnd)
+                                .offset(x = 6.dp, y = (-6).dp),
                         ) {
-                            Text(
-                                text = "1",
-                                color = Color.White,
-                                fontSize = 10.sp,
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.titleSmall
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(size = 18.dp)
+                                    .background(
+                                        color = Color(color = 0xff0e8244),
+                                        shape = RoundedCornerShape(size = 12.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "1",
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                            }
                         }
                     }
                 }
@@ -144,13 +276,7 @@ fun HeaderUserHome() {
     }
 }
 
-/**
- *
- * Composable de la SearchBar maneja la Searchbar
- * sus estilos y comming soon will be managging the
- * logic about all
- *
- * */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar() {
@@ -187,12 +313,6 @@ fun SearchBar() {
 }
 
 
-/**
- *
- * Composable de categorias para manejar las categorias
- * y la logica de ellas
- *
- * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Categories() {
@@ -222,14 +342,14 @@ fun Categories() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(all = 20.dp)
+                        .padding(all = 18.dp)
                 ) {
                     Image(
                         painter = painterResource(id = item.img),
                         contentDescription = item.title,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
-                            .size(size = 58.dp)
+                            .size(size = 56.dp)
                             .clip(shape = CircleShape)
                             .align(Alignment.BottomEnd)
                     )
@@ -336,6 +456,7 @@ fun Categories() {
 
 }
 
+
 @Composable
 fun AllCategories() {
     val categoryList = getCategoriesList()
@@ -379,7 +500,7 @@ fun AllCategories() {
     }
 }
 
-/** Composable de Chips  */
+
 @Composable
 fun Chips() {
     val chips = getChips()
@@ -421,6 +542,7 @@ fun Chips() {
     }
 }
 
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedCardTransition(navController: NavHostController) {
@@ -458,12 +580,13 @@ fun SharedCardTransition(navController: NavHostController) {
 
 }
 
+
 @Composable
 fun Home(navController: NavHostController) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        item { HeaderUserHome() }
+        item { HeaderUserHome(navController = navController) }
 
         item { SearchBar() }
 
@@ -478,15 +601,6 @@ fun Home(navController: NavHostController) {
 }
 
 
-/**
- *
- * Composable de la UserHomeScreen
- *
- * @param modifier para manejar el estilo de los composable
- *
- * @author Alejandro
- *
- * */
 @Composable
 fun UserHomeScreen(modifier: Modifier = Modifier, navController: NavHostController) {
     var selectedTab by remember { mutableStateOf<Tabs>(value = Tabs.Home) }
@@ -520,7 +634,7 @@ fun UserHomeScreen(modifier: Modifier = Modifier, navController: NavHostControll
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues = paddingValues)
         ) {
             when (selectedTab) {
                 is Tabs.Home -> Home(navController = navController)

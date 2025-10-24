@@ -1,11 +1,11 @@
-package com.clay.ecommerce_compose.screens
+package com.clay.ecommerce_compose.ui.screens.register
 
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,17 +14,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,84 +36,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.clay.ecommerce_compose.R
+import kotlinx.coroutines.delay
 
-/**
- *
- * Composable `HeaderComp` para renderizar la imagen/logo de fondo de la pantalla del login
- *
- * @param imgUrl property de tipo `Int` para asignar la imagen a mostrar
- * @param descriptionContent property de tipo `String` para asignar la descripcion de la imagen
- * @param modifier property de la clase `Modifier` para personalizar la apariencia del composable
- *
- * @author Alejandro
- *
- * */
+
 @Composable
-fun HeaderComp(imgUrl: Int, descriptionContent: String, modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(id = imgUrl),
-        contentDescription = descriptionContent,
-        contentScale = ContentScale.Crop,
-        modifier = modifier
-    )
-}
-
-/**
- *
- * Composable `BottomComp` para renderizar el boton del login
- *
- * @param modifier property de la clase `Modifier` para personalizar la apariencia del composable
- * @param loginButtonAction callback para manejar el boton del login
- *
- * @author Alejandro
- *
- * */
-@Composable
-fun BottomComp(modifier: Modifier = Modifier, loginButtonAction: () -> Unit) {
-    Button(
-        onClick = loginButtonAction,
-        modifier = modifier,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(color = 0xff3ddb84),
-            contentColor = Color.White
-        ),
-        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(size = 10.dp),
-        contentPadding = PaddingValues()
-    ) {
-        Text(text = "Iniciar Sesion", fontSize = 18.sp)
-    }
-}
-
-
-/**
- *
- * Composable `LoginTextFields` para poder renderizar los campos de texto del login
- *
- * @param email property de tipo `String` para asignar el email del usuario
- * @param onEmailChange callback para cambiar el email del usuario
- * @param password property de tipo `String` para asignar la contraseña del usuario
- * @param onPasswordChange callback para cambiar la contraseña del usuario
- * @param showPassword property de tipo `Boolean` para mostrar o no la contraseña del usuario
- * @param onShowPasswordChange callback para cambiar el `showPassword` para el estado del boton
- *
- * @author Alejandro
- *
- * */
-@Composable
-fun LoginTextFields(
+fun RegisterTextFields(
     email: String,
     onEmailChange: (String) -> Unit,
+    username: String,
+    onUsernameChange: (String) -> Unit,
     password: String,
     onPasswordChange: (String) -> Unit,
     showPassword: Boolean,
@@ -124,6 +67,24 @@ fun LoginTextFields(
         },
         leadingIcon = {
             Icon(imageVector = Icons.Default.Email, contentDescription = null)
+        },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+    )
+
+    TextField(
+        value = username,
+        onValueChange = onUsernameChange,
+        label = {
+            Text(text = "Username")
+        },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Person, contentDescription = null)
         },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,
@@ -167,33 +128,64 @@ fun LoginTextFields(
 
 }
 
-/**
- *
- * Composable `LoginScreen` para renderizar la pantalla del loginScreen
- *
- * @param modifier property de tipo `Modifier` para personalizar la apariencia del composable
- *
- * @author Alejandro
- *
- * */
+
 @Composable
-fun LoginScreen(
+fun BottomComp(
     modifier: Modifier = Modifier,
-    loginButtonAction: () -> Unit = {},
-    navController: NavHostController
+    onButtonAction: () -> Unit,
+    containerColor: Color,
+    contentColor: Color,
+    shape: RoundedCornerShape,
+    padding: PaddingValues,
+    content: @Composable RowScope.() -> Unit
 ) {
-    var email by remember { mutableStateOf(value = "") }
-    var password by remember { mutableStateOf(value = "") }
+    Button(
+        onClick = onButtonAction,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        ),
+        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 4.dp),
+        shape = shape,
+        contentPadding = padding,
+        content = content
+    )
+}
+
+
+@Composable
+fun RegisterScreen(
+    viewModel: RegisterViewModel,
+    navController: NavHostController = rememberNavController(),
+    modifier: Modifier = Modifier
+) {
+
     var showPassword by remember { mutableStateOf(value = false) }
+    val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(state.error, state.registered) {
+        state.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+        if (state.registered) {
+            Toast.makeText(context, "Registrado ${state.username}", Toast.LENGTH_SHORT).show()
+            delay(300)
+            navController.navigate(route = "login")
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .animateContentSize()
     ) {
-        HeaderComp(
-            imgUrl = R.drawable.ic_launcher_background,
-            descriptionContent = "Logo",
+
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_background),
+            contentDescription = "Logo",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height = 400.dp)
@@ -205,14 +197,9 @@ fun LoginScreen(
                 .padding(vertical = 20.dp, horizontal = 16.dp)
         ) {
             Text(
-                text = "Bienvenido,",
+                text = "Registrate",
                 fontSize = 30.sp,
-                fontFamily = FontFamily.Default,
-            )
-            Text(
-                text = stringResource(id = R.string.logueate),
-                fontSize = 20.sp,
-                fontFamily = FontFamily.Default
+                style = MaterialTheme.typography.bodyLarge
             )
         }
 
@@ -222,42 +209,51 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(all = 20.dp)
         ) {
-            LoginTextFields(
-                email = email,
-                onEmailChange = { email = it },
-                password = password,
-                onPasswordChange = { password = it },
+            RegisterTextFields(
+                email = state.email,
+                onEmailChange = {
+                    viewModel.handleIntent(intent = RegisterViewModel.Intent.EmailChanged(email = it))
+                },
+                password = state.password,
+                onPasswordChange = {
+                    viewModel.handleIntent(
+                        intent = RegisterViewModel.Intent.PasswordChanged(
+                            password = it
+                        )
+                    )
+                },
+                username = state.username,
+                onUsernameChange = {
+                    viewModel.handleIntent(
+                        intent = RegisterViewModel.Intent.UsernameChanged(
+                            username = it
+                        )
+                    )
+                },
                 showPassword = showPassword,
-                onShowPasswordChange = { showPassword = !showPassword }
+                onShowPasswordChange = {
+                    showPassword = !showPassword
+                }
             )
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                TextButton(onClick = { navController.navigate(route = "register") }) {
-                    Text(
-                        text = stringResource(id = R.string.any_account),
-                        color = Color.Gray,
-                        fontSize = 15.sp
-                    )
-                }
-                TextButton(onClick = {}) {
-                    Text(
-                        text = stringResource(id = R.string.forget_password),
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
             BottomComp(
-                loginButtonAction = loginButtonAction,
+                onButtonAction = { viewModel.handleIntent(intent = RegisterViewModel.Intent.Submit) },
+                containerColor = Color(color = 0xff3ddb84),
+                contentColor = Color.White,
+                shape = RoundedCornerShape(size = 10.dp),
+                padding = PaddingValues(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 20.dp, horizontal = 6.dp),
-            )
+            ) {
+                Text(
+                    text = "Registrate",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontSize = 18.sp
+                )
+            }
         }
     }
 
 }
+

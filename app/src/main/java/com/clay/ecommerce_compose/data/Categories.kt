@@ -20,11 +20,3 @@ fun getCategoriesList(): List<Categories> {
         // agregar mas categorias segun sea necesario
     )
 }
-
-fun getCategory(): List<Categories> {
-    return listOf(
-        Categories(title = "Fast Food", img = R.drawable.ic_pizza),
-        Categories(title = "Basicos", img = R.drawable.ic_shopping_bag),
-        Categories(title = "Electronicos", img = R.drawable.ic_monitor_50),
-    )
-}
