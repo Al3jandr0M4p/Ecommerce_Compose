@@ -95,6 +95,7 @@ fun Navigation(
                 )
             }
 
+
 //            composable(route = "details/{id}") { backStackEntry ->
 //                val id = backStackEntry.arguments?.getString("id")?.toInt()
 //                DetailsScreen(
