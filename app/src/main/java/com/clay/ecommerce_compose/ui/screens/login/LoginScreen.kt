@@ -30,9 +30,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -65,7 +64,10 @@ fun LoginTextFields(
     showPassword: Boolean,
     onShowPasswordChange: () -> Unit
 ) {
-    TextField(
+
+    val focusedPurple = Color(color = 0xFF6200EE)
+
+    OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
         label = {
@@ -74,16 +76,28 @@ fun LoginTextFields(
         leadingIcon = {
             Icon(imageVector = Icons.Default.Email, contentDescription = null)
         },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
+        maxLines = 1,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
+
+            focusedLabelColor = focusedPurple,
+            unfocusedLabelColor = Color.Gray,
+
+            unfocusedBorderColor = Color.LightGray,
+            focusedBorderColor = focusedPurple,
+
+            focusedLeadingIconColor = focusedPurple,
+            unfocusedLeadingIconColor = Color.Gray
         ),
+        shape = RoundedCornerShape(size = 16.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .padding(bottom = 8.dp)
     )
 
-    TextField(
+    OutlinedTextField(
         value = password,
         onValueChange = onPasswordChange,
         label = {
@@ -108,12 +122,23 @@ fun LoginTextFields(
                 )
             }
         },
+        maxLines = 1,
         visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
+
+            focusedLabelColor = focusedPurple,
+            unfocusedLabelColor = Color.Gray,
+
+            unfocusedBorderColor = Color.LightGray,
+            focusedBorderColor = focusedPurple,
+
+            focusedLeadingIconColor = focusedPurple,
+            unfocusedLeadingIconColor = Color.Gray
         ),
+        shape = RoundedCornerShape(size = 16.dp),
         modifier = Modifier
             .fillMaxWidth()
     )
@@ -138,7 +163,6 @@ fun BottomComp(
             contentColor = contentColor
         ),
         elevation = elevation,
-        shape = RoundedCornerShape(size = 10.dp),
         contentPadding = PaddingValues(),
         content = content
     )
@@ -160,9 +184,14 @@ fun LoginScreen(
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
         if (state.loggedIn) {
+            val userRole = state.currentUser?.roleName ?: "guest"
             Toast.makeText(context, "Bienvenido ${state.currentUser}", Toast.LENGTH_SHORT).show()
+
             delay(300)
-            navController.navigate(route = "userHome")
+            when (userRole) {
+                "usuario" -> navController.navigate(route = "userHome")
+                else -> navController.navigate(route = "login")
+            }
         }
     }
 
@@ -178,15 +207,14 @@ fun LoginScreen(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(height = 450.dp)
+                .height(height = 350.dp)
         )
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(space = 4.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = Color.White)
-                .padding(all = 16.dp)
+                .padding(all = 14.dp)
         ) {
             Text(
                 text = "Bienvenido",
@@ -194,143 +222,166 @@ fun LoginScreen(
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = stringResource(id = R.string.logueate),
+                text = "de vuelta",
                 fontSize = 20.sp,
                 style = MaterialTheme.typography.labelMedium
             )
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(space = 6.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color.White)
                 .padding(all = 20.dp)
         ) {
-            LoginTextFields(
-                email = state.email,
-                onEmailChange = {
-                    viewModel.handleIntent(
-                        intent = LoginViewModel.Intent.EmailChanged(
-                            email = it
+            Column(
+                verticalArrangement = Arrangement.spacedBy(space = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                LoginTextFields(
+                    email = state.email,
+                    onEmailChange = {
+                        viewModel.handleIntent(
+                            intent = LoginViewModel.Intent.EmailChanged(
+                                email = it
+                            )
                         )
-                    )
-                },
-                password = state.password,
-                onPasswordChange = {
-                    viewModel.handleIntent(
-                        intent = LoginViewModel.Intent.PasswordChanged(
-                            password = it
+                    },
+                    password = state.password,
+                    onPasswordChange = {
+                        viewModel.handleIntent(
+                            intent = LoginViewModel.Intent.PasswordChanged(
+                                password = it
+                            )
                         )
+                    },
+                    showPassword = showPassword,
+                    onShowPasswordChange = { showPassword = !showPassword }
+                )
+
+                // login Buttom
+                BottomComp(
+                    onButtonAction = {
+                        viewModel.handleIntent(intent = LoginViewModel.Intent.Submit)
+                    },
+                    containerColor = Color.Black,
+                    contentColor = Color.White,
+                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 20.dp)
+                        .height(height = 56.dp),
+                ) {
+                    Text(
+                        text = "Entrar",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(vertical = 6.dp)
                     )
-                },
-                showPassword = showPassword,
-                onShowPasswordChange = { showPassword = !showPassword }
-            )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .weight(weight = 1f)
+                            .height(height = 1.dp),
+                        thickness = DividerDefaults.Thickness,
+                        color = Color.Gray
+                    )
+
+                    Text(
+                        text = "Puedes continuar con",
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 14.sp
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .weight(weight = 1f)
+                            .height(height = 1.dp),
+                        thickness = DividerDefaults.Thickness,
+                        color = Color.Gray
+                    )
+                }
+
+                // Google Buttom
+                BottomComp(
+                    onButtonAction = { },
+                    containerColor = Color.White,
+                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+                    contentColor = Color.Black,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 18.dp, horizontal = 6.dp)
+                        .height(height = 56.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height = 56.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Iniciar con Google",
+                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .padding(start = 18.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google),
+                                contentDescription = "Google logo",
+                                modifier = Modifier.size(size = 24.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                    }
+                }
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(bottom = 7.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Aun no tienes una cuenta?",
-                    fontSize = 16.sp,
-                    color = Color.DarkGray,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier
-                        .clickable { navController.navigate(route = "register") }
-                        .align(Alignment.CenterStart)
-                )
-            }
-
-            // login Buttom
-            BottomComp(
-                onButtonAction = {
-                    viewModel.handleIntent(intent = LoginViewModel.Intent.Submit)
-                },
-                containerColor = Color(color = 0xff3ddb84),
-                contentColor = Color.White,
-                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 18.dp),
-            ) {
-                Text(
-                    text = "Entrar",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(vertical = 6.dp)
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .weight(weight = 1f)
-                        .height(height = 1.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = Color.Gray
-                )
-
-                Text(
-                    text = "Puedes continuar con",
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontSize = 14.sp
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .weight(weight = 1f)
-                        .height(height = 1.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = Color.Gray
-                )
-            }
-
-            // Google Buttom
-            BottomComp(
-                onButtonAction = { viewModel.handleIntent(intent = LoginViewModel.Intent.Submit) },
-                containerColor = Color.White,
-                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
-                contentColor = Color.Black,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 18.dp, horizontal = 6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(height = 56.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 ) {
                     Text(
-                        text = "Iniciar con Google",
-                        fontSize = 18.sp,
-                        style = MaterialTheme.typography.labelMedium
+                        text = "Tu Primera vez?",
+                        fontSize = 16.sp,
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.labelSmall,
                     )
-
-                    Row(
+                    Text(
+                        text = "Crea una cuenta",
+                        fontSize = 16.sp,
+                        color = Color(color = 0xFF6200EE),
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
-                            .matchParentSize()
-                            .padding(start = 18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google),
-                            contentDescription = "Google logo",
-                            modifier = Modifier.size(size = 24.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
+                            .clickable { navController.navigate(route = "register") }
+                            .padding(start = 4.dp)
+                    )
                 }
             }
         }

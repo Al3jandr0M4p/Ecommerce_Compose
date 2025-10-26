@@ -2,6 +2,7 @@ package com.clay.ecommerce_compose
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -12,4 +13,5 @@ sealed class Tabs(
     val icon: ImageVector
 ) {
     object Home : Tabs(title = "Inicio", icon = Icons.Outlined.Home)
+    object Configuracion : Tabs(title = "configuracion", Icons.Outlined.Settings)
 }

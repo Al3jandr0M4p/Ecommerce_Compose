@@ -2,7 +2,9 @@ package com.clay.ecommerce_compose.data.repository
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.clay.ecommerce_compose.MainViewModel
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
+import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 
@@ -11,8 +13,12 @@ object AppViewModelProvider : ViewModelProvider.Factory {
         AuthRepository(SupabaseConfig.client)
     }
 
+    private val getCurrentUserSessionUseCase by lazy {
+        GetCurrentUserSessionUseCase(authRepository)
+    }
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if(modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return LoginViewModel(authRepository) as T
         }
@@ -20,6 +26,14 @@ object AppViewModelProvider : ViewModelProvider.Factory {
         if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return RegisterViewModel(authRepository) as T
+        }
+
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return MainViewModel(
+                supabase = SupabaseConfig.client,
+                getCurrentUserSessionUseCase = getCurrentUserSessionUseCase
+            ) as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

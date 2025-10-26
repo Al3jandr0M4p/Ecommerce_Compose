@@ -1,5 +1,6 @@
 package com.clay.ecommerce_compose.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -9,31 +10,68 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.clay.ecommerce_compose.MainViewModel
 import com.clay.ecommerce_compose.R
-import kotlinx.coroutines.delay
+import com.clay.ecommerce_compose.SplashState
 
 
 @Composable
-fun SplashScreen(modifier: Modifier = Modifier, onSplashChange: () -> Unit = {}) {
+fun SplashScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel,
+    modifier: Modifier = Modifier,
+) {
     val alpha = remember { Animatable(initialValue = 0f) }
 
-    LaunchedEffect(Unit) {
+    val splashState by mainViewModel.splashState.collectAsState()
+
+    LaunchedEffect(splashState) {
         alpha.animateTo(targetValue = 1f, animationSpec = tween(durationMillis = 1500))
-        delay(timeMillis = 3000)
-        alpha.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 1500))
-        onSplashChange()
+
+        if (splashState is SplashState.Success) {
+            val session = (splashState as SplashState.Success).session
+
+            Log.d("SplashScreen", "Session: $session")
+            Log.e("SplashScreen", "Session: $session")
+            val destination = if (session == null) {
+                "login"
+            } else {
+                when (session.role) {
+                    "admin" -> "adminHome"
+                    "repartidor" -> "deliveryHome"
+                    "usuario" -> "userHome"
+                    "vendedor" -> "sellerHome"
+                    else -> "login"
+                }
+            }
+
+            alpha.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 1000))
+
+            navController.navigate(route = destination) {
+                popUpTo(navController.graph.startDestinationId) {
+                    inclusive = true
+                }
+            }
+        }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .alpha(alpha = alpha.value)
+    ) {
         Image(
             painter = painterResource(id = R.drawable.bg_seller_splash),
             contentDescription = null,
@@ -50,12 +88,4 @@ fun SplashScreen(modifier: Modifier = Modifier, onSplashChange: () -> Unit = {})
             modifier = Modifier.align(Alignment.Center)
         )
     }
-
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SplashScreenPreview() {
-    SplashScreen()
 }

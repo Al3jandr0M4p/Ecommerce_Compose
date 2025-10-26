@@ -1,22 +1,17 @@
 package com.clay.ecommerce_compose.data
 
-import androidx.compose.runtime.Immutable
 import com.clay.ecommerce_compose.R
 
 
-@Immutable
-data class Categories(
-    val title: String,
-    val img: Int
-)
-
-fun getCategoriesList(): List<Categories> {
+fun getCategoriesList(): List<Category> {
     return listOf(
-        Categories(title = "Productos del\nSuper", img = R.drawable.ic_shopping_cart),
-        Categories(title = "Alcoho\nlicos", img = R.drawable.ic_beer_botle),
-        Categories(title = "Fast Food", img = R.drawable.ic_pizza),
-        Categories(title = "Basicos", img = R.drawable.ic_shopping_bag),
-        Categories(title = "Electronicos", img = R.drawable.ic_monitor_50),
-        // agregar mas categorias segun sea necesario
+        Category(title = "Colmados", img = R.drawable.ic_launcher_background),
+        Category(title = "Panaderías", img = R.drawable.ic_launcher_background),
+        Category(title = "Frutas y Verduras", img = R.drawable.ic_launcher_background),
+        Category(title = "Comida Rápida", img = R.drawable.ic_pizza),
+        Category(title = "Restaurantes", img = R.drawable.ic_launcher_background),
+        Category(title = "Limpieza y Hogar", img = R.drawable.ic_launcher_background),
+        Category(title = "Electronicos", img = R.drawable.ic_monitor_50),
     )
 }
+

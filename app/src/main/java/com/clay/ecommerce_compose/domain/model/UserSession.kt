@@ -1,4 +1,9 @@
 package com.clay.ecommerce_compose.domain.model
 
-class UserSession {
-}
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserSession(
+    val id: String,
+    val role: String?
+)

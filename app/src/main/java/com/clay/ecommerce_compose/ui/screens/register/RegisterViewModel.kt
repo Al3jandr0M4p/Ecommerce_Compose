@@ -10,22 +10,28 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+
+// =========== MODEL =========== //
 class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
+    // =========== STATE =========== //
     data class State(
         val email: String = "",
         val password: String = "",
-        val username: String = "",
+        val name: String = "",
+        val lastname: String = "",
         val isLoading: Boolean = false,
         val error: String? = null,
         val registered: Boolean = false,
         val currentUser: Profile? = null
     )
 
+    // =========== INTENT =========== //
     sealed class Intent {
         data class EmailChanged(val email: String) : Intent()
-        data class UsernameChanged(val username: String) : Intent()
         data class PasswordChanged(val password: String) : Intent()
+        data class NameChanged(val name: String) : Intent()
+        data class LastNameChanged(val lastname: String) : Intent()
         object Submit : Intent()
     }
 
@@ -37,8 +43,9 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
         when (intent) {
             is Intent.Submit -> register()
             is Intent.EmailChanged -> _state.value = _state.value.copy(email = intent.email)
-            is Intent.UsernameChanged -> _state.value =
-                _state.value.copy(username = intent.username)
+            is Intent.NameChanged -> _state.value = _state.value.copy(name = intent.name)
+            is Intent.LastNameChanged -> _state.value =
+                _state.value.copy(lastname = intent.lastname)
 
             is Intent.PasswordChanged -> _state.value =
                 _state.value.copy(password = intent.password)
@@ -53,7 +60,8 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
             val user = authRepository.signUp(
                 email = current.email,
                 password = current.password,
-                username = current.username
+                name = current.name,
+                lastname = current.lastname
             )
             if (user != null) {
                 _state.update {
