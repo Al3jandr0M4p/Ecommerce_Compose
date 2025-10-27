@@ -38,7 +38,6 @@ fun SplashScreen(
     val splashState by mainViewModel.splashState.collectAsState()
 
     LaunchedEffect(splashState) {
-        alpha.animateTo(targetValue = 1f, animationSpec = tween(durationMillis = 1500))
 
         if (splashState is SplashState.Success) {
             val session = (splashState as SplashState.Success).session
@@ -57,7 +56,6 @@ fun SplashScreen(
                 }
             }
 
-            alpha.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 1000))
 
             navController.navigate(route = destination) {
                 popUpTo(navController.graph.startDestinationId) {
@@ -70,7 +68,6 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .alpha(alpha = alpha.value)
     ) {
         Image(
             painter = painterResource(id = R.drawable.bg_seller_splash),

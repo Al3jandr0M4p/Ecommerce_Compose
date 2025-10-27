@@ -3,7 +3,7 @@ package com.clay.ecommerce_compose.ui.screens.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.AuthRepository
-import com.clay.ecommerce_compose.data.repository.Profile
+import com.clay.ecommerce_compose.domain.model.Profile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -31,10 +31,13 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     fun handleIntent(intent: Intent) {
         when (intent) {
-            is Intent.Submit -> login()
-            is Intent.EmailChanged -> _state.value = _state.value.copy(email = intent.email)
+            is Intent.EmailChanged -> _state.value =
+                _state.value.copy(email = intent.email)
+
             is Intent.PasswordChanged -> _state.value =
                 _state.value.copy(password = intent.password)
+
+            is Intent.Submit -> login()
         }
     }
 
@@ -43,9 +46,20 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
         _state.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
-            val user = authRepository.signIn(email = current.email, password = current.password)
+            val user = authRepository.signIn(
+                email = current.email,
+                password = current.password
+            )
+
             if (user != null) {
-                _state.update { it.copy(isLoading = false, loggedIn = true, currentUser = user) }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        loggedIn = true,
+                        currentUser = user
+                    )
+                }
+
             } else {
                 _state.update {
                     it.copy(
@@ -53,6 +67,7 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
                         error = "Usuario o contraseña incorrectos"
                     )
                 }
+
             }
         }
     }

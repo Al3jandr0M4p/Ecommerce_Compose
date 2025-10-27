@@ -1,11 +1,15 @@
 package com.clay.ecommerce_compose.data.repository
 
+import android.net.Uri
 import android.util.Log
+import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.Profile
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.storage.storage
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -119,6 +123,72 @@ class AuthRepository(private val supabase: SupabaseClient) {
             Log.e("AuthRepository", "Error al obtener el perfil del usuario", e)
             supabase.auth.signOut()
             return null
+        }
+    }
+
+    suspend fun signUpBusiness(
+        email: String,
+        password: String,
+        name: String,
+        logo: Uri?,
+        logoByteArray: ByteArray?,
+        direccion: String,
+        horarioApertura: String,
+        horarioCierre: String,
+        telefono: String,
+        description: String,
+        hasDelivery: Boolean,
+        category: String
+    ): BusinessProfile? {
+        try {
+            val result = supabase.auth.signUpWith(Email) {
+                this.email = email
+                this.password = password
+                data = buildJsonObject {
+                    put("username", JsonPrimitive(name))
+                }
+            }
+
+            val userId = result?.id ?: throw IllegalStateException("No se pudo crear el usuario")
+
+            var logoUrl: String? = null
+
+            if (logo != null && logoByteArray != null) {
+                val fileExtension = logo.lastPathSegment?.substringAfterLast('.', "jpg")
+                val path = "business_logo/${userId}_${System.currentTimeMillis()}.$fileExtension"
+
+                supabase.storage.from("logos").upload(path, logoByteArray)
+
+                logoUrl = supabase.storage.from("logos").publicUrl(path)
+
+                Log.d("AuthRepository", "Logo subido a $logoUrl")
+            }
+
+            val newBusinessProfile = supabase.from("businesses").insert(
+                buildJsonObject {
+                    put("owner_id", JsonPrimitive(userId))
+                    put("name", JsonPrimitive(name))
+                    put("address", JsonPrimitive(direccion))
+                    put("opening_time", JsonPrimitive(horarioApertura))
+                    put("closing_time", JsonPrimitive(horarioCierre))
+                    put("phone", JsonPrimitive(telefono))
+                    put("description", JsonPrimitive(description))
+                    put("has_delivery", JsonPrimitive(hasDelivery))
+                    put("category", JsonPrimitive(category))
+                    logoUrl?.let { put("logo_url", JsonPrimitive(it)) }
+                }
+            ).decodeSingle<BusinessProfile>()
+
+            Log.d("AuthRepository", "Negocio registrado: $newBusinessProfile")
+            return newBusinessProfile
+
+        } catch (e: Exception) {
+            supabase.auth.currentUserOrNull()?.id.let {
+
+            }
+
+            Log.e("AuthRepository", "Error al registrar el negocio", e)
+            throw e
         }
     }
 

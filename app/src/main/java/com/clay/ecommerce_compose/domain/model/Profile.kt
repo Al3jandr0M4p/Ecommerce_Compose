@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.data.repository
+package com.clay.ecommerce_compose.domain.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

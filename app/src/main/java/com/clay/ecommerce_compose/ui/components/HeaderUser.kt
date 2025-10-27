@@ -13,16 +13,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -219,55 +216,15 @@ fun HeaderUserHome(navController: NavHostController) {
         )
 
 
-        Row {
-            IconButton(onClick = {
-                navController.navigate(route = "profile")
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = "User Perfil",
-                    modifier = Modifier
-                        .size(size = 30.dp)
-                )
-            }
-            IconButton(onClick = {
-                navController.navigate(route = "cart")
-            }) {
-                Box(
-                    modifier = Modifier.size(size = 24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = "Cart Shopping",
-                        modifier = Modifier.size(size = 60.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = 6.dp, y = (-6).dp),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(size = 18.dp)
-                                .background(
-                                    color = Color(color = 0xff0e8244),
-                                    shape = RoundedCornerShape(size = 12.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "1",
-                                color = Color.White,
-                                fontSize = 10.sp,
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                        }
-                    }
-                }
-            }
+        IconButton(onClick = {
+            navController.navigate(route = "profile")
+        }) {
+            Icon(
+                imageVector = Icons.Outlined.Person,
+                contentDescription = "User Perfil",
+                modifier = Modifier
+                    .size(size = 30.dp)
+            )
         }
     }
 }

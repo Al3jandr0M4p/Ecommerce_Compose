@@ -1,7 +1,13 @@
-package com.clay.ecommerce_compose.data
+package com.clay.ecommerce_compose.utils
 
+import androidx.compose.runtime.Immutable
 import com.clay.ecommerce_compose.R
 
+@Immutable
+data class Category(
+    val title: String,
+    val img: Int
+)
 
 fun getCategoriesList(): List<Category> {
     return listOf(

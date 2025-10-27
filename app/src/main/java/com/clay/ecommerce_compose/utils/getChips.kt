@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.data
+package com.clay.ecommerce_compose.utils
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk

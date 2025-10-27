@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clay.ecommerce_compose.data.getChips
+import com.clay.ecommerce_compose.utils.getChips
 
 @Composable
 fun Chips() {
