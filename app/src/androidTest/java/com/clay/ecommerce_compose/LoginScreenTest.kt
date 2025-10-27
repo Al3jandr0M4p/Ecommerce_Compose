@@ -7,7 +7,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.clay.ecommerce_compose.data.repository.AppViewModelProvider
+import com.clay.ecommerce_compose.data.AppViewModelProvider
 import com.clay.ecommerce_compose.ui.screens.login.LoginScreen
 import org.junit.Rule
 import org.junit.Test

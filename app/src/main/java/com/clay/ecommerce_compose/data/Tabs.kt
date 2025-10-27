@@ -1,11 +1,11 @@
-package com.clay.ecommerce_compose
+package com.clay.ecommerce_compose.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
-
 
 @Immutable
 sealed class Tabs(
@@ -14,4 +14,5 @@ sealed class Tabs(
 ) {
     object Home : Tabs(title = "Inicio", icon = Icons.Outlined.Home)
     object Configuracion : Tabs(title = "configuracion", Icons.Outlined.Settings)
+    object ShoppinCart : Tabs(title = "cart", icon = Icons.Outlined.ShoppingCart)
 }

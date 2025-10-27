@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -25,8 +24,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -283,76 +280,6 @@ fun LoginScreen(
                         fontSize = 20.sp,
                         modifier = Modifier.padding(vertical = 6.dp)
                     )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .weight(weight = 1f)
-                            .height(height = 1.dp),
-                        thickness = DividerDefaults.Thickness,
-                        color = Color.Gray
-                    )
-
-                    Text(
-                        text = "Puedes continuar con",
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 14.sp
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .weight(weight = 1f)
-                            .height(height = 1.dp),
-                        thickness = DividerDefaults.Thickness,
-                        color = Color.Gray
-                    )
-                }
-
-                // Google Buttom
-                BottomComp(
-                    onButtonAction = { },
-                    containerColor = Color.White,
-                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
-                    contentColor = Color.Black,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 18.dp, horizontal = 6.dp)
-                        .height(height = 56.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(height = 56.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Iniciar con Google",
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .padding(start = 18.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_google),
-                                contentDescription = "Google logo",
-                                modifier = Modifier.size(size = 24.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
-                    }
                 }
             }
 
