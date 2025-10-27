@@ -4,21 +4,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.clay.ecommerce_compose.screens.LoginScreen
-import com.clay.ecommerce_compose.screens.RegisterScreen
-import com.clay.ecommerce_compose.screens.SplashScreen
-import com.clay.ecommerce_compose.screens.cliente.DetailsScreen
-import com.clay.ecommerce_compose.screens.cliente.UserHomeScreen
+import com.clay.ecommerce_compose.data.repository.AppViewModelProvider
+import com.clay.ecommerce_compose.ui.screens.SplashScreen
+import com.clay.ecommerce_compose.ui.screens.cliente.Cart
+import com.clay.ecommerce_compose.ui.screens.cliente.UserHomeScreen
+import com.clay.ecommerce_compose.ui.screens.login.LoginScreen
+import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
+import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
+import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.theme.Ecommerce_ComposeTheme
+import com.clay.ecommerce_compose.ui.screens.admin.AdminScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,10 +37,13 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
 
             Ecommerce_ComposeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    contentWindowInsets = WindowInsets(0.dp)
+                ) { innerPadding ->
                     Navigation(
-                        modifier = Modifier.padding(paddingValues = innerPadding),
-                        navController = navController
+                        navController = navController,
+                        modifier = Modifier.padding(paddingValues = innerPadding)
                     )
                 }
             }
@@ -39,46 +51,71 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun Navigation(modifier: Modifier = Modifier, navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "splash") {
+fun Navigation(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+) {
 
-        composable(route = "splash") {
-            SplashScreen(modifier = modifier) {
-                navController.navigate(route = "login") {
-                    popUpTo(route = "splash") {
-                        inclusive = true
-                    }
-                }
+    SharedTransitionLayout {
+        NavHost(navController = navController, startDestination = "adminHome") {
+
+            composable(route = "splash") {
+                val mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider)
+                SplashScreen(
+                    modifier = Modifier,
+                    navController = navController,
+                    mainViewModel = mainViewModel
+                )
             }
-        }
 
-        composable(route = "login") {
-            LoginScreen(
-                modifier = modifier,
-                loginButtonAction = { navController.navigate(route = "userHome") },
-                navController = navController
-            )
-        }
-
-        composable(route = "register") {
-            RegisterScreen(modifier = modifier) {
-                navController.navigate(route = "login")
+            composable(route = "login") {
+                val loginViewModel: LoginViewModel = viewModel(factory = AppViewModelProvider)
+                LoginScreen(
+                    navController = navController,
+                    modifier = Modifier,
+                    viewModel = loginViewModel
+                )
             }
-        }
 
-        composable(route = "userHome") {
-            UserHomeScreen(modifier = modifier, navController = navController)
-        }
+            composable(route = "register") {
+                val registerViewModel: RegisterViewModel = viewModel(factory = AppViewModelProvider)
+                RegisterScreen(
+                    viewModel = registerViewModel,
+                    navController = navController,
+                    modifier = Modifier
+                )
+            }
 
-        composable(route = "details/{id}") { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")?.toInt()
-            DetailsScreen(id = id, navController = navController)
-        }
+            composable(route = "userHome") {
+                UserHomeScreen(
+                    modifier = Modifier,
+                    navController = navController,
+                    animatedVisibilityScope = this
+                )
+            }
 
-//        composable(route = "adminHome") {
-//            UserHomeScreen(modifier = modifier)
-//        }
+
+//            composable(route = "details/{id}") { backStackEntry ->
+//                val id = backStackEntry.arguments?.getString("id")?.toInt()
+//                DetailsScreen(
+//                    id = id,
+//                    navController = navController,
+//                    animatedVisibilityScope = this
+//                )
+//            }
+
+            composable(route = "cart") {
+                Cart()
+            }
+
+            composable(route = "adminHome") {
+                AdminScreen(
+                    navController ,
+                    modifier = Modifier ,
+                )
+            }
 
 //        composable(route = "negocio") {
 //            UserHomeScreen(modifier = modifier)
@@ -92,5 +129,6 @@ fun Navigation(modifier: Modifier = Modifier, navController: NavHostController) 
 //            UserHomeScreen(modifier = modifier)
 //        }
 
+        }
     }
 }

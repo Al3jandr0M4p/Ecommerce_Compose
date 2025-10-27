@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.screens.cliente
+package com.clay.ecommerce_compose.ui.screens.cliente
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
