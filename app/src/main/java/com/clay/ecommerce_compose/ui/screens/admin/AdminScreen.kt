@@ -22,7 +22,7 @@ fun AdminScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(50.dp),
+            .padding(35.dp),
     ) {
         Text(
             text = "Panel de Administrador",
