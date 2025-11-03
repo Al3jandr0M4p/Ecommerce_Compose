@@ -28,6 +28,10 @@ import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.theme.Ecommerce_ComposeTheme
 import com.clay.ecommerce_compose.ui.screens.admin.AdminScreen
+import com.clay.ecommerce_compose.ui.screens.admin.InventoryScreen
+import com.clay.ecommerce_compose.ui.screens.admin.OrdersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.StoresScreen
+import com.clay.ecommerce_compose.ui.screens.admin.UsersScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,6 +120,25 @@ fun Navigation(
                     modifier = Modifier ,
                 )
             }
+
+            composable(route = "users") {
+                UsersScreen(navController = navController)
+            }
+
+            composable(route = "users") {
+                UsersScreen(navController = navController)
+            }
+            composable(route = "inventory") {
+                InventoryScreen(navController = navController)
+            }
+            composable(route = "orders") {
+                OrdersScreen(navController = navController)
+            }
+            composable(route = "stores") {
+                StoresScreen(navController = navController)
+            }
+
+
 
 //        composable(route = "negocio") {
 //            UserHomeScreen(modifier = modifier)

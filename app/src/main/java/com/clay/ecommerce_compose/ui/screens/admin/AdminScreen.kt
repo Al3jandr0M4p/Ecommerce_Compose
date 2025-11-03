@@ -41,25 +41,26 @@ fun AdminDashboardButtons(navController: NavController) {
         AdminCard(
             title = "Usuarios",
             icon = Icons.Default.People,
-            onClick = { /* navController.navigate("manageUsers") */ }
+            onClick = { navController.navigate("users") }
         )
         AdminCard(
             title = "Inventario",
             icon = Icons.Default.Inventory,
-            onClick = { /* navController.navigate("manageInventory") */ }
+            onClick = { navController.navigate("inventory") }
         )
         AdminCard(
             title = "Órdenes",
             icon = Icons.Default.ShoppingCart,
-            onClick = { /* navController.navigate("manageOrders") */ }
+            onClick = { navController.navigate("orders") }
         )
         AdminCard(
             title = "Negocios",
             icon = Icons.Default.Store,
-            onClick = { /* navController.navigate("manageStores") */ }
+            onClick = { navController.navigate("stores") }
         )
     }
 }
+
 
 @Composable
 fun AdminCard(
@@ -70,22 +71,26 @@ fun AdminCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(90.dp)
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Icon(icon, contentDescription = title)
+            Icon(icon, contentDescription = title, tint = MaterialTheme.colorScheme.primary)
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }
 }
+
