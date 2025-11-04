@@ -11,30 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-// =========== MODEL =========== //
 class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel() {
-
-    // =========== STATE =========== //
-    data class State(
-        val email: String = "",
-        val password: String = "",
-        val name: String = "",
-        val lastname: String = "",
-        val isLoading: Boolean = false,
-        val error: String? = null,
-        val registered: Boolean = false,
-        val currentUser: Profile? = null
-    )
-
-    // =========== INTENT =========== //
-    sealed class Intent {
-        data class EmailChanged(val email: String) : Intent()
-        data class PasswordChanged(val password: String) : Intent()
-        data class NameChanged(val name: String) : Intent()
-        data class LastNameChanged(val lastname: String) : Intent()
-        object Submit : Intent()
-    }
-
     private val _state = MutableStateFlow(value = State())
     val state: StateFlow<State> = _state.asStateFlow()
 

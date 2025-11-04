@@ -1,7 +1,7 @@
 package com.clay.ecommerce_compose.ui.screens.register.business
 
 import android.app.Application
-import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.AuthRepository
@@ -15,39 +15,6 @@ class BusinessViewModel(
     private val authRepository: AuthRepository,
     private val application: Application
 ) : AndroidViewModel(application) {
-    data class BusinessState(
-        val name: String = "",
-        val email: String = "",
-        val password: String = "",
-        val logo: Uri? = null,
-        val logoByteArray: ByteArray? = null,
-        val direccion: String = "",
-        val horario_apertura: String = "",
-        val horario_cierre: String = "",
-        val telefono: String = "",
-        val description: String = "",
-        val hasDelivery: Boolean = false,
-        val category: String = "",
-        val isLoading: Boolean = false,
-        val isRegistrationSuccessful: Boolean = false,
-        val error: String? = null
-    )
-
-    sealed class Intent {
-        data class NameChanged(val name: String) : Intent()
-        data class EmailChanged(val email: String) : Intent()
-        data class PasswordChanged(val password: String) : Intent()
-        data class LogoChanged(val logo: Uri?) : Intent()
-        data class DireccionChanged(val direccion: String) : Intent()
-        data class HorarioAperturaChanged(val horarario_apertura: String) : Intent()
-        data class HorarioCierreChanged(val horario_cierre: String) : Intent()
-        data class TelefonoChanged(val telefono: String) : Intent()
-        data class DescriptionChanged(val description: String) : Intent()
-        data class HasDeliveryChanged(val hasDelivery: Boolean) : Intent()
-        data class CategoryChanged(val category: String) : Intent()
-        object Submit : Intent()
-    }
-
     private val _state = MutableStateFlow(value = BusinessState())
     val state: StateFlow<BusinessState> = _state.asStateFlow()
 
@@ -72,16 +39,32 @@ class BusinessViewModel(
             is Intent.HorarioAperturaChanged -> _state.update { it.copy(horario_apertura = intent.horarario_apertura) }
             is Intent.HorarioCierreChanged -> _state.update { it.copy(horario_cierre = intent.horario_cierre) }
             is Intent.TelefonoChanged -> _state.update { it.copy(telefono = intent.telefono) }
-            is Intent.DescriptionChanged -> _state.update { it.copy(description = intent.description) }
             is Intent.HasDeliveryChanged -> _state.update { it.copy(hasDelivery = intent.hasDelivery) }
             is Intent.CategoryChanged -> _state.update { it.copy(category = intent.category) }
+            is Intent.NextStep -> {
+                if (validateStep1()) {
+                    _state.update { it.copy(currentPage = 2, error = null) }
+                }
+            }
+
+            is Intent.PreviousStep -> _state.update { it.copy(currentPage = 1) }
             is Intent.Submit -> registerBusiness()
+        }
+    }
+
+    private fun validateStep1(): Boolean {
+        val currentState = _state.value
+        return if (currentState.name.isBlank() || currentState.email.isBlank()) {
+            _state.update { it.copy(error = "Todos los campos son obligatorios") }
+            false
+        } else {
+            true
         }
     }
 
     private fun registerBusiness() {
         val currentState = _state.value
-        if (currentState.email.isBlank() || currentState.password.isBlank() || currentState.name.isBlank()) {
+        if (currentState.email.isBlank() || currentState.password.isBlank() || currentState.direccion.isBlank()) {
             _state.update { it.copy(error = "Por favor, complete todos los campos") }
             return
         }
@@ -92,19 +75,23 @@ class BusinessViewModel(
                 val businessProfile = authRepository.signUpBusiness(
                     email = currentState.email,
                     password = currentState.password,
+
                     name = currentState.name,
                     logo = currentState.logo,
                     logoByteArray = currentState.logoByteArray,
-                    direccion = currentState.direccion,
                     horarioApertura = currentState.horario_apertura,
                     horarioCierre = currentState.horario_cierre,
+                    category = currentState.category,
+
+                    direccion = currentState.direccion,
                     telefono = currentState.telefono,
-                    description = currentState.description,
-                    hasDelivery = currentState.hasDelivery,
-                    category = currentState.category
+                    hasDelivery = currentState.hasDelivery
                 )
 
+                Log.i("BusinessViewModel", "Business $businessProfile")
+
                 if (businessProfile != null) {
+                    Log.d("BusinessViewModel", "Registro exitoso: $businessProfile")
                     _state.update { it.copy(isLoading = false, isRegistrationSuccessful = true) }
                 } else {
                     _state.update {
@@ -113,6 +100,7 @@ class BusinessViewModel(
                             error = "No se pudo completar el registro"
                         )
                     }
+                    Log.e("BusinessViewModel", "Registro fallido en else $businessProfile")
                 }
 
             } catch (e: Exception) {
@@ -122,6 +110,7 @@ class BusinessViewModel(
                         error = e.message ?: "Ocurrio un error al registrar el negocio"
                     )
                 }
+                Log.e("BusinessViewModel", "Registro fallido en catch ${e.message}")
             }
         }
     }

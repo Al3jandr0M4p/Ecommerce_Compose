@@ -33,3 +33,4 @@ data class BusinessProfile(
 
     val category: String = ""
 )
+

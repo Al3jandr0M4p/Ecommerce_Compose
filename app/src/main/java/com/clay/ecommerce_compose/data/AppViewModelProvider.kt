@@ -3,8 +3,8 @@ package com.clay.ecommerce_compose.data
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.clay.ecommerce_compose.ui.screens.signOut.ConfigViewModel
-import com.clay.ecommerce_compose.MainViewModel
+import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
+import com.clay.ecommerce_compose.activity.MainViewModel
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase

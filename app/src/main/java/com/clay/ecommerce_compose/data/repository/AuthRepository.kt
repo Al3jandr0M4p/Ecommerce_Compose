@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import com.clay.ecommerce_compose.domain.model.Profile
+import com.clay.ecommerce_compose.domain.model.RoleIdResponse
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
@@ -63,12 +64,14 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
     suspend fun signIn(email: String, password: String): Profile? {
         return try {
-            supabase.auth.signInWith(Email) {
+            val session = supabase.auth.signInWith(Email) {
                 this.email = email
                 this.password = password
             }
 
             val user = supabase.auth.currentUserOrNull()
+            Log.d("AuthRepository", "Usuario autenticado (ID): ${user?.id}")
+
             if (user != null) {
                 val profileResponse = supabase.from("profiles")
                     .select(Columns.list("id", "role_id")) {
@@ -82,14 +85,18 @@ class AuthRepository(private val supabase: SupabaseClient) {
                             filter { eq("id", profileResponse.roleId) }
                         }
                         .decodeSingleOrNull<JsonObject>()
-
                     val roleName = roleNameObject?.get("name")?.jsonPrimitive?.contentOrNull
 
                     profileResponse.roleName = roleName
-                }
 
+                    Log.d("AuthRepository", "Rol obtenido en SigIn $roleName para ID: ${user.id}")
+                }
+                Log.d("AuthRepository", "Usuario logueado: $profileResponse")
                 return profileResponse
-            } else null
+            } else {
+                Log.e("AuthRepository", "Error: La sesión es válida pero el usuario es null")
+                null
+            }
         } catch (e: Exception) {
             Log.e("AuthRepository", "Error en signIn", e)
             null
@@ -129,65 +136,101 @@ class AuthRepository(private val supabase: SupabaseClient) {
     suspend fun signUpBusiness(
         email: String,
         password: String,
+
         name: String,
         logo: Uri?,
         logoByteArray: ByteArray?,
-        direccion: String,
         horarioApertura: String,
         horarioCierre: String,
+        category: String,
+
+        direccion: String,
         telefono: String,
-        description: String,
-        hasDelivery: Boolean,
-        category: String
+        hasDelivery: Boolean
     ): BusinessProfile? {
+        var sessionUserId: String? = null
+        var logoPath: String? = null
+
         try {
-            val result = supabase.auth.signUpWith(Email) {
-                this.email = email
-                this.password = password
-                data = buildJsonObject {
-                    put("username", JsonPrimitive(name))
+            try {
+                supabase.auth.signUpWith(Email) {
+                    this.email = email
+                    this.password = password
+                    data = buildJsonObject {
+                        put("username", JsonPrimitive(name))
+                    }
                 }
+            } catch (authException: Exception) {
+                Log.e("AuthRepository", "Fallo en signUpWith", authException)
+                throw authException
             }
 
-            val userId = result?.id ?: throw IllegalStateException("No se pudo crear el usuario")
+            sessionUserId = supabase.auth.currentUserOrNull()?.id
+                ?: throw IllegalStateException("No hay usuario autenticado despues del registro")
 
             var logoUrl: String? = null
 
             if (logo != null && logoByteArray != null) {
                 val fileExtension = logo.lastPathSegment?.substringAfterLast('.', "jpg")
-                val path = "business_logo/${userId}_${System.currentTimeMillis()}.$fileExtension"
+                logoPath =
+                    "business_logo/${sessionUserId}_${System.currentTimeMillis()}.$fileExtension"
 
-                supabase.storage.from("logos").upload(path, logoByteArray)
+                supabase.storage.from("logos").upload(logoPath, logoByteArray)
 
-                logoUrl = supabase.storage.from("logos").publicUrl(path)
+                logoUrl = supabase.storage.from("logos").publicUrl(logoPath)
 
                 Log.d("AuthRepository", "Logo subido a $logoUrl")
             }
 
             val newBusinessProfile = supabase.from("businesses").insert(
                 buildJsonObject {
-                    put("owner_id", JsonPrimitive(userId))
+                    put("owner_id", JsonPrimitive(sessionUserId))
                     put("name", JsonPrimitive(name))
                     put("address", JsonPrimitive(direccion))
                     put("opening_time", JsonPrimitive(horarioApertura))
                     put("closing_time", JsonPrimitive(horarioCierre))
                     put("phone", JsonPrimitive(telefono))
-                    put("description", JsonPrimitive(description))
                     put("has_delivery", JsonPrimitive(hasDelivery))
                     put("category", JsonPrimitive(category))
                     logoUrl?.let { put("logo_url", JsonPrimitive(it)) }
                 }
-            ).decodeSingle<BusinessProfile>()
+            ) {
+                select()
+            }.decodeSingle<BusinessProfile>()
 
-            Log.d("AuthRepository", "Negocio registrado: $newBusinessProfile")
+            val businessRole = supabase.from("roles")
+                .select(Columns.raw("id")) {
+                    filter { eq("name", "negocio") }
+                }
+                .decodeSingleOrNull<RoleIdResponse>()
+
+            val roleId = businessRole?.id
+                ?: throw IllegalStateException("El rol 'negocio' no existe en la base de datos. Verifica la tabla roles.")
+
+            supabase.from("profiles")
+                .update(buildJsonObject { put("role_id", JsonPrimitive(roleId)) }) {
+                    filter { eq("id", sessionUserId) }
+                }
+
+            Log.d("AuthRepository", "Negocio registrado y rol actualizado $newBusinessProfile")
             return newBusinessProfile
 
         } catch (e: Exception) {
-            supabase.auth.currentUserOrNull()?.id.let {
-
+            if (sessionUserId != null && logoPath != null) {
+                try {
+                    supabase.storage.from("logos").delete(listOf(logoPath))
+                    Log.d("AuthRepository", "Logo de negocio eliminado tras fallo.")
+                } catch (removeException: Exception) {
+                    Log.e(
+                        "AuthRepository",
+                        "Advertencia: Fallo al eliminar el logo subido.",
+                        removeException
+                    )
+                }
             }
 
-            Log.e("AuthRepository", "Error al registrar el negocio", e)
+            supabase.auth.signOut()
+
             throw e
         }
     }

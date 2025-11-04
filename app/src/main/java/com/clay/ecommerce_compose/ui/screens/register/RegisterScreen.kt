@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -49,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
+import com.clay.ecommerce_compose.ui.components.auth.users.BottomComp
 import kotlinx.coroutines.delay
 
 
@@ -76,41 +79,42 @@ fun RegisterTextFields(
     showPassword: Boolean,
     onShowPasswordChange: () -> Unit
 ) {
+    val colors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = colorResource(id = R.color.white),
+        unfocusedContainerColor = colorResource(id = R.color.white),
+        disabledContainerColor = colorResource(id = R.color.white),
+
+        focusedLabelColor = colorResource(id = R.color.focusedPurple),
+        unfocusedLabelColor = Color.Gray,
+
+        unfocusedBorderColor = Color.LightGray,
+        focusedBorderColor = colorResource(id = R.color.focusedPurple),
+
+        focusedLeadingIconColor = colorResource(id = R.color.focusedPurple),
+        unfocusedLeadingIconColor = Color.Gray
+    )
+
     OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
         label = {
-            Text(text = "Email")
+            Text(text = "Email", fontSize = 12.sp, style = MaterialTheme.typography.labelSmall)
         },
         leadingIcon = {
             Icon(imageVector = Icons.Default.Email, contentDescription = null)
         },
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = colorResource(id = R.color.white),
-            unfocusedContainerColor = colorResource(id = R.color.white),
-            disabledContainerColor = colorResource(id = R.color.white),
-
-            focusedLabelColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLabelColor = Color.Gray,
-
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = colorResource(id = R.color.focusedPurple),
-
-            focusedLeadingIconColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLeadingIconColor = Color.Gray
-        ),
+        colors = colors,
         maxLines = 1,
         shape = RoundedCornerShape(size = 16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp, start = 16.dp, end = 16.dp)
     )
 
     OutlinedTextField(
         value = password,
         onValueChange = onPasswordChange,
         label = {
-            Text(text = "Contraseña")
+            Text(text = "Contraseña", fontSize = 12.sp, style = MaterialTheme.typography.labelSmall)
         },
         leadingIcon = {
             Icon(
@@ -130,61 +134,33 @@ fun RegisterTextFields(
         },
         maxLines = 1,
         visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = colorResource(id = R.color.white),
-            unfocusedContainerColor = colorResource(id = R.color.white),
-            disabledContainerColor = colorResource(id = R.color.white),
-
-            focusedLabelColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLabelColor = Color.Gray,
-
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = colorResource(id = R.color.focusedPurple),
-
-            focusedLeadingIconColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLeadingIconColor = Color.Gray
-        ),
+        colors = colors,
         shape = RoundedCornerShape(size = 16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp, start = 16.dp, end = 16.dp)
     )
 
     OutlinedTextField(
         value = name,
         onValueChange = onNameChange,
         label = {
-            Text(text = "Nombre")
+            Text(text = "Nombre", fontSize = 12.sp, style = MaterialTheme.typography.labelSmall)
         },
         leadingIcon = {
             Icon(imageVector = Icons.Default.Person, contentDescription = null)
         },
         maxLines = 1,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = colorResource(id = R.color.white),
-            unfocusedContainerColor = colorResource(id = R.color.white),
-            disabledContainerColor = colorResource(id = R.color.white),
-
-            focusedLabelColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLabelColor = Color.Gray,
-
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = colorResource(id = R.color.focusedPurple),
-
-            focusedLeadingIconColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLeadingIconColor = Color.Gray
-        ),
+        colors = colors,
         shape = RoundedCornerShape(size = 16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp, start = 16.dp, end = 16.dp)
     )
 
     OutlinedTextField(
         value = lastname,
         onValueChange = onLasNameChange,
         label = {
-            Text(text = "Apellido")
+            Text(text = "Apellido", fontSize = 12.sp, style = MaterialTheme.typography.labelSmall)
         },
         leadingIcon = {
             Icon(
@@ -193,50 +169,15 @@ fun RegisterTextFields(
             )
         },
         maxLines = 1,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = colorResource(id = R.color.white),
-            unfocusedContainerColor = colorResource(id = R.color.white),
-            disabledContainerColor = colorResource(id = R.color.white),
-
-            focusedLabelColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLabelColor = Color.Gray,
-
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = colorResource(id = R.color.focusedPurple),
-
-            focusedLeadingIconColor = colorResource(id = R.color.focusedPurple),
-            unfocusedLeadingIconColor = Color.Gray
-        ),
+        colors = colors,
         shape = RoundedCornerShape(size = 16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
     )
 }
 
 
-@Composable
-fun BottomComp(
-    modifier: Modifier = Modifier,
-    onButtonAction: () -> Unit,
-    containerColor: Color,
-    contentColor: Color,
-    shape: RoundedCornerShape,
-    elevation: ButtonElevation,
-    content: @Composable RowScope.() -> Unit
-) {
-    Button(
-        onClick = onButtonAction,
-        modifier = modifier,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        elevation = elevation,
-        shape = shape,
-        content = content
-    )
-}
+
 
 
 @Composable
@@ -261,26 +202,34 @@ fun RegisterScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier
+    Box(
+        modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())) {
+            .background(color = colorResource(id = R.color.grey))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 26.dp, horizontal = 16.dp)
+                    .padding(vertical = 28.dp, horizontal = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null,
-                    modifier = Modifier.size(size = 28.dp)
-                )
+                IconButton(onClick = { navController.navigate(route = "login") }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier.size(size = 28.dp)
+                    )
+                }
 
                 Text(
-                    text = "Registrate",
-                    fontSize = 30.sp,
+                    text = "Registrarse",
+                    fontSize = 38.sp,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -288,18 +237,18 @@ fun RegisterScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .padding(all = 20.dp)
+                    .padding(all = 16.dp)
                     .fillMaxWidth()
             ) {
                 RegisterTextFields(
                     email = state.email,
                     onEmailChange = {
-                        viewModel.handleIntent(intent = RegisterViewModel.Intent.EmailChanged(email = it))
+                        viewModel.handleIntent(intent = Intent.EmailChanged(email = it))
                     },
                     password = state.password,
                     onPasswordChange = {
                         viewModel.handleIntent(
-                            intent = RegisterViewModel.Intent.PasswordChanged(
+                            intent = Intent.PasswordChanged(
                                 password = it
                             )
                         )
@@ -307,7 +256,7 @@ fun RegisterScreen(
                     name = state.name,
                     onNameChange = {
                         viewModel.handleIntent(
-                            intent = RegisterViewModel.Intent.NameChanged(
+                            intent = Intent.NameChanged(
                                 name = it
                             )
                         )
@@ -315,7 +264,7 @@ fun RegisterScreen(
                     lastname = state.lastname,
                     onLasNameChange = {
                         viewModel.handleIntent(
-                            intent = RegisterViewModel.Intent.LastNameChanged(
+                            intent = Intent.LastNameChanged(
                                 lastname = it
                             )
                         )
@@ -328,31 +277,43 @@ fun RegisterScreen(
 
                 BottomComp(
                     onButtonAction = {
-                        viewModel.handleIntent(
-                            intent = RegisterViewModel.Intent.Submit
-                        )
+                        if (!state.isLoading) {
+                            viewModel.handleIntent(
+                                intent = Intent.Submit
+                            )
+                        }
                     },
                     containerColor = colorResource(id = R.color.tintRed),
                     contentColor = colorResource(id = R.color.white),
                     shape = CircleShape,
-                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 4.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 18.dp, horizontal = 6.dp)
-                        .height(height = 56.dp),
+                        .padding(vertical = 18.dp, horizontal = 7.dp)
+                        .height(height = 54.dp),
                 ) {
-                    Text(
-                        text = "Registrate",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    )
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            color = colorResource(id = R.color.white),
+                            strokeWidth = 2.dp,
+                            modifier = Modifier
+                                .padding(all = 6.dp)
+                                .height(height = 20.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "Registrate",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        )
+                    }
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                        .padding(horizontal = 18.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     HorizontalDivider(
@@ -364,11 +325,11 @@ fun RegisterScreen(
                     )
 
                     Text(
-                        text = "Puedes continuar con",
+                        text = "O continua con",
                         modifier = Modifier.padding(horizontal = 8.dp),
                         color = Color.Gray,
                         style = MaterialTheme.typography.labelSmall,
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
 
                     HorizontalDivider(
@@ -390,8 +351,8 @@ fun RegisterScreen(
                         shape = CircleShape,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 6.dp, end = 6.dp, top = 8.dp)
-                            .height(height = 56.dp),
+                            .padding(start = 6.dp, end = 6.dp, top = 9.dp)
+                            .height(height = 48.dp),
                     ) {
                         Box(
                             modifier = Modifier
@@ -402,7 +363,7 @@ fun RegisterScreen(
                             Text(
                                 text = "Iniciar con Google",
                                 fontSize = 18.sp,
-                                style = MaterialTheme.typography.labelMedium
+                                style = MaterialTheme.typography.labelSmall
                             )
 
                             Row(
@@ -430,8 +391,8 @@ fun RegisterScreen(
                         shape = CircleShape,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 6.dp, vertical = 10.dp)
-                            .height(height = 56.dp),
+                            .padding(horizontal = 6.dp, vertical = 11.dp)
+                            .height(height = 48.dp),
                     ) {
                         Box(
                             modifier = Modifier
@@ -442,7 +403,7 @@ fun RegisterScreen(
                             Text(
                                 text = "Iniciar con Meta",
                                 fontSize = 18.sp,
-                                style = MaterialTheme.typography.labelMedium
+                                style = MaterialTheme.typography.labelSmall
                             )
 
                             Row(
@@ -470,8 +431,8 @@ fun RegisterScreen(
                         shape = CircleShape,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 6.dp, end = 6.dp, bottom = 8.dp)
-                            .height(height = 56.dp),
+                            .padding(start = 6.dp, end = 6.dp, bottom = 9.dp)
+                            .height(height = 48.dp),
                     ) {
                         Box(
                             modifier = Modifier
@@ -482,7 +443,7 @@ fun RegisterScreen(
                             Text(
                                 text = "Iniciar con Apple",
                                 fontSize = 18.sp,
-                                style = MaterialTheme.typography.labelMedium
+                                style = MaterialTheme.typography.labelSmall
                             )
 
                             Row(
@@ -509,10 +470,11 @@ fun RegisterScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 70.dp, start = 16.dp, end = 16.dp)
+                .padding(bottom = 60.dp, start = 16.dp, end = 16.dp)
                 .clickable {
                     navController.navigate(route = "registerBusiness")
-                },
+                }
+                .shadow(elevation = 4.dp),
             contentAlignment = Alignment.Center
         ) {
             Row(

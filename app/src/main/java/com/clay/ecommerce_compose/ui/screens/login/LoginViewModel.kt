@@ -10,22 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
-
-    data class State(
-        val email: String = "",
-        val password: String = "",
-        val isLoading: Boolean = false,
-        val error: String? = null,
-        val loggedIn: Boolean = false,
-        val currentUser: Profile? = null
-    )
-
-    sealed class Intent {
-        data class EmailChanged(val email: String) : Intent()
-        data class PasswordChanged(val password: String) : Intent()
-        object Submit : Intent()
-    }
-
     private val _state = MutableStateFlow(value = State())
     val state: StateFlow<State> = _state
 
