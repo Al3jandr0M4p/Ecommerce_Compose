@@ -26,10 +26,10 @@ data class BusinessProfile(
     val horarioCierre: String = "",
 
     val phone: String = "",
-    val description: String = "",
 
     @SerialName("has_delivery")
     val hasDelivery: Boolean = false,
 
     val category: String = ""
 )
+

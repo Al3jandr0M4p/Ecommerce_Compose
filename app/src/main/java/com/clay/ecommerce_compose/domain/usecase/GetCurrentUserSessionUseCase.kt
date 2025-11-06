@@ -11,7 +11,8 @@ class GetCurrentUserSessionUseCase(private val authRepository: AuthRepository) {
         return profile?.let {
             UserSession(
                 id = it.id,
-                role = it.roleName
+                role = it.roleName,
+                businessId = it.businessId
             )
         }
     }

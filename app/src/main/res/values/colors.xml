@@ -2,7 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="tintRed">#FFD91600</color>
+    <color name="tintRed">#FFD32F2F</color>
     <color name="focusedPurple">#FF6200EE</color>
     <color name="facebookBlue">#FF3B5998</color>
+    <color name="grey">#FFFAFAFA</color>
+    <color name="lightGrey">#FFF0F1F3</color>
+    <color name="coolGrey">#FF6E6E73</color>
+    <color name="gold">#FF957235</color>
 </resources>

@@ -5,5 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserSession(
     val id: String,
-    val role: String?
+    val role: String?,
+
+    val businessId: String? = null
 )
