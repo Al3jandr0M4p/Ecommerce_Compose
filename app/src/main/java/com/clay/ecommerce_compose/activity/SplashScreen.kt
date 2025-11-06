@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.clay.ecommerce_compose.R
+import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
 
 
 @Composable
@@ -32,7 +33,6 @@ fun SplashScreen(
     modifier: Modifier = Modifier,
 ) {
     val splashState by mainViewModel.splashState.collectAsState()
-
     LaunchedEffect(splashState) {
 
         if (splashState is SplashState.Success) {
@@ -45,7 +45,11 @@ fun SplashScreen(
                     "admin" -> "adminHome"
                     "repartidor" -> "deliveryHome"
                     "usuario" -> "userHome"
-                    "negocio" -> "businessHome"
+                    "negocio" -> {
+                        val businessId = session.businessId
+                        if (businessId != null) "businessHome/${businessId}"
+                        else "login"
+                    }
                     else -> "login"
                 }
             }

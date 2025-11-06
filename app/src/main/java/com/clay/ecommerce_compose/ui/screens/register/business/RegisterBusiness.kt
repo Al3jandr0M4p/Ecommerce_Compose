@@ -55,7 +55,7 @@ import com.clay.ecommerce_compose.ui.components.auth.business.TimePickerComponen
 
 @Composable
 fun Step1Content(
-    state: BusinessState,
+    state: RegisterBusinessState,
     onIntent: (Intent) -> Unit,
     showPassword: Boolean,
     onShowPassword: () -> Unit,
@@ -266,7 +266,7 @@ fun Step1Content(
 
 @Composable
 fun Step2Content(
-    state: BusinessState,
+    state: RegisterBusinessState,
     onIntent: (Intent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -411,13 +411,13 @@ fun Step2Content(
 
 
 @Composable
-fun RegisterBusiness(viewModel: BusinessViewModel, navController: NavHostController) {
+fun RegisterBusiness(viewModel: RegisterBusinessViewModel, navController: NavHostController) {
     var showPassword by remember { mutableStateOf(value = true) }
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(state.isRegistrationSuccessful) {
         if(state.isRegistrationSuccessful) {
-            navController.navigate(route = "businessHome") {
+            navController.navigate(route = "businessHome/${state.businessId}") {
                 popUpTo(route = "registerBusiness") {
                     inclusive = true
                 }

@@ -11,6 +11,7 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.storage.storage
+import kotlinx.coroutines.supervisorScope
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -18,6 +19,28 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository(private val supabase: SupabaseClient) {
+
+    data class InternalUserProfile(
+        val id: String,
+        val roleName: String?,
+        val businessId: String? = null
+    )
+
+    private suspend fun getBusinessByOwnerId(ownerId: String): String? {
+        return try {
+            supabase.from("businesses")
+                .select(Columns.list("id")) {
+                    filter { eq("owner_id", ownerId) }
+                }
+                .decodeSingleOrNull<JsonObject>()
+                ?.get("id")
+                ?.jsonPrimitive
+                ?.contentOrNull
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Error al obtener businessId por ownerId", e)
+            null
+        }
+    }
 
     suspend fun signUp(email: String, password: String, name: String, lastname: String): Profile? {
         return try {
@@ -103,7 +126,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
         }
     }
 
-    suspend fun getCurrentUserProfile(): Profile? {
+    suspend fun getCurrentUserProfile(): InternalUserProfile? {
         try {
             val user = supabase.auth.currentUserOrNull() ?: return null
 
@@ -113,6 +136,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
                 }
                 .decodeSingleOrNull<Profile>()
 
+            var roleName: String? = null
             if (profileResponse?.roleId != null) {
                 val roleNameObject = supabase.from("roles")
                     .select(Columns.list("name")) {
@@ -120,12 +144,22 @@ class AuthRepository(private val supabase: SupabaseClient) {
                     }
                     .decodeSingleOrNull<JsonObject>()
 
-                val roleName = roleNameObject?.get("name")?.jsonPrimitive?.contentOrNull
-
-                profileResponse.roleName = roleName
+                roleName = roleNameObject?.get("name")?.jsonPrimitive?.contentOrNull
             }
-            Log.d("AuthRepository", "Perfil del usuario: $profileResponse")
-            return profileResponse
+
+            var businessId: String? = null
+            if (roleName == "negocio") {
+                businessId = getBusinessByOwnerId(user.id)
+            }
+
+            val finalProfile = InternalUserProfile(
+                id = user.id,
+                roleName = roleName,
+                businessId = businessId
+            )
+
+            Log.d("AuthRepository", "Perfil del usuario: $finalProfile")
+            return finalProfile
         } catch (e: Exception) {
             Log.e("AuthRepository", "Error al obtener el perfil del usuario", e)
             supabase.auth.signOut()
@@ -235,6 +269,8 @@ class AuthRepository(private val supabase: SupabaseClient) {
                     )
                 }
             }
+
+            supabase.auth.signOut()
 
             throw e
         }

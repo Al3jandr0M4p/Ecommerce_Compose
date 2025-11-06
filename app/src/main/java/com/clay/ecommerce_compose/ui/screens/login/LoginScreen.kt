@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.ui.components.auth.users.BottomComp
+import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
 import kotlinx.coroutines.delay
 
 
@@ -154,11 +155,14 @@ fun LoginTextFields(
 fun LoginScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    registerBusinessViewModel: RegisterBusinessViewModel
 ) {
     var showPassword by remember { mutableStateOf(value = false) }
     val state by viewModel.state.collectAsState()
+    val businessState by registerBusinessViewModel.state.collectAsState()
     val context = LocalContext.current
+    val businessId = businessState.businessId
 
     LaunchedEffect(state.error, state.loggedIn) {
         state.error?.let {
@@ -172,7 +176,7 @@ fun LoginScreen(
             delay(300)
             when (userRole) {
                 "usuario" -> navController.navigate(route = "userHome")
-                "negocio" -> navController.navigate(route = "businessHome")
+                "negocio" -> navController.navigate(route = "businessHome/${businessId}")
                 else -> {
                     Toast.makeText(context, "Rol no reconocido: $userRole", Toast.LENGTH_SHORT)
                         .show()

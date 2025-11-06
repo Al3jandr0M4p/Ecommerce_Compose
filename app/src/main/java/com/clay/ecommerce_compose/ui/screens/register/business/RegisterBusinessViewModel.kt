@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class BusinessViewModel(
+class RegisterBusinessViewModel(
     private val authRepository: AuthRepository,
     private val application: Application
 ) : AndroidViewModel(application) {
-    private val _state = MutableStateFlow(value = BusinessState())
-    val state: StateFlow<BusinessState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(value = RegisterBusinessState())
+    val state: StateFlow<RegisterBusinessState> = _state.asStateFlow()
 
     fun handleIntent(intent: Intent) {
         when (intent) {
@@ -92,7 +92,13 @@ class BusinessViewModel(
 
                 if (businessProfile != null) {
                     Log.d("BusinessViewModel", "Registro exitoso: $businessProfile")
-                    _state.update { it.copy(isLoading = false, isRegistrationSuccessful = true) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isRegistrationSuccessful = true,
+                            businessId = businessProfile.id
+                        )
+                    }
                 } else {
                     _state.update {
                         it.copy(

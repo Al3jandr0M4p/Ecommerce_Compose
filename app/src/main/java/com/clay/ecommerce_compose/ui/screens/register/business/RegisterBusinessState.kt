@@ -2,7 +2,7 @@ package com.clay.ecommerce_compose.ui.screens.register.business
 
 import android.net.Uri
 
-data class BusinessState(
+data class RegisterBusinessState(
     // Auth
     val email: String = "",
     val password: String = "",
@@ -24,5 +24,7 @@ data class BusinessState(
     val currentPage: Int = 1,
     val isLoading: Boolean = false,
     val isRegistrationSuccessful: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+
+    val businessId: String? = null
 )
