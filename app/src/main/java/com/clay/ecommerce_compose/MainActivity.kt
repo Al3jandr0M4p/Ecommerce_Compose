@@ -27,6 +27,13 @@ import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
 import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.theme.Ecommerce_ComposeTheme
+import com.clay.ecommerce_compose.ui.screens.admin.AdminDashboardScreen
+import com.clay.ecommerce_compose.ui.screens.admin.CategoriesScreen
+import com.clay.ecommerce_compose.ui.screens.admin.OrdersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.ReportsScreen
+import com.clay.ecommerce_compose.ui.screens.admin.UsersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.BusinessScreen
+import com.clay.ecommerce_compose.ui.screens.admin.ProductsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,7 +102,6 @@ fun Navigation(
                 )
             }
 
-
 //            composable(route = "details/{id}") { backStackEntry ->
 //                val id = backStackEntry.arguments?.getString("id")?.toInt()
 //                DetailsScreen(
@@ -109,22 +115,53 @@ fun Navigation(
                 Cart()
             }
 
-//        composable(route = "adminHome") {
-//            UserHomeScreen(modifier = modifier)
-//        }
+            // ADMIN ROUTES
+            composable(route = "adminHome") {
+                AdminDashboardScreen(
+                    onNavigateToUsers = { navController.navigate("adminUsers") },
+                    onNavigateToBusinesses = { navController.navigate("adminBusinesses") },
+                    onNavigateToProducts = { navController.navigate("adminProducts") },
+                    onNavigateToCategories = { navController.navigate("adminCategories") },
+                    onNavigateToOrders = { navController.navigate("adminOrders") },
+                    onNavigateToReports = { navController.navigate("adminReports") }
+                )
+            }
 
-//        composable(route = "negocio") {
-//            UserHomeScreen(modifier = modifier)
-//        }
-//
-//        composable(route = "sellerHome") {
-//            UserHomeScreen(modifier = modifier)
-//        }
-//
-//        composable(route = "deliveryHome") {
-//            UserHomeScreen(modifier = modifier)
-//        }
+            composable(route = "adminUsers") {
+                UsersScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
 
+            composable(route = "adminBusinesses") {
+                BusinessScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(route = "adminProducts") {
+                ProductsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(route = "adminCategories") {
+                CategoriesScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(route = "adminOrders") {
+                OrdersScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(route = "adminReports") {
+                ReportsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
