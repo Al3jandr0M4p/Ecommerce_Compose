@@ -65,7 +65,7 @@ fun Navigation(
 ) {
 
     SharedTransitionLayout {
-        NavHost(navController = navController, startDestination = "adminHome") {
+        NavHost(navController = navController, startDestination = "splash") {
 
             composable(route = "splash") {
                 val mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider)
@@ -101,6 +101,15 @@ fun Navigation(
                     animatedVisibilityScope = this
                 )
             }
+
+//            composable(route = "details/{id}") { backStackEntry ->
+//                val id = backStackEntry.arguments?.getString("id")?.toInt()
+//                DetailsScreen(
+//                    id = id,
+//                    navController = navController,
+//                    animatedVisibilityScope = this
+//                )
+//            }
 
             composable(route = "cart") {
                 Cart()
