@@ -1,6 +1,8 @@
 package com.clay.ecommerce_compose.navigation
 
 import android.app.Application
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -11,6 +13,7 @@ import androidx.navigation.compose.composable
 import com.clay.ecommerce_compose.activity.MainViewModel
 import com.clay.ecommerce_compose.activity.SplashScreen
 import com.clay.ecommerce_compose.data.AppViewModelProvider
+import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.Cart
@@ -25,6 +28,7 @@ import com.clay.ecommerce_compose.ui.screens.register.business.BusinessViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusiness
 
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun Navigation(
     navController: NavHostController,
@@ -77,8 +81,12 @@ fun Navigation(
         }
 
         composable(route = "details/{id}") { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")?.toInt()
-            UserBusinessScreen(navController = navController, id = id, modifier = Modifier)
+            val idBusiness = backStackEntry.arguments?.getString("id")?.toInt()
+            UserBusinessScreen(
+                navController = navController,
+                idBusiness = idBusiness,
+                modifier = Modifier
+            )
         }
 
         composable(route = "businessHome") {
@@ -93,14 +101,10 @@ fun Navigation(
             SearchBar()
         }
 
-//            composable(route = "details/{id}") { backStackEntry ->
-//                val id = backStackEntry.arguments?.getString("id")?.toInt()
-//                DetailsScreen(
-//                    id = id,
-//                    navController = navController,
-//                    animatedVisibilityScope = this
-//                )
-//            }
+        composable(route = "searchInShop/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toInt()
+            SearchInShop(idShop = id, navController = navController)
+        }
 
 //        composable(route = "adminHome") {
 //            UserHomeScreen(modifier = modifier)

@@ -207,10 +207,17 @@ class AuthRepository(private val supabase: SupabaseClient) {
             val roleId = businessRole?.id
                 ?: throw IllegalStateException("El rol 'negocio' no existe en la base de datos. Verifica la tabla roles.")
 
-            supabase.from("profiles")
-                .update(buildJsonObject { put("role_id", JsonPrimitive(roleId)) }) {
-                    filter { eq("id", sessionUserId) }
+            // supabase.from("profiles")
+            //     .update(buildJsonObject { put("role_id", JsonPrimitive(roleId)) }) {
+            //          filter { eq("id", sessionUserId) }
+            //     }
+            // esto lo reemplazo por esto
+            supabase.from("profiles").insert(
+                buildJsonObject {
+                    put("id", JsonPrimitive(sessionUserId))
+                    put("role_id", JsonPrimitive(roleId))
                 }
+            )
 
             Log.d("AuthRepository", "Negocio registrado y rol actualizado $newBusinessProfile")
             return newBusinessProfile
@@ -228,8 +235,6 @@ class AuthRepository(private val supabase: SupabaseClient) {
                     )
                 }
             }
-
-            supabase.auth.signOut()
 
             throw e
         }

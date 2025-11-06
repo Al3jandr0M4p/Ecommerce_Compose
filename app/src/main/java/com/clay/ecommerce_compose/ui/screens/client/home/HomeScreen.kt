@@ -33,7 +33,6 @@ import com.clay.ecommerce_compose.ui.components.client.bars.MyBottomNavigationBa
 import com.clay.ecommerce_compose.ui.components.client.business.Business
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderUserHome
 import com.clay.ecommerce_compose.ui.components.client.search.SearchBarContainer
-import com.clay.ecommerce_compose.ui.components.client.sliders.PageIndicator
 import com.clay.ecommerce_compose.ui.components.client.sliders.SliderBranding
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.Configuration
@@ -87,7 +86,9 @@ fun Home(navController: NavHostController) {
 
         item {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 HorizontalPager(
@@ -95,8 +96,7 @@ fun Home(navController: NavHostController) {
                     pageSpacing = 16.dp,
                     beyondViewportPageCount = 1,
                     modifier = Modifier
-                        .height(height = 180.dp)
-                        .padding(vertical = 20.dp),
+                        .height(height = 180.dp),
                 ) { page ->
                     val brand = business[page]
                     SliderBranding(
@@ -106,7 +106,6 @@ fun Home(navController: NavHostController) {
                         logo = brand.logo
                     )
                 }
-                PageIndicator(pagerState = pagerState)
             }
         }
     }

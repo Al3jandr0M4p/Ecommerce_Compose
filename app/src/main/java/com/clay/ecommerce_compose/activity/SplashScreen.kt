@@ -1,23 +1,25 @@
 package com.clay.ecommerce_compose.activity
 
-import android.util.Log
-import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.clay.ecommerce_compose.R
@@ -60,21 +62,45 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(color = colorResource(id = R.color.black)),
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.bg_seller_splash),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-        )
-
-        Text(
-            text = stringResource(id = R.string.app_name),
-            color = Color.White,
-            fontSize = 40.sp,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Click",
+                style = MaterialTheme.typography.bodyLarge,
+                color = colorResource(id = R.color.white),
+                fontSize = 50.sp,
+            )
+            Box(modifier = Modifier.padding(start = 2.dp)) {
+                Text(
+                    text = "Market",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colorResource(id = R.color.white),
+                    fontSize = 45.sp,
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 8.dp, y = (-8).dp)
+                        .size(size = 22.dp)
+                        .background(
+                            color = Color(color = 0xff06c167),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "2",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
+        }
     }
 }

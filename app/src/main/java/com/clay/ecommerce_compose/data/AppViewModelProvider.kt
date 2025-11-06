@@ -36,7 +36,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
             @Suppress("UNCHECKED_CAST")
             return MainViewModel(
                 supabase = SupabaseConfig.client,
-                getCurrentUserSessionUseCase = getCurrentUserSessionUseCase
+                getCurrentUserSessionUseCase = getCurrentUserSessionUseCase,
             ) as T
         }
 

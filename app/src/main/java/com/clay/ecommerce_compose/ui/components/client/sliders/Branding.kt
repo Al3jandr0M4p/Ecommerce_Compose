@@ -94,33 +94,3 @@ fun SliderBranding(
         }
     }
 }
-
-@Composable
-fun PageIndicator(pagerState: PagerState) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(times = pagerState.pageCount) { iteration ->
-            val color = if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
-            Box(
-                modifier = Modifier
-                    .padding(all = 2.dp)
-                    .clip(CircleShape)
-                    .background(color)
-                    .size(size = 8.dp)
-            )
-        }
-    }
-
-    HorizontalDivider(
-        modifier = Modifier
-            .height(height = 1.4.dp)
-            .padding(bottom = 10.dp),
-        thickness = DividerDefaults.Thickness,
-        color = colorResource(id = R.color.lightGrey)
-    )
-}

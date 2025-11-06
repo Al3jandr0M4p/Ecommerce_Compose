@@ -17,7 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -117,7 +117,7 @@ fun Business(navController: NavHostController) {
                                 modifier = Modifier.size(size = 20.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Outlined.Favorite,
+                                    imageVector = Icons.Outlined.FavoriteBorder,
                                     contentDescription = null,
                                 )
                             }
@@ -153,7 +153,7 @@ fun Business(navController: NavHostController) {
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = "Tiendas cercanas",
+                text = "Lugares que te pueden gustar",
                 fontSize = 18.sp,
                 style = MaterialTheme.typography.labelMedium
             )
@@ -166,43 +166,141 @@ fun Business(navController: NavHostController) {
                 )
             }
         }
+
+        LazyRow(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp)
+        ) {
+            items(items = buss) { elements ->
+                Card(
+                    modifier = Modifier
+                        .size(width = 290.dp, height = 220.dp)
+                        .clickable {
+                            navController.navigate(route = "details/${elements.id}")
+                        },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.6.dp),
+                    colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white))
+                ) {
+                    Image(
+                        painter = painterResource(id = elements.img),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height = 130.dp)
+                            .clip(shape = RoundedCornerShape(size = 10.dp))
+                    )
+
+                    Spacer(modifier = Modifier.height(height = 10.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = elements.name,
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+
+                            IconButton(
+                                onClick = { /* TODO not yet implemented */ },
+                                modifier = Modifier.size(size = 20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.FavoriteBorder,
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = elements.time,
+                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Spacer(modifier = Modifier.height(height = 16.dp))
+
+    HorizontalDivider(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        items(items = buss) { element ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(width = 70.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = element.img),
+            .height(height = 1.4.dp)
+            .padding(vertical = 6.dp),
+        thickness = DividerDefaults.Thickness,
+        color = colorResource(id = R.color.lightGrey)
+    )
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = "Negocios cercanos",
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.labelMedium
+            )
+
+            IconButton(onClick = { /* TODO not yet implemented */ }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(size = 68.dp)
-                        .clip(shape = CircleShape)
+                    modifier = Modifier.size(size = 26.dp)
                 )
+            }
+        }
 
-                Spacer(modifier = Modifier.height(height = 4.dp))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            items(items = buss) { element ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(width = 70.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = element.img),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(size = 68.dp)
+                            .clip(shape = CircleShape)
+                    )
 
-                Text(
-                    text = element.name,
-                    fontSize = 12.sp,
-                    style = MaterialTheme.typography.labelSmall,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                Text(
-                    text = element.horario,
-                    fontSize = 10.sp,
-                    style = MaterialTheme.typography.labelSmall
-                )
+                    Spacer(modifier = Modifier.height(height = 4.dp))
+
+                    Text(
+                        text = element.name,
+                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelSmall,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = element.horario,
+                        fontSize = 10.sp,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
     }
@@ -210,7 +308,7 @@ fun Business(navController: NavHostController) {
     HorizontalDivider(
         modifier = Modifier
             .height(height = 1.4.dp)
-            .padding(top = 6.dp),
+            .padding(vertical = 6.dp),
         thickness = DividerDefaults.Thickness,
         color = colorResource(id = R.color.lightGrey)
     )

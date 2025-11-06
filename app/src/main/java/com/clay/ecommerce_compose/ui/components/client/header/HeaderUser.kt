@@ -203,9 +203,9 @@ fun HeaderUserHome(navController: NavHostController) {
                 text = locationText,
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 16.sp,
-                maxLines = 2,
+                maxLines = 3,
                 modifier = Modifier
-                    .width(width = 170.dp)
+                    .width(width = 190.dp)
                     .clickable {
                         if (!permissionState.status.isGranted) {
                             permissionState.launchPermissionRequest()

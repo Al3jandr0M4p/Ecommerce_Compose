@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val supabase: SupabaseClient,
-    private val getCurrentUserSessionUseCase: GetCurrentUserSessionUseCase
+    private val getCurrentUserSessionUseCase: GetCurrentUserSessionUseCase,
 ) : ViewModel() {
     private val _splashState = MutableStateFlow<SplashState>(SplashState.Loading)
     val splashState: StateFlow<SplashState> = _splashState
