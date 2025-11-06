@@ -13,4 +13,6 @@ class BusinessRepository(private val supabase: SupabaseClient) {
             }
             .decodeSingleOrNull()
     }
+
+
 }
