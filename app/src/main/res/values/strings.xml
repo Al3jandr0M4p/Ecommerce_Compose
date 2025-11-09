@@ -3,4 +3,7 @@
     <string name="app_version">1.0.0</string>
     <string name="app_author">Alejandro</string>
     <string name="business">Negocios</string>
+    <string name="monedero">Monedero</string>
+    <string name="bandeja_de_entrada">Bandeja de entrada</string>
+    <string name="help">Ayuda</string>
 </resources>

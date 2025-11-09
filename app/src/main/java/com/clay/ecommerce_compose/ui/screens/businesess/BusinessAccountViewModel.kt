@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class BusinessAccountViewModel(private val businessAccountRepository: BusinessRepository, private val authRepository: AuthRepository) :
-    ViewModel() {
+class BusinessAccountViewModel(
+    private val businessAccountRepository: BusinessRepository,
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
     private val _businessProfile = MutableStateFlow<BusinessProfile?>(null)
     val businessProfile: StateFlow<BusinessProfile?> = _businessProfile

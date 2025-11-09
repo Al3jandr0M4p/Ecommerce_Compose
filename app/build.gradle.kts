@@ -74,11 +74,8 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0")
 
-
-
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
-
 
     implementation(platform("io.github.jan-tennert.supabase:bom:3.2.5"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
