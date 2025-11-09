@@ -34,12 +34,13 @@ import com.clay.ecommerce_compose.ui.components.client.business.Business
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderUserHome
 import com.clay.ecommerce_compose.ui.components.client.search.SearchBarContainer
 import com.clay.ecommerce_compose.ui.components.client.sliders.SliderBranding
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.Configuration
 import kotlinx.coroutines.delay
 
 @Composable
-fun Home(navController: NavHostController) {
+fun Home(navController: NavHostController, cartViewModel: CartViewModel) {
     val pagerState = rememberPagerState(pageCount = { 3 })
 
     LaunchedEffect(true) {
@@ -76,7 +77,7 @@ fun Home(navController: NavHostController) {
             .fillMaxSize()
             .background(color = colorResource(id = R.color.white))
     ) {
-        item { HeaderUserHome(navController = navController) }
+        item { HeaderUserHome(navController = navController, cartViewModel = cartViewModel) }
 
         item { SearchBarContainer(navController = navController) }
 
@@ -117,6 +118,7 @@ fun UserHomeScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     configViewModel: ConfigViewModel,
+    cartViewModel: CartViewModel
 ) {
     var selectedTab by remember { mutableStateOf<Tabs>(value = Tabs.Home) }
 
@@ -140,6 +142,7 @@ fun UserHomeScreen(
             when (selectedTab) {
                 is Tabs.Home -> Home(
                     navController = navController,
+                    cartViewModel = cartViewModel
                 )
 
                 is Tabs.Activity -> Text(text = "Tu actividad")

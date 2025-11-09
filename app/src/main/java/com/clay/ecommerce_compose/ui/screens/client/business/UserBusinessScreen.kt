@@ -2,7 +2,6 @@ package com.clay.ecommerce_compose.ui.screens.client.business
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +50,8 @@ import com.clay.ecommerce_compose.domain.model.getBusinesess
 import com.clay.ecommerce_compose.ui.components.client.bars.MyTopAppBar
 import com.clay.ecommerce_compose.ui.components.client.business.ProductCard
 import com.clay.ecommerce_compose.ui.components.client.business.SettingsButtonIcons
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartItem
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 
 @RequiresApi(Build.VERSION_CODES.S)
 @SuppressLint("FrequentlyChangingValue")
@@ -59,6 +60,7 @@ import com.clay.ecommerce_compose.ui.components.client.business.SettingsButtonIc
 fun UserBusinessScreen(
     navController: NavHostController,
     idBusiness: Int?,
+    cartViewModel: CartViewModel,
 ) {
     val buss = getBusinesess().find { it.id == idBusiness }
 
@@ -219,7 +221,10 @@ fun UserBusinessScreen(
                                 title = "Un buen producto",
                                 price = "${20 + (it * 100)}",
                                 image = R.drawable.ic_launcher_background,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(weight = 1f),
+                                onAddClick = {
+                                    cartViewModel.handleIntent(CartItem("1", "Pan", 2.5, "", 1))
+                                }
                             )
                         }
                     }

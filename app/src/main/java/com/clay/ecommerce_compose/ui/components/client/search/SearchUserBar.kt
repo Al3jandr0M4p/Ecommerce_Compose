@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +62,7 @@ fun SearchBarContainer(navController: NavHostController) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .height(height = 56.dp)
+            .clip(shape = CircleShape)
             .clickable {
                 navController.navigate(route = "search")
             },

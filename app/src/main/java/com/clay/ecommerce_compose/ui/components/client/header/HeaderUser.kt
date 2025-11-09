@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.clay.ecommerce_compose.ui.components.client.cart.ShoppingCart
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.utils.helpers.updateLocationTextFromAddress
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -54,7 +56,7 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun HeaderUserHome(navController: NavHostController) {
+fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel) {
     val context = LocalContext.current
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
@@ -221,15 +223,6 @@ fun HeaderUserHome(navController: NavHostController) {
             )
         }
 
-        IconButton(onClick = {
-            navController.navigate(route = "cart")
-        }) {
-            Icon(
-                imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = "User cart",
-                modifier = Modifier
-                    .size(size = 26.dp)
-            )
-        }
+        ShoppingCart(navController = navController, cartViewModel = cartViewModel)
     }
 }
