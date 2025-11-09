@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -58,6 +59,8 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
         item { ConfigHeader() }
 
         item { UtilsHeader() }
+        
+        item { Spacer(modifier = Modifier.height(height = 8.dp)) }
 
         item {
             Row(
@@ -71,19 +74,19 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
                 Icon(
                     imageVector = Icons.Outlined.Settings,
                     contentDescription = null,
-                    modifier = Modifier.size(size = 30.dp)
+                    modifier = Modifier.size(size = 24.dp)
                 )
 
                 Column {
                     Text(
                         text = "Configuracion",
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.labelMedium
+                        fontSize = 15.sp,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.W500)
                     )
                     Spacer(modifier = Modifier.height(height = 2.dp))
                     Text(
                         text = "Configuracion de la app y cuenta del usuario",
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -102,13 +105,13 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = null,
-                    modifier = Modifier.size(size = 30.dp)
+                    modifier = Modifier.size(size = 24.dp)
                 )
 
                 Text(
                     text = "Favoritos de ${stringResource(id = R.string.app_name)}",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.labelMedium
+                    fontSize = 15.sp,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.W500)
                 )
             }
         }
@@ -125,19 +128,19 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
                 Icon(
                     imageVector = Icons.Default.NotificationImportant,
                     contentDescription = null,
-                    modifier = Modifier.size(size = 30.dp)
+                    modifier = Modifier.size(size = 24.dp)
                 )
 
                 Column {
                     Text(
                         text = "Legal",
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.labelMedium
+                        fontSize = 15.sp,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.W500)
                     )
                     Spacer(modifier = Modifier.height(height = 2.dp))
                     Text(
                         text = "Terminos y condiciones de uso de la app ${stringResource(id = R.string.app_name)}",
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -164,13 +167,13 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
                 Icon(
                     imageVector = Icons.Default.Output,
                     contentDescription = null,
-                    modifier = Modifier.size(size = 30.dp)
+                    modifier = Modifier.size(size = 24.dp)
                 )
 
                 Text(
                     text = "Cerrar sesion",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.labelMedium
+                    fontSize = 15.sp,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.W500)
                 )
             }
         }

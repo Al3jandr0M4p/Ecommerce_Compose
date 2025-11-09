@@ -21,6 +21,7 @@ import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.Cart
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.UserHomeScreen
 import com.clay.ecommerce_compose.ui.screens.client.search.SearchBar
@@ -30,7 +31,6 @@ import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusiness
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
-import io.github.jan.supabase.SupabaseClient
 
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -47,9 +47,7 @@ fun Navigation(
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
             SplashScreen(
-                modifier = Modifier,
-                navController = navController,
-                mainViewModel = mainViewModel
+                modifier = Modifier, navController = navController, mainViewModel = mainViewModel
             )
         }
 
@@ -68,9 +66,7 @@ fun Navigation(
         composable(route = "register") {
             val registerViewModel: RegisterViewModel = viewModel(factory = factory)
             RegisterScreen(
-                viewModel = registerViewModel,
-                navController = navController,
-                modifier = Modifier
+                viewModel = registerViewModel, navController = navController, modifier = Modifier
             )
         }
 
@@ -81,10 +77,12 @@ fun Navigation(
 
         composable(route = "userHome") {
             val configViewModel: ConfigViewModel = viewModel(factory = factory)
+            val cartViewModel: CartViewModel = viewModel(factory = factory)
             UserHomeScreen(
                 modifier = Modifier,
                 navController = navController,
-                configViewModel = configViewModel
+                configViewModel = configViewModel,
+                cartViewModel = cartViewModel
             )
         }
 
@@ -94,7 +92,7 @@ fun Navigation(
             UserBusinessScreen(
                 navController = navController,
                 idBusiness = idBusiness,
-                modifier = Modifier
+                cartViewModel = viewModel(factory = factory)
             )
         }
 
@@ -109,11 +107,13 @@ fun Navigation(
         }
 
         composable(route = "cart") {
-            Cart(modifier = Modifier)
+            val cartViewModel: CartViewModel = viewModel(factory = factory)
+            Cart(navController = navController, modifier = Modifier, cartViewModel = cartViewModel)
         }
 
         composable(route = "search") {
-            SearchBar()
+            val cartViewModel: CartViewModel = viewModel(factory = factory)
+            SearchBar(navController = navController, cartViewModel = cartViewModel)
         }
 
         composable(route = "searchInShop/{id}") { backStackEntry ->
