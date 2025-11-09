@@ -2,6 +2,7 @@ package com.clay.ecommerce_compose.navigation
 
 import android.app.Application
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +14,8 @@ import androidx.navigation.compose.composable
 import com.clay.ecommerce_compose.activity.MainViewModel
 import com.clay.ecommerce_compose.activity.SplashScreen
 import com.clay.ecommerce_compose.data.AppViewModelProvider
+import com.clay.ecommerce_compose.data.remote.SupabaseConfig
+import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
@@ -27,6 +30,7 @@ import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusiness
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import io.github.jan.supabase.SupabaseClient
 
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -51,12 +55,13 @@ fun Navigation(
 
         composable(route = "login") {
             val loginViewModel: LoginViewModel = viewModel(factory = factory)
-            val businessViewModel: RegisterBusinessViewModel = viewModel(factory = factory)
+            val supabase = SupabaseConfig.client
+            val authRepository = AuthRepository(supabase = supabase)
             LoginScreen(
                 navController = navController,
                 modifier = Modifier,
                 viewModel = loginViewModel,
-                registerBusinessViewModel = businessViewModel
+                authRepository = authRepository
             )
         }
 
@@ -85,6 +90,7 @@ fun Navigation(
 
         composable(route = "details/{id}") { backStackEntry ->
             val idBusiness = backStackEntry.arguments?.getString("id")?.toInt()
+            Log.d("IdBusiness", "same id in navigation $idBusiness")
             UserBusinessScreen(
                 navController = navController,
                 idBusiness = idBusiness,

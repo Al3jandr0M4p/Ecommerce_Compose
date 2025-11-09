@@ -1,5 +1,6 @@
 package com.clay.ecommerce_compose.ui.components.client.business
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,6 +78,7 @@ fun Business(navController: NavHostController) {
             items(items = buss) { elements ->
                 Card(
                     modifier = Modifier
+                        .clip(shape = RoundedCornerShape(size = 10.dp))
                         .size(width = 290.dp, height = 220.dp)
                         .clickable {
                             navController.navigate(route = "details/${elements.id}")
@@ -175,8 +177,10 @@ fun Business(navController: NavHostController) {
             items(items = buss) { elements ->
                 Card(
                     modifier = Modifier
+                        .clip(shape = RoundedCornerShape(size = 10.dp))
                         .size(width = 290.dp, height = 220.dp)
                         .clickable {
+                            Log.d("IdBusiness", "id ${elements.id}")
                             navController.navigate(route = "details/${elements.id}")
                         },
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.6.dp),

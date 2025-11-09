@@ -2,6 +2,7 @@ package com.clay.ecommerce_compose.ui.screens.client.business
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -58,7 +59,6 @@ import com.clay.ecommerce_compose.ui.components.client.business.SettingsButtonIc
 fun UserBusinessScreen(
     navController: NavHostController,
     idBusiness: Int?,
-    modifier: Modifier = Modifier
 ) {
     val buss = getBusinesess().find { it.id == idBusiness }
 
@@ -176,7 +176,7 @@ fun UserBusinessScreen(
                             horizontalArrangement = Arrangement.spacedBy(space = 2.dp)
                         ) {
                             Text(
-                                text = stringResource(id = R.string.app_name),
+                                text = "${stringResource(id = R.string.app_name)} One",
                                 color = colorResource(id = R.color.gold),
                                 fontSize = 12.sp,
                                 style = MaterialTheme.typography.labelSmall
@@ -205,7 +205,8 @@ fun UserBusinessScreen(
                     Text(
                         text = "Productos destacados",
                         fontSize = 18.sp,
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
 
                     LazyRow(
@@ -215,38 +216,10 @@ fun UserBusinessScreen(
                     ) {
                         items(18) {
                             ProductCard(
-                                title = "Un buen productos",
-                                price = "100",
-                                image = R.drawable.ic_launcher_background
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "Productos destacados",
-                        fontSize = 18.sp,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-
-                    LazyColumn(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(space = 2.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        items(10) {
-                            ProductCard(
-                                title = "Un buen productos",
-                                price = "100",
-                                image = R.drawable.ic_launcher_background
+                                title = "Un buen producto",
+                                price = "${20 + (it * 100)}",
+                                image = R.drawable.ic_launcher_background,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }

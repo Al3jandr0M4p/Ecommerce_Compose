@@ -47,8 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
+import com.clay.ecommerce_compose.data.repository.AuthRepository
+import com.clay.ecommerce_compose.domain.model.UserSession
+import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.components.auth.users.BottomComp
-import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
 import kotlinx.coroutines.delay
 
 
@@ -156,27 +158,33 @@ fun LoginScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel,
-    registerBusinessViewModel: RegisterBusinessViewModel
+    authRepository: AuthRepository,
 ) {
     var showPassword by remember { mutableStateOf(value = false) }
     val state by viewModel.state.collectAsState()
-    val businessState by registerBusinessViewModel.state.collectAsState()
     val context = LocalContext.current
-    val businessId = businessState.businessId
+    val session = remember { mutableStateOf<UserSession?>(null) }
 
     LaunchedEffect(state.error, state.loggedIn) {
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
         if (state.loggedIn) {
-            val userRole = state.currentUser?.roleName ?: "guest"
-            Toast.makeText(context, "Bienvenido ${state.currentUser?.roleName}", Toast.LENGTH_SHORT)
+            val getSessionUseCase = GetCurrentUserSessionUseCase(authRepository = authRepository)
+            session.value = getSessionUseCase.invoke()
+
+            val userRole = session.value?.role ?: "guest"
+            Toast.makeText(context, "Bienvenido ${session.value?.role}", Toast.LENGTH_SHORT)
                 .show()
 
             delay(300)
             when (userRole) {
                 "usuario" -> navController.navigate(route = "userHome")
-                "negocio" -> navController.navigate(route = "businessHome/${businessId}")
+                "negocio" -> {
+                    val businessId = session.value?.businessId
+                    navController.navigate(route = "businessHome/${businessId}")
+                }
+
                 else -> {
                     Toast.makeText(context, "Rol no reconocido: $userRole", Toast.LENGTH_SHORT)
                         .show()

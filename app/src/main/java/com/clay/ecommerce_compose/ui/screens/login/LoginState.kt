@@ -9,5 +9,5 @@ data class State(
     val isLoading: Boolean = false,
     val error: String? = null,
     val loggedIn: Boolean = false,
-    val currentUser: Profile? = null
+    val currentUser: Profile? = null,
 )

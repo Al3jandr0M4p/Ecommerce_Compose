@@ -54,7 +54,6 @@ fun SplashScreen(
                 }
             }
 
-
             navController.navigate(route = destination) {
                 popUpTo(navController.graph.startDestinationId) {
                     inclusive = true
