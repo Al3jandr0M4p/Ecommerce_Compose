@@ -16,8 +16,11 @@ data class BusinessProfile(
     @SerialName("logo_url")
     val logoUrl: String? = null,
 
-    @SerialName("address")
-    val direccion: String = "",
+    @SerialName("longitude")
+    val longitud: Double? = null,
+
+    @SerialName("latitude")
+    val latitud: Double? = null,
 
     @SerialName("opening_time")
     val horarioApertura: String = "",

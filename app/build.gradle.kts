@@ -14,6 +14,7 @@ val localProperties = rootProject.file("local.properties").takeIf { it.exists() 
 
 val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: "DEFAULT"
 val supabaseKey = localProperties.getProperty("SUPABASE_KEY") ?: "DEFAULT"
+val mapKey = localProperties.getProperty("MAP_KEY") ?: "DEFAULT"
 
 android {
     namespace = "com.clay.ecommerce_compose"
@@ -34,6 +35,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
         buildConfigField("String", "SUPABASE_KEY", "\"${supabaseKey}\"")
+        buildConfigField("String", "MAP_KEY", "\"${mapKey}\"")
     }
 
     buildTypes {
@@ -65,6 +67,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    implementation("org.maplibre.gl:android-sdk:12.1.0")
+    implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.2")
+
+    implementation("androidx.compose.ui:ui:1.9.4")
+    implementation("androidx.compose.ui:ui-viewbinding:1.9.4")
+
     implementation("androidx.navigation:navigation-compose-android:2.9.5")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("com.google.android.material:material:1.13.0")
@@ -75,6 +83,8 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0")
 
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.maps.android:maps-compose:6.12.1")
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
 
     implementation(platform("io.github.jan-tennert.supabase:bom:3.2.5"))

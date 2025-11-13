@@ -16,7 +16,8 @@ data class RegisterBusinessState(
     val horario_cierre: String = "",
 
     // Step 2
-    val direccion: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val telefono: String = "",
     val hasDelivery: Boolean = false,
 

@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.ui.components.business.BusinessInfoContent
 
+
 @Composable
 fun BusinessScreen(
     businessId: String,

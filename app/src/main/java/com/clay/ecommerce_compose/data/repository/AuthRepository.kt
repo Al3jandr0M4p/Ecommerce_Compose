@@ -11,7 +11,6 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.storage.storage
-import kotlinx.coroutines.supervisorScope
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -178,7 +177,8 @@ class AuthRepository(private val supabase: SupabaseClient) {
         horarioCierre: String,
         category: String,
 
-        direccion: String,
+        latitude: Double?,
+        longitude: Double?,
         telefono: String,
         hasDelivery: Boolean
     ): BusinessProfile? {
@@ -220,7 +220,8 @@ class AuthRepository(private val supabase: SupabaseClient) {
                 buildJsonObject {
                     put("owner_id", JsonPrimitive(sessionUserId))
                     put("name", JsonPrimitive(name))
-                    put("address", JsonPrimitive(direccion))
+                    put("longitude", JsonPrimitive(longitude))
+                    put("latitude", JsonPrimitive(latitude))
                     put("opening_time", JsonPrimitive(horarioApertura))
                     put("closing_time", JsonPrimitive(horarioCierre))
                     put("phone", JsonPrimitive(telefono))

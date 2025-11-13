@@ -35,8 +35,16 @@ class RegisterBusinessViewModel(
                 }
             }
 
-            is Intent.DireccionChanged -> _state.update { it.copy(direccion = intent.direccion) }
-            is Intent.HorarioAperturaChanged -> _state.update { it.copy(horario_apertura = intent.horarario_apertura) }
+            is Intent.LocationChanged -> {
+                _state.update {
+                    it.copy(
+                        longitude = intent.longitude,
+                        latitude = intent.latitude
+                    )
+                }
+            }
+
+            is Intent.HorarioAperturaChanged -> _state.update { it.copy(horario_apertura = intent.horario_apertura) }
             is Intent.HorarioCierreChanged -> _state.update { it.copy(horario_cierre = intent.horario_cierre) }
             is Intent.TelefonoChanged -> _state.update { it.copy(telefono = intent.telefono) }
             is Intent.HasDeliveryChanged -> _state.update { it.copy(hasDelivery = intent.hasDelivery) }
@@ -64,7 +72,7 @@ class RegisterBusinessViewModel(
 
     private fun registerBusiness() {
         val currentState = _state.value
-        if (currentState.email.isBlank() || currentState.password.isBlank() || currentState.direccion.isBlank()) {
+        if (currentState.email.isBlank() || currentState.password.isBlank()) {
             _state.update { it.copy(error = "Por favor, complete todos los campos") }
             return
         }
@@ -83,7 +91,8 @@ class RegisterBusinessViewModel(
                     horarioCierre = currentState.horario_cierre,
                     category = currentState.category,
 
-                    direccion = currentState.direccion,
+                    latitude = currentState.latitude,
+                    longitude = currentState.longitude,
                     telefono = currentState.telefono,
                     hasDelivery = currentState.hasDelivery
                 )

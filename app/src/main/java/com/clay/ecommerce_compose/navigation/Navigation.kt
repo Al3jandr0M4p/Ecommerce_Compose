@@ -23,6 +23,7 @@ import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.Cart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
+import com.clay.ecommerce_compose.ui.screens.client.home.HomeViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.UserHomeScreen
 import com.clay.ecommerce_compose.ui.screens.client.search.SearchBar
 import com.clay.ecommerce_compose.ui.screens.login.LoginScreen
@@ -78,11 +79,13 @@ fun Navigation(
         composable(route = "userHome") {
             val configViewModel: ConfigViewModel = viewModel(factory = factory)
             val cartViewModel: CartViewModel = viewModel(factory = factory)
+            val homeViewModel: HomeViewModel = viewModel(factory = factory)
             UserHomeScreen(
                 modifier = Modifier,
                 navController = navController,
                 configViewModel = configViewModel,
-                cartViewModel = cartViewModel
+                cartViewModel = cartViewModel,
+                homeViewModel = homeViewModel
             )
         }
 
