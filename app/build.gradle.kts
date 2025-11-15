@@ -73,27 +73,27 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.9.4")
     implementation("androidx.compose.ui:ui-viewbinding:1.9.4")
 
-    implementation("androidx.navigation:navigation-compose-android:2.9.5")
+    implementation("androidx.navigation:navigation-compose-android:2.9.6")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
     implementation("androidx.compose.material3:material3:1.4.0")
 
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
 
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.maps.android:maps-compose:6.12.1")
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
 
-    implementation(platform("io.github.jan-tennert.supabase:bom:3.2.5"))
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.2.6"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:realtime-kt")
     implementation("io.github.jan-tennert.supabase:storage-kt")
-    implementation("io.github.jan-tennert.supabase:functions-kt:3.2.5")
-    implementation("io.ktor:ktor-client-android:3.3.1")
+    implementation("io.github.jan-tennert.supabase:functions-kt:3.2.6")
+    implementation("io.ktor:ktor-client-android:3.3.2")
 
     implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
