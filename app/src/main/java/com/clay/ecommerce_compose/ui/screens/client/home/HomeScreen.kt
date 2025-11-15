@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,12 +35,13 @@ import com.clay.ecommerce_compose.ui.components.client.business.Business
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderUserHome
 import com.clay.ecommerce_compose.ui.components.client.search.SearchBarContainer
 import com.clay.ecommerce_compose.ui.components.client.sliders.SliderBranding
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.Configuration
 import kotlinx.coroutines.delay
 
 @Composable
-fun Home(navController: NavHostController) {
+fun Home(navController: NavHostController, cartViewModel: CartViewModel, homeViewModel: HomeViewModel) {
     val pagerState = rememberPagerState(pageCount = { 3 })
 
     LaunchedEffect(true) {
@@ -76,37 +78,18 @@ fun Home(navController: NavHostController) {
             .fillMaxSize()
             .background(color = colorResource(id = R.color.white))
     ) {
-        item { HeaderUserHome(navController = navController) }
+        item { HeaderUserHome(navController = navController, cartViewModel = cartViewModel) }
 
         item { SearchBarContainer(navController = navController) }
 
         item { Spacer(modifier = Modifier.height(height = 20.dp)) }
 
-        item { Business(navController = navController) }
-
         item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 30.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                HorizontalPager(
-                    state = pagerState,
-                    pageSpacing = 16.dp,
-                    beyondViewportPageCount = 1,
-                    modifier = Modifier
-                        .height(height = 180.dp),
-                ) { page ->
-                    val brand = business[page]
-                    SliderBranding(
-                        title = brand.title,
-                        color = brand.color,
-                        description = brand.description,
-                        logo = brand.logo
-                    )
-                }
-            }
+            Business(
+                navController = navController,
+                viewModel = homeViewModel,
+                brand = business,
+                pagerState = pagerState)
         }
     }
 }
@@ -117,9 +100,10 @@ fun UserHomeScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     configViewModel: ConfigViewModel,
+    cartViewModel: CartViewModel,
+    homeViewModel: HomeViewModel
 ) {
     var selectedTab by remember { mutableStateOf<Tabs>(value = Tabs.Home) }
-
 
     Scaffold(
         bottomBar = {
@@ -140,6 +124,8 @@ fun UserHomeScreen(
             when (selectedTab) {
                 is Tabs.Home -> Home(
                     navController = navController,
+                    cartViewModel = cartViewModel,
+                    homeViewModel = homeViewModel
                 )
 
                 is Tabs.Activity -> Text(text = "Tu actividad")
