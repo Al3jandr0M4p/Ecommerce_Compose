@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.domain.model.getBusinesess
-import com.clay.ecommerce_compose.ui.components.client.bars.MyTopAppBar
+import com.clay.ecommerce_compose.ui.components.bars.MyTopAppBar
 import com.clay.ecommerce_compose.ui.components.client.business.ProductCard
 import com.clay.ecommerce_compose.ui.components.client.business.SettingsButtonIcons
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartItem

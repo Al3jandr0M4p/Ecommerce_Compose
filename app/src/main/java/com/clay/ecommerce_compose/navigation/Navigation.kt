@@ -47,6 +47,7 @@ fun Navigation(
 
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
+
             SplashScreen(
                 modifier = Modifier, navController = navController, mainViewModel = mainViewModel
             )
@@ -56,6 +57,7 @@ fun Navigation(
             val loginViewModel: LoginViewModel = viewModel(factory = factory)
             val supabase = SupabaseConfig.client
             val authRepository = AuthRepository(supabase = supabase)
+
             LoginScreen(
                 navController = navController,
                 modifier = Modifier,
@@ -66,6 +68,7 @@ fun Navigation(
 
         composable(route = "register") {
             val registerViewModel: RegisterViewModel = viewModel(factory = factory)
+
             RegisterScreen(
                 viewModel = registerViewModel, navController = navController, modifier = Modifier
             )
@@ -80,6 +83,7 @@ fun Navigation(
             val configViewModel: ConfigViewModel = viewModel(factory = factory)
             val cartViewModel: CartViewModel = viewModel(factory = factory)
             val homeViewModel: HomeViewModel = viewModel(factory = factory)
+
             UserHomeScreen(
                 modifier = Modifier,
                 navController = navController,
@@ -92,6 +96,7 @@ fun Navigation(
         composable(route = "details/{id}") { backStackEntry ->
             val idBusiness = backStackEntry.arguments?.getString("id")?.toInt()
             Log.d("IdBusiness", "same id in navigation $idBusiness")
+
             UserBusinessScreen(
                 navController = navController,
                 idBusiness = idBusiness,
@@ -102,6 +107,7 @@ fun Navigation(
         composable(route = "businessHome/{businessId}") { backStackEntry ->
             val businessAccountViewModel: BusinessAccountViewModel = viewModel(factory = factory)
             val businessId = backStackEntry.arguments?.getString("businessId") ?: ""
+
             BusinessScreen(
                 businessId = businessId,
                 navController = navController,

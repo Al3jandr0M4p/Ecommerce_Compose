@@ -3,25 +3,21 @@ package com.clay.ecommerce_compose.ui.screens.client.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -30,18 +26,21 @@ import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.domain.model.Brand
 import com.clay.ecommerce_compose.navigation.Tabs
-import com.clay.ecommerce_compose.ui.components.client.bars.MyBottomNavigationBar
+import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
 import com.clay.ecommerce_compose.ui.components.client.business.Business
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderUserHome
 import com.clay.ecommerce_compose.ui.components.client.search.SearchBarContainer
-import com.clay.ecommerce_compose.ui.components.client.sliders.SliderBranding
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.Configuration
 import kotlinx.coroutines.delay
 
 @Composable
-fun Home(navController: NavHostController, cartViewModel: CartViewModel, homeViewModel: HomeViewModel) {
+fun Home(
+    navController: NavHostController,
+    cartViewModel: CartViewModel,
+    homeViewModel: HomeViewModel
+) {
     val pagerState = rememberPagerState(pageCount = { 3 })
 
     LaunchedEffect(true) {
@@ -89,7 +88,8 @@ fun Home(navController: NavHostController, cartViewModel: CartViewModel, homeVie
                 navController = navController,
                 viewModel = homeViewModel,
                 brand = business,
-                pagerState = pagerState)
+                pagerState = pagerState
+            )
         }
     }
 }
@@ -104,6 +104,25 @@ fun UserHomeScreen(
     homeViewModel: HomeViewModel
 ) {
     var selectedTab by remember { mutableStateOf<Tabs>(value = Tabs.Home) }
+    val pages: Map<Tabs, @Composable () -> Unit> = mapOf(
+        Tabs.Home to {
+            Home(
+                navController = navController,
+                cartViewModel = cartViewModel,
+                homeViewModel = homeViewModel
+            )
+        },
+        Tabs.Activity to {
+            Text(text = "Tu actividad")
+        },
+
+        Tabs.Configuration to {
+            Configuration(
+                navController = navController,
+                configViewModel = configViewModel
+            )
+        }
+    )
 
     Scaffold(
         bottomBar = {
@@ -111,7 +130,8 @@ fun UserHomeScreen(
                 selectedTab = selectedTab,
                 onTabSelected = { newTab ->
                     selectedTab = newTab
-                }
+                },
+                tabs = listOf(Tabs.Home, Tabs.Activity, Tabs.Configuration)
             )
         },
         modifier = Modifier.fillMaxWidth()
@@ -121,20 +141,7 @@ fun UserHomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues = paddingValues)
         ) {
-            when (selectedTab) {
-                is Tabs.Home -> Home(
-                    navController = navController,
-                    cartViewModel = cartViewModel,
-                    homeViewModel = homeViewModel
-                )
-
-                is Tabs.Activity -> Text(text = "Tu actividad")
-
-                is Tabs.Configuration -> Configuration(
-                    navController = navController,
-                    configViewModel = configViewModel
-                )
-            }
+            pages[selectedTab]?.invoke()
         }
     }
 }

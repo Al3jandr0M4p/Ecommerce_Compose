@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.components.client.bars
+package com.clay.ecommerce_compose.ui.components.bars
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
