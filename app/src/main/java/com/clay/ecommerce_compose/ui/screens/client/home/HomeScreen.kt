@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.domain.model.Brand
+import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
 import com.clay.ecommerce_compose.ui.components.client.business.Business
@@ -97,11 +98,12 @@ fun Home(
 
 @Composable
 fun UserHomeScreen(
-    modifier: Modifier = Modifier,
     navController: NavHostController,
     configViewModel: ConfigViewModel,
     cartViewModel: CartViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+
+    modifier: Modifier = Modifier,
 ) {
     var selectedTab by remember { mutableStateOf<Tabs>(value = Tabs.Home) }
     val pages: Map<Tabs, @Composable () -> Unit> = mapOf(
@@ -119,7 +121,7 @@ fun UserHomeScreen(
         Tabs.Configuration to {
             Configuration(
                 navController = navController,
-                configViewModel = configViewModel
+                configViewModel = configViewModel,
             )
         }
     )

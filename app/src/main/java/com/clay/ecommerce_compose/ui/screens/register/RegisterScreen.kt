@@ -382,46 +382,6 @@ fun RegisterScreen(
                         }
                     }
 
-                    // Boton de facebook
-                    BottomComp(
-                        onButtonAction = { },
-                        containerColor = colorResource(id = R.color.white),
-                        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
-                        contentColor = colorResource(id = R.color.facebookBlue),
-                        shape = CircleShape,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 6.dp, vertical = 11.dp)
-                            .height(height = 48.dp),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(height = 56.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Iniciar con Meta",
-                                fontSize = 18.sp,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .padding(start = 18.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_facebook),
-                                    contentDescription = "Facebook logo",
-                                    modifier = Modifier.size(size = 44.dp),
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
-                        }
-                    }
-
                     // Boton de Apple
                     BottomComp(
                         onButtonAction = { },

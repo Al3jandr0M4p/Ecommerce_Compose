@@ -40,7 +40,7 @@ fun MyBottomNavigationBar(
                 icon = {
                     Icon(
                         imageVector = tab.icon,
-                        contentDescription = tab.title
+                        contentDescription = tab.title,
                     )
                 },
                 label = {

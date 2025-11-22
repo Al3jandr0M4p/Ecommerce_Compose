@@ -85,7 +85,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
     suspend fun signIn(email: String, password: String): Profile? {
         return try {
-            val session = supabase.auth.signInWith(Email) {
+            supabase.auth.signInWith(Email) {
                 this.email = email
                 this.password = password
             }

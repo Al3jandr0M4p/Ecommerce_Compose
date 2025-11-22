@@ -79,7 +79,7 @@ fun Navigation(
             RegisterBusiness(viewModel = businessViewModel, navController = navController)
         }
 
-        composable(route = "userHome") {
+        composable(route = "userHome") { backStackEntry ->
             val configViewModel: ConfigViewModel = viewModel(factory = factory)
             val cartViewModel: CartViewModel = viewModel(factory = factory)
             val homeViewModel: HomeViewModel = viewModel(factory = factory)
@@ -89,7 +89,7 @@ fun Navigation(
                 navController = navController,
                 configViewModel = configViewModel,
                 cartViewModel = cartViewModel,
-                homeViewModel = homeViewModel
+                homeViewModel = homeViewModel,
             )
         }
 

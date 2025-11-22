@@ -62,7 +62,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
 
         if (modelClass.isAssignableFrom(ConfigViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ConfigViewModel(authRepository) as T
+            return ConfigViewModel(userRepository) as T
         }
 
         if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
@@ -79,7 +79,6 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
             @Suppress("UNCHECKED_CAST")
             return BusinessAccountViewModel(
                 businessAccountRepository = businessRepository,
-                authRepository = authRepository
             ) as T
         }
 
