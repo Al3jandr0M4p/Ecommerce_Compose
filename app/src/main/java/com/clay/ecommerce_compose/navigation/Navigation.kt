@@ -20,6 +20,7 @@ import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
 import com.clay.ecommerce_compose.ui.screens.admin.AdminDashboardScreen
 import com.clay.ecommerce_compose.ui.screens.admin.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.admin.CategoriesScreen
+import com.clay.ecommerce_compose.ui.screens.admin.DeliveryScreen
 import com.clay.ecommerce_compose.ui.screens.admin.OrdersScreen
 import com.clay.ecommerce_compose.ui.screens.admin.ProductsScreen
 import com.clay.ecommerce_compose.ui.screens.admin.ReportsScreen
@@ -132,12 +133,16 @@ fun Navigation(
 
         composable(route = "adminHome") {
             AdminDashboardScreen(
-                onNavigateToUsers = { navController.navigate("adminUsers") },
                 onNavigateToBusinesses = { navController.navigate("adminBusinesses") },
-                onNavigateToProducts = { navController.navigate("adminProducts") },
-                onNavigateToCategories = { navController.navigate("adminCategories") },
-                onNavigateToOrders = { navController.navigate("adminOrders") },
-                onNavigateToReports = { navController.navigate("adminReports") }
+                onNavigateToReports = { navController.navigate("adminReports") },
+                onNavigateToDelivery = { navController.navigate("adminDelivery") }
+            )
+        }
+
+        composable(route = "adminDelivery") {
+
+            DeliveryScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

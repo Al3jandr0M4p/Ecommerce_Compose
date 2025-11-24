@@ -17,18 +17,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clay.ecommerce_compose.ui.components.admin.*
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
-    onNavigateToUsers: () -> Unit,
     onNavigateToBusinesses: () -> Unit,
-    onNavigateToProducts: () -> Unit,
-    onNavigateToCategories: () -> Unit,
-    onNavigateToOrders: () -> Unit,
-    onNavigateToReports: () -> Unit
+    onNavigateToReports: () -> Unit,
+    onNavigateToDelivery: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -81,18 +76,11 @@ fun AdminDashboardScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Stats Cards en Grid 2x2
+            // Stats Cards en Grid
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MiniStatsCard(
-                    title = "Usuarios",
-                    value = "0",
-                    icon = Icons.Default.People,
-                    color = Color(0xFF3498DB),
-                    modifier = Modifier.weight(1f)
-                )
                 MiniStatsCard(
                     title = "Negocios",
                     value = "0",
@@ -100,29 +88,28 @@ fun AdminDashboardScreen(
                     color = Color(0xFF27AE60),
                     modifier = Modifier.weight(1f)
                 )
+                MiniStatsCard(
+                    title = "Delivery",
+                    value = " ",
+                    icon = Icons.Default.LocalShipping,
+                    color = Color(0xFF03A9F4),
+                    modifier = Modifier.weight(1f)
+                )
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 MiniStatsCard(
-                    title = "Pedidos",
-                    value = "0",
-                    icon = Icons.Default.ShoppingCart,
-                    color = Color(0xFFF39C12),
-                    modifier = Modifier.weight(1f)
-                )
-                MiniStatsCard(
-                    title = "Productos",
-                    value = "0",
-                    icon = Icons.Default.Inventory,
-                    color = Color(0xFF9B59B6),
+                    title = "Reportes",
+                    value = " ",
+                    icon = Icons.Default.Assessment,
+                    color = Color(0xFFE74C3C),
                     modifier = Modifier.weight(1f)
                 )
             }
+
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -138,16 +125,6 @@ fun AdminDashboardScreen(
 
             // Menú de opciones
             MenuOption(
-                icon = Icons.Default.People,
-                title = "Usuarios",
-                subtitle = "Gestionar usuarios y roles",
-                color = Color(0xFF3498DB),
-                onClick = onNavigateToUsers
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            MenuOption(
                 icon = Icons.Default.Store,
                 title = "Negocios",
                 subtitle = "Administrar comercios",
@@ -158,31 +135,11 @@ fun AdminDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             MenuOption(
-                icon = Icons.Default.Inventory,
-                title = "Productos",
-                subtitle = "Catálogo de productos",
-                color = Color(0xFF9B59B6),
-                onClick = onNavigateToProducts
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            MenuOption(
-                icon = Icons.Default.Category,
-                title = "Categorías",
-                subtitle = "Organizar categorías",
-                color = Color(0xFFE67E22),
-                onClick = onNavigateToCategories
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            MenuOption(
-                icon = Icons.Default.ShoppingCart,
-                title = "Pedidos",
-                subtitle = "Gestión de órdenes",
-                color = Color(0xFFF39C12),
-                onClick = onNavigateToOrders
+                icon = Icons.Default.LocalShipping,
+                title = "Delivery",
+                subtitle = "Aquí podrás ver todos los delivery",
+                color = Color(0xFF03A9F4),
+                onClick = onNavigateToDelivery
             )
 
             Spacer(modifier = Modifier.height(10.dp))

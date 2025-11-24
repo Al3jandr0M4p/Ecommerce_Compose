@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clay.ecommerce_compose.ui.components.admin.*
@@ -446,6 +448,8 @@ fun EditBusinessDialog(
     var name by remember { mutableStateOf(business.name) }
     var rnc by remember { mutableStateOf(business.rnc) }
     var address by remember { mutableStateOf(business.address) }
+    val isRncValid = rnc.length == 13
+    val isFormValid = name.isNotBlank() && isRncValid && address.isNotBlank()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -460,9 +464,20 @@ fun EditBusinessDialog(
                 )
                 OutlinedTextField(
                     value = rnc,
-                    onValueChange = { rnc = it },
+                    onValueChange = { newValue ->
+                        if (newValue.length <= 13 && newValue.all { it.isDigit() }) {
+                            rnc = newValue
+                        }
+                    },
                     label = { Text("RNC") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = !isRncValid && rnc.isNotEmpty(),
+                    supportingText = {
+                        if (!isRncValid && rnc.isNotEmpty()) {
+                            Text("El RNC debe tener 13 dígitos.")
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
                 OutlinedTextField(
                     value = address,
@@ -473,13 +488,16 @@ fun EditBusinessDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(name, rnc, address) }) {
-                Text("Guardar", color = Color(0xFF3498DB))
+            TextButton(
+                onClick = { onConfirm(name, rnc, address) },
+                enabled = isFormValid
+            ) {
+                Text("Guardar")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = Color(0xFF95A5A6))
+                Text("Cancelar")
             }
         }
     )
@@ -493,6 +511,8 @@ fun AddBusinessDialog(
     var name by remember { mutableStateOf("") }
     var rnc by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
+    val isRncValid = rnc.length == 13
+    val isFormValid = name.isNotBlank() && isRncValid && address.isNotBlank()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -504,42 +524,50 @@ fun AddBusinessDialog(
                     onValueChange = { name = it },
                     label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = name.isBlank()
+                    isError = name.isBlank() && name.isNotEmpty()
                 )
                 OutlinedTextField(
                     value = rnc,
-                    onValueChange = { rnc = it },
+                    onValueChange = { newValue ->
+                        if (newValue.length <= 13 && newValue.all { it.isDigit() }) {
+                            rnc = newValue
+                        }
+                    },
                     label = { Text("RNC") },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = rnc.isBlank()
+                    isError = !isRncValid && rnc.isNotEmpty(),
+                    supportingText = {
+                        if (!isRncValid && rnc.isNotEmpty()) {
+                            Text("El RNC debe tener 13 dígitos.")
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
                 OutlinedTextField(
                     value = address,
                     onValueChange = { address = it },
                     label = { Text("Dirección") },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = address.isBlank()
+                    isError = address.isBlank() && address.isNotEmpty()
                 )
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { 
-                    if(name.isNotBlank() && rnc.isNotBlank() && address.isNotBlank()){
-                        onConfirm(name, rnc, address)
-                    }
-                }
+                onClick = { onConfirm(name, rnc, address) },
+                enabled = isFormValid
             ) {
-                Text("Agregar", color = Color(0xFF3498DB))
+                Text("Agregar")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = Color(0xFF95A5A6))
+                Text("Cancelar")
             }
         }
     )
 }
+
 
 data class Business(
     val id: String,

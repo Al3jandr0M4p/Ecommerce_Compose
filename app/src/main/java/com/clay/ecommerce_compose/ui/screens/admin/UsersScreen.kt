@@ -23,6 +23,7 @@ fun UsersScreen(
     onBack: () -> Unit
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf<User?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -96,7 +97,10 @@ fun UsersScreen(
                     items(users) { user ->
                         UserCard(
                             user = user,
-                            onEdit = { /* TODO */ },
+                            onEdit = {
+                                selectedUser = user
+                                showEditDialog = true
+                            },
                             onDelete = {
                                 selectedUser = user
                                 showDeleteDialog = true
@@ -121,6 +125,29 @@ fun UsersScreen(
                     status = "Activo"
                 ))
                 showCreateDialog = false
+            }
+        )
+    }
+
+    // Dialog editar usuario
+    if (showEditDialog && selectedUser != null) {
+        EditUserDialog(
+            user = selectedUser!!,
+            onDismiss = {
+                showEditDialog = false
+                selectedUser = null
+            },
+            onConfirm = { name, email, role ->
+                val index = users.indexOf(selectedUser)
+                if (index != -1) {
+                    users[index] = selectedUser!!.copy(
+                        name = name,
+                        email = email,
+                        role = role
+                    )
+                }
+                showEditDialog = false
+                selectedUser = null
             }
         )
     }
@@ -362,6 +389,58 @@ fun CreateUserDialog(
                 }
             ) {
                 Text("Crear", color = Color(0xFF3498DB))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = Color(0xFF95A5A6))
+            }
+        }
+    )
+}
+
+@Composable
+fun EditUserDialog(
+    user: User,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String, String) -> Unit
+) {
+    var name by remember { mutableStateOf(user.name) }
+    var email by remember { mutableStateOf(user.email) }
+    var role by remember { mutableStateOf(user.role) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar Usuario", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre completo") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                AdminDropdown(
+                    label = "Rol",
+                    selectedValue = role,
+                    options = listOf("Cliente", "Negocio", "Repartidor", "Cajero"),
+                    onValueChange = { role = it }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (name.isNotBlank() && email.isNotBlank() && role.isNotBlank()) {
+                    onConfirm(name, email, role)
+                }
+            }) {
+                Text("Guardar", color = Color(0xFF3498DB))
             }
         },
         dismissButton = {
