@@ -1,164 +1,419 @@
 package com.clay.ecommerce_compose.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
+    onNavigateToUsers: () -> Unit,
     onNavigateToBusinesses: () -> Unit,
-    onNavigateToReports: () -> Unit,
-    onNavigateToDelivery: () -> Unit
+    onNavigateToDelivery: () -> Unit,
+    onNavigateToReports: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Panel Admin",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
+    var selectedTab by remember { mutableStateOf(0) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            DrawerContent(
+                onNavigateToUsers = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToUsers()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF2C3E50),
-                    titleContentColor = Color.White
-                ),
-                actions = {
-                    IconButton(onClick = { /* Notificaciones */ }) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                    }
+                onNavigateToBusinesses = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToBusinesses()
+                },
+                onNavigateToDelivery = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToDelivery()
+                },
+                onNavigateToReports = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToReports()
+                },
+                onCloseDrawer = {
+                    scope.launch { drawerState.close() }
                 }
             )
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Color(0xFFF5F6FA))
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            // Header
-            Text(
-                text = "Bienvenido",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2C3E50)
-            )
-
-            Text(
-                text = "Gestiona tu plataforma",
-                fontSize = 14.sp,
-                color = Color(0xFF7F8C8D),
-                modifier = Modifier.padding(top = 4.dp)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Stats Cards en Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                MiniStatsCard(
-                    title = "Negocios",
-                    value = "0",
-                    icon = Icons.Default.Store,
-                    color = Color(0xFF27AE60),
-                    modifier = Modifier.weight(1f)
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = if (selectedTab == 0) "Panel Admin" else "Cuenta",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Abrir menú"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
-                MiniStatsCard(
-                    title = "Delivery",
-                    value = " ",
-                    icon = Icons.Default.LocalShipping,
-                    color = Color(0xFF03A9F4),
-                    modifier = Modifier.weight(1f)
-                )
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color.White,
+                    tonalElevation = 8.dp
+                ) {
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                Icons.Default.Home,
+                                contentDescription = "Inicio"
+                            )
+                        },
+                        label = { Text("Inicio") },
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 }
+                    )
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Cuenta"
+                            )
+                        },
+                        label = { Text("Cuenta") },
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 }
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
             ) {
-                MiniStatsCard(
-                    title = "Reportes",
-                    value = " ",
-                    icon = Icons.Default.Assessment,
-                    color = Color(0xFFE74C3C),
-                    modifier = Modifier.weight(1f)
-                )
+                when (selectedTab) {
+                    0 -> InicioContent(
+                        onNavigateToUsers = onNavigateToUsers,
+                        onNavigateToBusinesses = onNavigateToBusinesses,
+                        onNavigateToDelivery = onNavigateToDelivery,
+                        onNavigateToReports = onNavigateToReports
+                    )
+                    1 -> CuentaContent()
+                }
             }
-
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Título sección
-            Text(
-                text = "Gestión",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2C3E50)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Menú de opciones
-            MenuOption(
-                icon = Icons.Default.Store,
-                title = "Negocios",
-                subtitle = "Administrar comercios",
-                color = Color(0xFF27AE60),
-                onClick = onNavigateToBusinesses
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            MenuOption(
-                icon = Icons.Default.LocalShipping,
-                title = "Delivery",
-                subtitle = "Aquí podrás ver todos los delivery",
-                color = Color(0xFF03A9F4),
-                onClick = onNavigateToDelivery
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            MenuOption(
-                icon = Icons.Default.Assessment,
-                title = "Reportes",
-                subtitle = "Estadísticas y reportes",
-                color = Color(0xFFE74C3C),
-                onClick = onNavigateToReports
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
-fun MiniStatsCard(
+fun DrawerContent(
+    onNavigateToUsers: () -> Unit,
+    onNavigateToBusinesses: () -> Unit,
+    onNavigateToDelivery: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onCloseDrawer: () -> Unit
+) {
+    ModalDrawerSheet(
+        drawerContainerColor = Color.White,
+        modifier = Modifier.width(280.dp)
+    ) {
+        // Header del Drawer
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color(0xFF2C3E50)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Icon(
+                    Icons.Default.AdminPanelSettings,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Panel Admin",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "admin@example.com",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Sección de Gestión
+        Text(
+            text = "GESTIÓN",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        DrawerMenuItem(
+            icon = Icons.Default.People,
+            title = "Usuarios",
+            onClick = onNavigateToUsers
+        )
+
+        DrawerMenuItem(
+            icon = Icons.Default.Store,
+            title = "Negocios",
+            onClick = onNavigateToBusinesses
+        )
+
+        DrawerMenuItem(
+            icon = Icons.Default.LocalShipping,
+            title = "Delivery",
+            onClick = onNavigateToDelivery
+        )
+
+        DrawerMenuItem(
+            icon = Icons.Default.Assessment,
+            title = "Reportes",
+            onClick = onNavigateToReports
+        )
+
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Cerrar sesión al final
+        DrawerMenuItem(
+            icon = Icons.Default.Logout,
+            title = "Cerrar sesión",
+            onClick = {
+                onCloseDrawer()
+                // TODO: Implementar cierre de sesión
+            },
+            color = Color(0xFFE74C3C)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun DrawerMenuItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit,
+    color: Color = Color.Black
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = title,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = color
+        )
+    }
+}
+
+@Composable
+fun InicioContent(
+    onNavigateToUsers: () -> Unit,
+    onNavigateToBusinesses: () -> Unit,
+    onNavigateToDelivery: () -> Unit,
+    onNavigateToReports: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFF5F7FA),
+                        Color(0xFFFFFFFF)
+                    )
+                )
+            )
+    ) {
+        // Perfil Admin con diseño mejorado
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFF2C3E50),
+                    shape = RoundedCornerShape(20.dp),
+                    shadowElevation = 8.dp
+                ) {
+                    Box {
+                        // Patrón decorativo de fondo
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(120.dp)
+                                .offset(x = 40.dp, y = (-40).dp)
+                        ) {
+                            Surface(
+                                color = Color.White.copy(alpha = 0.05f),
+                                shape = RoundedCornerShape(60.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {}
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Avatar con gradiente
+                            Box(
+                                modifier = Modifier.size(70.dp)
+                            ) {
+                                Surface(
+                                    color = Color.Transparent,
+                                    shape = RoundedCornerShape(35.dp),
+                                    modifier = Modifier.fillMaxSize(),
+                                    border = BorderStroke(
+                                        3.dp,
+                                        Color.White.copy(alpha = 0.3f)
+                                    )
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(
+                                                brush = Brush.linearGradient(
+                                                    colors = listOf(
+                                                        Color(0xFF667EEA),
+                                                        Color(0xFF764BA2)
+                                                    )
+                                                )
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.AdminPanelSettings,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(36.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Administrador",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .background(
+                                                color = Color.Green, // O usa un color dinámico para el estado
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "En línea",
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Estadísticas
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MiniStatCard("Usuarios", "0", Icons.Default.People, Color(0xFF3498DB), Modifier.weight(1f))
+                MiniStatCard("Negocios", "0", Icons.Default.Store, Color(0xFF27AE60), Modifier.weight(1f))
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MiniStatCard("Delivery", "0", Icons.Default.LocalShipping, Color(0xFF03A9F4), Modifier.weight(1f))
+                MiniStatCard("Reportes", "0", Icons.Default.Assessment, Color(0xFFE74C3C), Modifier.weight(1f))
+            }
+        }
+        item { Spacer(modifier = Modifier.height(height = 8.dp)) }
+    }
+}
+
+@Composable
+fun CuentaContent() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Pantalla de Cuenta")
+    }
+}
+
+@Composable
+fun MiniStatCard(
     title: String,
     value: String,
     icon: ImageVector,
@@ -166,102 +421,15 @@ fun MiniStatsCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.height(100.dp),
+        modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = color),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
-            )
-
-            Column {
-                Text(
-                    text = title,
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = value,
-                    color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MenuOption(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    color: Color,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(2.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                color = color.copy(alpha = 0.15f),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.size(50.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = color,
-                        modifier = Modifier.size(26.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2C3E50)
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 13.sp,
-                    color = Color(0xFF7F8C8D)
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = Color(0xFFBDC3C7)
-            )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Icon(icon, null, tint = Color.White)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(title, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodySmall)
+            Text(value, color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
     }
 }

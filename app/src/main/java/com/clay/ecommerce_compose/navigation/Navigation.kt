@@ -133,6 +133,7 @@ fun Navigation(
 
         composable(route = "adminHome") {
             AdminDashboardScreen(
+                onNavigateToUsers = { navController.navigate("adminUsers") },
                 onNavigateToBusinesses = { navController.navigate("adminBusinesses") },
                 onNavigateToReports = { navController.navigate("adminReports") },
                 onNavigateToDelivery = { navController.navigate("adminDelivery") }
@@ -140,7 +141,6 @@ fun Navigation(
         }
 
         composable(route = "adminDelivery") {
-
             DeliveryScreen(
                 onBack = { navController.popBackStack() }
             )
