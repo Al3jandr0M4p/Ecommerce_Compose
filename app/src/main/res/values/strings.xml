@@ -6,4 +6,6 @@
     <string name="monedero">Monedero</string>
     <string name="bandeja_de_entrada">Bandeja de entrada</string>
     <string name="help">Ayuda</string>
+    <string name="notification">notification</string>
+    <string name="propietario">Propietario</string>
 </resources>

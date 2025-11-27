@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
-import com.clay.ecommerce_compose.ui.components.client.config.ConfigHeader
 import com.clay.ecommerce_compose.ui.components.client.config.UtilsHeader
 
 @Composable
@@ -43,7 +42,7 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
         item {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 14.dp, horizontal = 16.dp)
@@ -56,7 +55,7 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
             }
         }
 
-        item { ConfigHeader() }
+        item { ConfigHeader(viewModel = configViewModel) }
 
         item { UtilsHeader() }
         

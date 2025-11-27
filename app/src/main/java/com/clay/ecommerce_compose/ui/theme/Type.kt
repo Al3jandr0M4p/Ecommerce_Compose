@@ -13,7 +13,7 @@ import com.clay.ecommerce_compose.R
 * @property Poppins should charge Poppins fonts
 *
 * Sets up MaterialTheme typography fonts
-*~
+*
 *
 * */
 
