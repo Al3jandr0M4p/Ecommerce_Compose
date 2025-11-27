@@ -96,6 +96,8 @@ dependencies {
     implementation("io.ktor:ktor-client-android:3.3.2")
 
     implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
