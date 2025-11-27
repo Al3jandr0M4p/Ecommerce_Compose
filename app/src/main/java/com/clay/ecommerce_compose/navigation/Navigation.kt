@@ -17,8 +17,15 @@ import com.clay.ecommerce_compose.data.AppViewModelProvider
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
+import com.clay.ecommerce_compose.ui.screens.admin.AdminDashboardScreen
+import com.clay.ecommerce_compose.ui.screens.admin.BusinessScreen
+import com.clay.ecommerce_compose.ui.screens.admin.CategoriesScreen
+import com.clay.ecommerce_compose.ui.screens.admin.DeliveryScreen
+import com.clay.ecommerce_compose.ui.screens.admin.OrdersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.ProductsScreen
+import com.clay.ecommerce_compose.ui.screens.admin.ReportsScreen
+import com.clay.ecommerce_compose.ui.screens.admin.UsersScreen
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
-import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.Cart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
@@ -43,7 +50,7 @@ fun Navigation(
     val application = LocalContext.current.applicationContext as Application
     val factory = AppViewModelProvider(application)
 
-    NavHost(navController = navController, startDestination = "splash") {
+    NavHost(navController = navController, startDestination = "adminHome") {
 
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
@@ -102,7 +109,7 @@ fun Navigation(
         composable(route = "businessHome/{businessId}") { backStackEntry ->
             val businessAccountViewModel: BusinessAccountViewModel = viewModel(factory = factory)
             val businessId = backStackEntry.arguments?.getString("businessId") ?: ""
-            BusinessScreen(
+            com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen(
                 businessId = businessId,
                 navController = navController,
                 viewModel = businessAccountViewModel
@@ -124,14 +131,56 @@ fun Navigation(
             SearchInShop(idShop = id, navController = navController)
         }
 
-//        composable(route = "adminHome") {
-//            UserHomeScreen(modifier = modifier)
-//        }
-//
-//
-//        composable(route = "deliveryHome") {
-//            UserHomeScreen(modifier = modifier)
-//        }
+        composable(route = "adminHome") {
+            AdminDashboardScreen(
+                onNavigateToUsers = { navController.navigate("adminUsers") },
+                onNavigateToBusinesses = { navController.navigate("adminBusinesses") },
+                onNavigateToReports = { navController.navigate("adminReports") },
+                onNavigateToDelivery = { navController.navigate("adminDelivery") }
+            )
+        }
+
+        composable(route = "adminDelivery") {
+            DeliveryScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "adminUsers") {
+            UsersScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "adminBusinesses") {
+            BusinessScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "adminProducts") {
+            ProductsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "adminCategories") {
+            CategoriesScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "adminOrders") {
+            OrdersScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "adminReports") {
+            ReportsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
 
     }
 }
