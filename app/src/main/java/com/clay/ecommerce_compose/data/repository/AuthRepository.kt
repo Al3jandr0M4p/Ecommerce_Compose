@@ -27,14 +27,13 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
     private suspend fun getBusinessByOwnerId(ownerId: String): String? {
         return try {
-            supabase.from("businesses")
+            val result = supabase.from("businesses")
                 .select(Columns.list("id")) {
                     filter { eq("owner_id", ownerId) }
                 }
-                .decodeSingleOrNull<JsonObject>()
-                ?.get("id")
-                ?.jsonPrimitive
-                ?.contentOrNull
+                .decodeList<JsonObject>()
+
+            return result.firstOrNull()?.get("id")?.jsonPrimitive?.contentOrNull
         } catch (e: Exception) {
             Log.e("AuthRepository", "Error al obtener businessId por ownerId", e)
             null
@@ -86,7 +85,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
     suspend fun signIn(email: String, password: String): Profile? {
         return try {
-            val session = supabase.auth.signInWith(Email) {
+            supabase.auth.signInWith(Email) {
                 this.email = email
                 this.password = password
             }
@@ -247,7 +246,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
             //          filter { eq("id", sessionUserId) }
             //     }
             // esto lo reemplazo por esto
-            supabase.from("profiles").insert(
+            supabase.from("profiles").upsert(
                 buildJsonObject {
                     put("id", JsonPrimitive(sessionUserId))
                     put("role_id", JsonPrimitive(roleId))

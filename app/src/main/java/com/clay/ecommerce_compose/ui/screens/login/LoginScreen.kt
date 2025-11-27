@@ -174,12 +174,16 @@ fun LoginScreen(
             session.value = getSessionUseCase.invoke()
 
             val userRole = session.value?.role ?: "guest"
+
             Toast.makeText(context, "Bienvenido ${session.value?.role}", Toast.LENGTH_SHORT)
                 .show()
 
             delay(300)
             when (userRole) {
-                "usuario" -> navController.navigate(route = "userHome")
+                "usuario" -> {
+                    navController.navigate(route = "userHome")
+                }
+
                 "negocio" -> {
                     val businessId = session.value?.businessId
                     navController.navigate(route = "businessHome/${businessId}")
