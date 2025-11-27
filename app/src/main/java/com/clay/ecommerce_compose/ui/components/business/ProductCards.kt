@@ -1,6 +1,5 @@
 package com.clay.ecommerce_compose.ui.components.business
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,13 +15,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 
 @Composable
-fun ProductsCards(id: Int, name: String, price: Double, imageUrl: Int, navController: NavHostController) {
+fun ProductsCards(
+    id: Int?,
+    name: String,
+    price: Double,
+    imageUrl: String,
+    navController: NavHostController
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -32,21 +37,21 @@ fun ProductsCards(id: Int, name: String, price: Double, imageUrl: Int, navContro
             .clip(shape = RoundedCornerShape(size = 16.dp))
     ) {
         Box(
-            modifier = Modifier 
+            modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally)
         ) {
-            Image(
-                painter = painterResource(id = imageUrl),
-                contentDescription = name,
-                contentScale = ContentScale.Crop,
+            AsyncImage(
+                model = imageUrl, contentDescription = name, contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(height = 130.dp)
                     .clip(shape = RoundedCornerShape(size = 16.dp))
             )
         }
-        Column(modifier = Modifier.fillMaxWidth().padding(all = 4.dp)) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 4.dp)) {
             Text(text = name, fontSize = 20.sp, style = MaterialTheme.typography.labelSmall)
             Text(
                 text = price.toString(),

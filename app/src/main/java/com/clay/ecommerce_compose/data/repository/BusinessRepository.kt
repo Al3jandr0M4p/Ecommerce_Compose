@@ -1,12 +1,45 @@
 package com.clay.ecommerce_compose.data.repository
 
+import android.content.Context
 import android.util.Log
+import androidx.core.net.toUri
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.ProductPayload
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.storage.storage
 
-class BusinessRepository(private val supabase: SupabaseClient) {
+class BusinessRepository(private val supabase: SupabaseClient, private val context: Context) {
+    @OptIn(ExperimentalUnsignedTypes::class)
+    suspend fun uploadProductImage(imageUri: String): Result<String> {
+        return try {
+            val uri = imageUri.toUri()
+
+            val byteArray =
+                context.contentResolver.openInputStream(uri).use {
+                    it?.readBytes()
+                } ?: throw Exception("No se pudo leer el archivo de imagen")
+
+            val filename = "${System.currentTimeMillis()}.jpg"
+
+            supabase.storage.from("product-image").upload(filename, byteArray)
+
+            val publicUrl = supabase.storage.from("product-image").publicUrl(filename)
+
+            Result.success(publicUrl)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getProductsByBusinessId(businessId: Int?): List<ProductPayload> {
+        return supabase.from("products")
+            .select {
+                filter { businessId?.let { eq("business_id", it) } }
+            }
+            .decodeList<ProductPayload>()
+    }
 
     suspend fun getBusinessById(businessId: String): BusinessProfile? {
         return supabase.from("businesses")
@@ -16,35 +49,23 @@ class BusinessRepository(private val supabase: SupabaseClient) {
             .decodeSingleOrNull()
     }
 
-    suspend fun addProduct(businessId: String, product: Map<String, Any?>): Result<Unit> {
+    suspend fun addProduct(product: ProductPayload): Result<Unit> {
         return try {
-            val payload = product.toMutableMap().also {
-                it["business_id"] = businessId
-            }
-            val response = supabase.from("products").insert(payload)
-            Log.d("DEBUG_INSERT", response.toString())
+            supabase.from("products").insert(product)
 
-            if (response.data != null) {
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("Insert failed"))
-            }
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun updateProduct(productId: Int, updates: Map<String, Any?>): Result<Unit> {
+    suspend fun updateProduct(productId: Int, updates: ProductPayload): Result<Unit> {
         return try {
-            val response = supabase.from("products").update(updates) {
+            supabase.from("products").update(updates) {
                 filter { eq("id", productId) }
             }
 
-            if (response.data != null) {
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("Update failed 'updates'"))
-            }
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -52,15 +73,11 @@ class BusinessRepository(private val supabase: SupabaseClient) {
 
     suspend fun disableProduct(productId: Int): Result<Unit> {
         return try {
-            val response = supabase.from("products").update(mapOf("is_active" to false)) {
+            supabase.from("products").update(mapOf("is_active" to false)) {
                 filter { eq("id", productId) }
             }
 
-            if (response.data != null) {
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("Update failed 'is_active'"))
-            }
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }

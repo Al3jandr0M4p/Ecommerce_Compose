@@ -1,6 +1,7 @@
 package com.clay.ecommerce_compose.data
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.clay.ecommerce_compose.activity.MainViewModel
@@ -19,13 +20,14 @@ import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessV
 
 class AppViewModelProvider(private val application: Application) : ViewModelProvider.Factory {
     val supabaseClient = SupabaseConfig.client
+    val aplication = application.applicationContext
 
     private val authRepository by lazy {
         AuthRepository(supabase = supabaseClient)
     }
 
     private val businessRepository by lazy {
-        BusinessRepository(supabase = supabaseClient)
+        BusinessRepository(supabase = supabaseClient, context = aplication)
     }
 
     private val userRepository by lazy {

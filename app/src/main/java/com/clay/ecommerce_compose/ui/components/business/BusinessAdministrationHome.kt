@@ -59,68 +59,6 @@ fun BusinessAdministrationHome(
         }
 
         item {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            ) {
-                business?.name?.let {
-                    Text(
-                        text = it, style = MaterialTheme.typography.labelLarge, fontSize = 28.sp
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    TextButton(onClick = { /*TODO*/ }) {
-                        Text(
-                            text = "Informacion",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 18.sp,
-                            color = colorResource(id = R.color.black)
-                        )
-                        Spacer(modifier = Modifier.width(width = 4.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            tint = colorResource(id = R.color.black)
-                        )
-                    }
-
-                    if (business?.hasDelivery != true) {
-                        TextButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                imageVector = Icons.Default.DeliveryDining,
-                                contentDescription = null,
-                                tint = colorResource(id = R.color.gold)
-                            )
-                            Spacer(modifier = Modifier.width(width = 4.dp))
-                            Text(
-                                text = "Entregas",
-                                fontSize = 16.sp,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = colorResource(id = R.color.gold)
-                            )
-                            Spacer(modifier = Modifier.width(width = 4.dp))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null,
-                                tint = colorResource(id = R.color.gold)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        item {
             if (business?.hasDelivery == true) {
                 Column {
                     Text(

@@ -14,7 +14,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,20 +28,15 @@ import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Stepeer(
-    SheetState: SheetState,
+fun Stepper(
+    sheetState: SheetState,
     onDimiss: () -> Unit,
     viewModel: BusinessAccountViewModel,
-    businessId: String,
 ) {
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(businessId) {
-        viewModel.handleIntent(BusinessAccountProductIntent.SetBusinessId(businessId))
-    }
-
     ModalBottomSheet(
-        sheetState = SheetState,
+        sheetState = sheetState,
         onDismissRequest = onDimiss,
         dragHandle = null,
         containerColor = colorResource(id = R.color.white)
@@ -73,20 +67,23 @@ fun Stepeer(
             }
         }
 
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 16.dp)
+        ) {
             BasicField(
                 value = state.name,
-                onValueChange = {
+                onValueChange = { name ->
                     viewModel.handleIntent(
-                        BusinessAccountProductIntent.ProductName(it.toString())
+                        intent = BusinessAccountProductIntent.ProductName(name = name.toString())
                     )
                 },
                 placeholder = "Nombre del producto",
             )
             BasicField(
-                value = state.price, onValueChange = {
+                value = state.price, onValueChange = { price ->
                     viewModel.handleIntent(
-                        BusinessAccountProductIntent.ProductPrice(it.toString())
+                        intent = BusinessAccountProductIntent.ProductPrice(price = price.toString())
                     )
                 }, placeholder = "Precio (0.00)"
             )
@@ -105,9 +102,9 @@ fun Stepeer(
 
                 Switch(
                     checked = state.hasStockControl,
-                    onCheckedChange = {
+                    onCheckedChange = { has ->
                         viewModel.handleIntent(
-                            BusinessAccountProductIntent.SetProductStockControl(it)
+                            intent = BusinessAccountProductIntent.SetProductStockControl(has = has)
                         )
                     }
                 )
@@ -116,9 +113,9 @@ fun Stepeer(
             if (state.hasStockControl) {
                 BasicField(
                     value = state.stock,
-                    onValueChange = {
+                    onValueChange = { stock ->
                         viewModel.handleIntent(
-                            BusinessAccountProductIntent.ProductStock(it.toString())
+                            intent = BusinessAccountProductIntent.ProductStock(stock = stock.toString())
                         )
                     },
                     placeholder = "Cantidad en stock",
@@ -135,7 +132,7 @@ fun Stepeer(
 
             ImageInput { uri ->
                 viewModel.handleIntent(
-                    BusinessAccountProductIntent.ProductImage(uri.toString())
+                    intent = BusinessAccountProductIntent.ProductImage(imgUrl = uri.toString())
                 )
             }
 
@@ -152,9 +149,9 @@ fun Stepeer(
 
             BasicField(
                 value = state.description,
-                onValueChange = {
+                onValueChange = { description ->
                     viewModel.handleIntent(
-                        BusinessAccountProductIntent.ProductDescription(it.toString())
+                        intent = BusinessAccountProductIntent.ProductDescription(description = description.toString())
                     )
                 },
                 placeholder = "Descripción",
