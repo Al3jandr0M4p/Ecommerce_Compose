@@ -1,7 +1,6 @@
 package com.clay.ecommerce_compose.data.repository
 
 import android.content.Context
-import android.util.Log
 import androidx.core.net.toUri
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import com.clay.ecommerce_compose.domain.model.ProductPayload
