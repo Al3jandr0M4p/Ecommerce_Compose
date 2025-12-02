@@ -23,6 +23,8 @@ class MainViewModel(
         }
     }
 
+
+
     private suspend fun checkUserSession() {
         val session = getCurrentUserSessionUseCase()
         _splashState.value = SplashState.Success(session)
