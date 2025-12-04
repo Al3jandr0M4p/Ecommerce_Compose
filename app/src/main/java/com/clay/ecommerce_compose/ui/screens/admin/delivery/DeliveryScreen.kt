@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.screens.admin
+package com.clay.ecommerce_compose.ui.screens.admin.delivery
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

@@ -1,6 +1,5 @@
 package com.clay.ecommerce_compose.ui.screens.businesess
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -17,18 +16,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +38,7 @@ import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationB
 import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationConfiguration
 import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationHome
 import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationStock
-import kotlinx.coroutines.launch
+import com.clay.ecommerce_compose.utils.hooks.useBusinessScreen
 
 
 @Composable
@@ -88,36 +80,12 @@ fun BusinessHomeScreen(
     viewModel: BusinessAccountViewModel,
     profile: BusinessProfile?
 ) {
-    var selectedTab by remember { mutableStateOf<Tabs>(Tabs.Home) }
+    val businessController = useBusinessScreen(viewModel = viewModel)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    var openSheet by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(Unit) {
-        viewModel.uiEvent.collect { event ->
-            when (event) {
-                is UIEvents.ShowMessage -> {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(event.message)
-                        Log.e("BusinessScreen", event.message)
-                    }
-                }
-                is UIEvents.CloseSheet -> {
-                    openSheet = false
-                }
-            }
-        }
-    }
-
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(hostState = businessController.snackBarHost) },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MyBusinessTopAppBar(
                 businessName = profile?.name ?: "",
@@ -126,18 +94,16 @@ fun BusinessHomeScreen(
         },
         bottomBar = {
             MyBottomNavigationBar(
-                selectedTab = selectedTab,
-                onTabSelected = { newTab ->
-                    selectedTab = newTab
-                },
+                selectedTab = businessController.selectedTab.value,
+                onTabSelected = { businessController.selectedTab.value = it },
                 tabs = listOf(Tabs.Home, Tabs.Balance, Tabs.Stock, Tabs.Configuration)
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(visible = selectedTab is Tabs.Stock) {
+            AnimatedVisibility(visible = businessController.selectedTab.value is Tabs.Stock) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
                     FloatingActionButton(
-                        onClick = { openSheet = true },
+                        onClick = { businessController.openSheet.value },
                         modifier = Modifier.width(width = 200.dp),
                         shape = CircleShape,
                         containerColor = colorResource(id = R.color.black),
@@ -169,7 +135,7 @@ fun BusinessHomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues = paddingValues),
         ) {
-            when (selectedTab) {
+            when (businessController.selectedTab.value) {
                 is Tabs.Home -> {
                     BusinessAdministrationHome(
                         business = profile,
@@ -186,11 +152,11 @@ fun BusinessHomeScreen(
                     BusinessAdministrationStock(
                         navController = navController,
                         profile = profile,
-                        openSheet = openSheet,
-                        sheetState = sheetState,
+                        openSheet = businessController.openSheet.value,
+                        sheetState = businessController.sheetState,
                         viewModel = viewModel
                     ) {
-                        openSheet = false
+                        businessController.openSheet.value = false
                     }
                 }
 

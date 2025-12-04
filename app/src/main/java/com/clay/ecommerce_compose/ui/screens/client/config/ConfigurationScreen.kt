@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
+import com.clay.ecommerce_compose.ui.components.client.config.ConfigHeader
 import com.clay.ecommerce_compose.ui.components.client.config.UtilsHeader
 
 @Composable

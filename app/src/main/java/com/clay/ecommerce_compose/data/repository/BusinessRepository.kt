@@ -9,7 +9,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 
-class BusinessRepository(private val supabase: SupabaseClient, private val context: Context) {
+class BusinessRepository(private val supabase: SupabaseClient, private val context: Context?) {
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun uploadProductImage(imageUri: String): Result<String> {
         return try {

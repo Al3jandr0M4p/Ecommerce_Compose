@@ -17,15 +17,16 @@ import com.clay.ecommerce_compose.data.AppViewModelProvider
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
-import com.clay.ecommerce_compose.ui.screens.admin.AdminDashboardScreen
-import com.clay.ecommerce_compose.ui.screens.admin.BusinessScreen
-import com.clay.ecommerce_compose.ui.screens.admin.CategoriesScreen
-import com.clay.ecommerce_compose.ui.screens.admin.DeliveryScreen
-import com.clay.ecommerce_compose.ui.screens.admin.OrdersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.dashboard.AdminDashboardScreen
+import com.clay.ecommerce_compose.ui.screens.admin.categories.CategoriesScreen
+import com.clay.ecommerce_compose.ui.screens.admin.business.BusinessScreen
+import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryScreen
+import com.clay.ecommerce_compose.ui.screens.admin.orders.OrdersScreen
 import com.clay.ecommerce_compose.ui.screens.admin.ProductsScreen
-import com.clay.ecommerce_compose.ui.screens.admin.ReportsScreen
-import com.clay.ecommerce_compose.ui.screens.admin.UsersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.reports.ReportsScreen
+import com.clay.ecommerce_compose.ui.screens.admin.users.UsersScreen
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
+import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.Cart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
@@ -50,13 +51,15 @@ fun Navigation(
     val application = LocalContext.current.applicationContext as Application
     val factory = AppViewModelProvider(application)
 
-    NavHost(navController = navController, startDestination = "adminHome") {
+    NavHost(navController = navController, startDestination = "splash") {
 
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
 
             SplashScreen(
-                modifier = Modifier, navController = navController, mainViewModel = mainViewModel
+                modifier = Modifier,
+                navController = navController,
+                mainViewModel = mainViewModel
             )
         }
 
@@ -67,7 +70,7 @@ fun Navigation(
 
             LoginScreen(
                 navController = navController,
-                modifier = Modifier,
+                modifier = modifier,
                 viewModel = loginViewModel,
                 authRepository = authRepository
             )
@@ -77,13 +80,18 @@ fun Navigation(
             val registerViewModel: RegisterViewModel = viewModel(factory = factory)
 
             RegisterScreen(
-                viewModel = registerViewModel, navController = navController, modifier = Modifier
+                viewModel = registerViewModel,
+                navController = navController,
+                modifier = Modifier
             )
         }
 
         composable(route = "registerBusiness") {
             val businessViewModel: RegisterBusinessViewModel = viewModel(factory = factory)
-            RegisterBusiness(viewModel = businessViewModel, navController = navController)
+            RegisterBusiness(
+                viewModel = businessViewModel,
+                navController = navController
+            )
         }
 
         composable(route = "userHome") { backStackEntry ->
@@ -114,6 +122,7 @@ fun Navigation(
         composable(route = "businessHome/{businessId}") { backStackEntry ->
             val businessAccountViewModel: BusinessAccountViewModel = viewModel(factory = factory)
             val businessId = backStackEntry.arguments?.getString("businessId") ?: ""
+
             BusinessScreen(
                 businessId = businessId,
                 navController = navController,
@@ -123,7 +132,12 @@ fun Navigation(
 
         composable(route = "cart") {
             val cartViewModel: CartViewModel = viewModel(factory = factory)
-            Cart(navController = navController, modifier = Modifier, cartViewModel = cartViewModel)
+
+            Cart(
+                navController = navController,
+                modifier = Modifier,
+                cartViewModel = cartViewModel
+            )
         }
 
         composable(route = "search") {

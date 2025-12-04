@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.utils
+package com.clay.ecommerce_compose.utils.helpers
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
