@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.screens.admin
+package com.clay.ecommerce_compose.ui.screens.admin.categories
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -12,13 +12,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clay.ecommerce_compose.ui.components.admin.*
+import com.clay.ecommerce_compose.ui.screens.admin.users.EmptyState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -437,8 +440,8 @@ data class Category(
     val id: String,
     val name: String,
     val description: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val subcategories: androidx.compose.runtime.snapshots.SnapshotStateList<Subcategory>
+    val icon: ImageVector,
+    val subcategories: SnapshotStateList<Subcategory>
 )
 
 data class Subcategory(

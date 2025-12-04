@@ -189,6 +189,10 @@ fun LoginScreen(
                     navController.navigate(route = "businessHome/${businessId}")
                 }
 
+                "admin" -> {
+                    navController.navigate(route = "adminHome")
+                }
+
                 else -> {
                     Toast.makeText(context, "Rol no reconocido: $userRole", Toast.LENGTH_SHORT)
                         .show()

@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.screens.client.config
+package com.clay.ecommerce_compose.ui.components.client.config
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.clay.ecommerce_compose.R
+import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 
 @Composable
 fun ConfigHeader(viewModel: ConfigViewModel) {

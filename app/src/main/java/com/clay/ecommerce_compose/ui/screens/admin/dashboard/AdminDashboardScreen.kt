@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.screens.admin
+package com.clay.ecommerce_compose.ui.screens.admin.dashboard
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clay.ecommerce_compose.ui.components.admin.drawer.DrawerContent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +31,7 @@ fun AdminDashboardScreen(
     onNavigateToDelivery: () -> Unit,
     onNavigateToReports: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -126,103 +129,6 @@ fun AdminDashboardScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun DrawerContent(
-    onNavigateToUsers: () -> Unit,
-    onNavigateToBusinesses: () -> Unit,
-    onNavigateToDelivery: () -> Unit,
-    onNavigateToReports: () -> Unit,
-    onCloseDrawer: () -> Unit
-) {
-    ModalDrawerSheet(
-        drawerContainerColor = Color.White,
-        modifier = Modifier.width(280.dp)
-    ) {
-        // Header del Drawer
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF2C3E50)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                Icon(
-                    Icons.Default.AdminPanelSettings,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Panel Admin",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = "admin@example.com",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Sección de Gestión
-        Text(
-            text = "GESTIÓN",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Gray,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-
-        DrawerMenuItem(
-            icon = Icons.Default.People,
-            title = "Usuarios",
-            onClick = onNavigateToUsers
-        )
-
-        DrawerMenuItem(
-            icon = Icons.Default.Store,
-            title = "Negocios",
-            onClick = onNavigateToBusinesses
-        )
-
-        DrawerMenuItem(
-            icon = Icons.Default.LocalShipping,
-            title = "Delivery",
-            onClick = onNavigateToDelivery
-        )
-
-        DrawerMenuItem(
-            icon = Icons.Default.Assessment,
-            title = "Reportes",
-            onClick = onNavigateToReports
-        )
-
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Cerrar sesión al final
-        DrawerMenuItem(
-            icon = Icons.Default.Logout,
-            title = "Cerrar sesión",
-            onClick = {
-                onCloseDrawer()
-                // TODO: Implementar cierre de sesión
-            },
-            color = Color(0xFFE74C3C)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

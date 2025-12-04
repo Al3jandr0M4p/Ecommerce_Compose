@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.utils
+package com.clay.ecommerce_compose.utils.helpers
 
 import android.content.BroadcastReceiver
 import android.content.Context
