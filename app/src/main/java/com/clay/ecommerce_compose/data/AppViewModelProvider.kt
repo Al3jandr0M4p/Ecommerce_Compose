@@ -20,14 +20,14 @@ import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessV
 
 class AppViewModelProvider(private val application: Application) : ViewModelProvider.Factory {
     val supabaseClient = SupabaseConfig.client
-    val aplication = application.applicationContext
+    val appContext: Context? = application.applicationContext
 
     private val authRepository by lazy {
         AuthRepository(supabase = supabaseClient)
     }
 
     private val businessRepository by lazy {
-        BusinessRepository(supabase = supabaseClient, context = aplication)
+        BusinessRepository(supabase = supabaseClient, context = appContext)
     }
 
     private val userRepository by lazy {

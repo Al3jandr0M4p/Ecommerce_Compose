@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.screens.admin
+package com.clay.ecommerce_compose.ui.screens.admin.users
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -283,7 +284,7 @@ fun UserCard(
 
 @Composable
 fun EmptyState(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     message: String,
     actionText: String,
     onAction: () -> Unit

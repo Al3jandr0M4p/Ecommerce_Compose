@@ -2,6 +2,7 @@ package com.clay.ecommerce_compose.ui.screens.client.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -10,7 +11,7 @@ class CartViewModel : ViewModel() {
     private val _state = MutableStateFlow(CartState())
     val state: StateFlow<CartState> = _state
 
-    fun handleIntent(intent: CartItem) {
+    fun handleIntent(intent: CartIntent) {
         when (intent) {
             is CartIntent.AddItem -> addItem(intent.item)
             is CartIntent.RemoveItem -> removeItem(intent.itemId)
@@ -60,7 +61,11 @@ class CartViewModel : ViewModel() {
     }
 
     private fun loadCart() {
-        // TODO: Implement load cart logic
-    }
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
 
+            delay(300)
+            _state.value = _state.value.copy(isLoading = false)
+        }
+    }
 }

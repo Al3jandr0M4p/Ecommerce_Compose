@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.screens.admin
+package com.clay.ecommerce_compose.ui.screens.admin.reports
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -262,7 +262,7 @@ fun MiniStatsCard(
 fun QuickReportCard(
     title: String,
     description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     color: Color,
     onClick: () -> Unit
 ) {
