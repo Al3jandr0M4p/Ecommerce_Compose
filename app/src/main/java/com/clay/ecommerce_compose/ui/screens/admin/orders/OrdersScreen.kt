@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,9 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clay.ecommerce_compose.ui.components.admin.*
 import com.clay.ecommerce_compose.ui.screens.admin.users.EmptyState
-import com.clay.ecommerce_compose.ui.screens.admin.QuickStatCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +26,7 @@ fun OrdersScreen(
     var showStatusDialog by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
     var selectedOrder by remember { mutableStateOf<Order?>(null) }
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
 
     val orders = remember { mutableStateListOf<Order>() }
 
@@ -37,7 +36,7 @@ fun OrdersScreen(
                 title = { Text("Pedidos", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -87,36 +86,6 @@ fun OrdersScreen(
                     onClick = { selectedTab = 2 },
                     text = { Text("Historial") }
                 )
-            }
-
-            // Stats rápidas (solo en tab "Todos")
-            if (selectedTab == 0 && orders.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    QuickStatCard(
-                        title = "Total",
-                        value = orders.size.toString(),
-                        color = Color(0xFF3498DB),
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickStatCard(
-                        title = "Pendientes",
-                        value = orders.count { it.status == "Pendiente" }.toString(),
-                        color = Color(0xFFF39C12),
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickStatCard(
-                        title = "Completados",
-                        value = orders.count { it.status == "Entregado" }.toString(),
-                        color = Color(0xFF27AE60),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
             }
 
             // Contenido según tab
@@ -293,17 +262,6 @@ fun OrderCard(
                         color = Color(0xFF7F8C8D)
                     )
                 }
-
-                StatusBadge(
-                    text = order.status,
-                    status = when (order.status) {
-                        "Entregado" -> "success"
-                        "En camino" -> "info"
-                        "Procesando" -> "warning"
-                        "Pendiente" -> "warning"
-                        else -> "danger"
-                    }
-                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -442,14 +400,6 @@ fun ActiveOrderCard(
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    StatusBadge(
-                        text = order.status,
-                        status = when (order.status) {
-                            "En camino" -> "info"
-                            "Procesando" -> "warning"
-                            else -> "warning"
-                        }
-                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = order.total,
@@ -513,10 +463,6 @@ fun HistoryOrderCard(order: Order) {
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                StatusBadge(
-                    text = order.status,
-                    status = if (order.status == "Entregado") "success" else "danger"
-                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = order.total,
@@ -546,13 +492,6 @@ fun ChangeOrderStatusDialog(
                     text = "Estado actual: $currentStatus",
                     fontSize = 13.sp,
                     color = Color(0xFF7F8C8D)
-                )
-
-                AdminDropdown(
-                    label = "Nuevo Estado",
-                    selectedValue = selectedStatus,
-                    options = listOf("Pendiente", "Procesando", "En camino", "Entregado", "Cancelado"),
-                    onValueChange = { selectedStatus = it }
                 )
             }
         },

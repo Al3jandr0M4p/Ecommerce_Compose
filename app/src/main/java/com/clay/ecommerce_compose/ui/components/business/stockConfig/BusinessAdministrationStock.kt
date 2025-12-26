@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.components.business
+package com.clay.ecommerce_compose.ui.components.business.stockConfig
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,14 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BusinessAdministrationStock(
     navController: NavHostController,
-    profile: BusinessProfile?,
     viewModel: BusinessAccountViewModel,
     openSheet: Boolean,
     sheetState: SheetState,

@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.components.business
+package com.clay.ecommerce_compose.ui.components.business.gps
 
 import android.location.Geocoder
 import android.os.Build

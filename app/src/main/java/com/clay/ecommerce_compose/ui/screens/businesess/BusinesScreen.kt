@@ -18,10 +18,10 @@ import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
 import com.clay.ecommerce_compose.ui.components.bars.MyBusinessTopAppBar
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationBalance
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationConfiguration
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationHome
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationStock
+import com.clay.ecommerce_compose.ui.components.business.economy.BusinessAdministrationBalance
+import com.clay.ecommerce_compose.ui.components.business.configuration.BusinessAdministrationConfiguration
+import com.clay.ecommerce_compose.ui.components.business.home.BusinessAdministrationHome
+import com.clay.ecommerce_compose.ui.components.business.stockConfig.BusinessAdministrationStock
 import com.clay.ecommerce_compose.ui.components.business.fab.Fab
 import com.clay.ecommerce_compose.utils.hooks.useBusinessScreen
 
@@ -112,7 +112,6 @@ fun BusinessHomeScreen(
                 is Tabs.Stock -> {
                     BusinessAdministrationStock(
                         navController = navController,
-                        profile = profile,
                         openSheet = businessController.openSheet.value,
                         sheetState = businessController.sheetState,
                         viewModel = viewModel

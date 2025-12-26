@@ -26,15 +26,15 @@ fun useCart(viewModel: CartViewModel): CartController {
     }
 
     val removeItem: (String) -> Unit = { id ->
-        viewModel.handleIntent(intent = CartIntent.RemoveItem(itemId = id))
+        viewModel.handleIntent(intent = CartIntent.RemoveItem(itemId = id.toInt()))
     }
 
     val updateQuantity: (String, Int) -> Unit = { id, qty ->
-        viewModel.handleIntent(CartIntent.UpdateQuantity(id, qty))
+        viewModel.handleIntent(intent = CartIntent.UpdateQuantity(itemId = id.toInt(), quantity = qty))
     }
 
     val clearCart: () -> Unit = {
-        viewModel.handleIntent(CartIntent.ClearCart)
+        viewModel.handleIntent(intent = CartIntent.ClearCart)
     }
 
     return CartController(

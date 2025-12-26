@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class RegisterBusinessViewModel(
     private val authRepository: AuthRepository,
-    private val application: Application
+    application: Application
 ) : AndroidViewModel(application) {
     private val _state = MutableStateFlow(value = RegisterBusinessState())
     val state: StateFlow<RegisterBusinessState> = _state.asStateFlow()
@@ -23,6 +23,8 @@ class RegisterBusinessViewModel(
             is Intent.NameChanged -> _state.update { it.copy(name = intent.name) }
             is Intent.EmailChanged -> _state.update { it.copy(email = intent.email) }
             is Intent.PasswordChanged -> _state.update { it.copy(password = intent.password) }
+            is Intent.RncChanged -> _state.update { it.copy(rnc = intent.rnc) }
+            is Intent.NcfChanged -> _state.update { it.copy(ncf = intent.ncf) }
             is Intent.LogoChanged -> {
                 _state.update { it.copy(logo = intent.logo) }
                 viewModelScope.launch {
@@ -35,38 +37,12 @@ class RegisterBusinessViewModel(
                 }
             }
 
-            is Intent.LocationChanged -> {
-                _state.update {
-                    it.copy(
-                        longitude = intent.longitude,
-                        latitude = intent.latitude
-                    )
-                }
-            }
-
             is Intent.HorarioAperturaChanged -> _state.update { it.copy(horario_apertura = intent.horario_apertura) }
             is Intent.HorarioCierreChanged -> _state.update { it.copy(horario_cierre = intent.horario_cierre) }
             is Intent.TelefonoChanged -> _state.update { it.copy(telefono = intent.telefono) }
             is Intent.HasDeliveryChanged -> _state.update { it.copy(hasDelivery = intent.hasDelivery) }
             is Intent.CategoryChanged -> _state.update { it.copy(category = intent.category) }
-            is Intent.NextStep -> {
-                if (validateStep1()) {
-                    _state.update { it.copy(currentPage = 2, error = null) }
-                }
-            }
-
-            is Intent.PreviousStep -> _state.update { it.copy(currentPage = 1) }
             is Intent.Submit -> registerBusiness()
-        }
-    }
-
-    private fun validateStep1(): Boolean {
-        val currentState = _state.value
-        return if (currentState.name.isBlank() || currentState.email.isBlank()) {
-            _state.update { it.copy(error = "Todos los campos son obligatorios") }
-            false
-        } else {
-            true
         }
     }
 
@@ -83,17 +59,15 @@ class RegisterBusinessViewModel(
                 val businessProfile = authRepository.signUpBusiness(
                     email = currentState.email,
                     password = currentState.password,
-
                     name = currentState.name,
                     logo = currentState.logo,
                     logoByteArray = currentState.logoByteArray,
                     horarioApertura = currentState.horario_apertura,
                     horarioCierre = currentState.horario_cierre,
                     category = currentState.category,
-
-                    latitude = currentState.latitude,
-                    longitude = currentState.longitude,
                     telefono = currentState.telefono,
+                    rnc = currentState.rnc,
+                    ncf = currentState.ncf,
                     hasDelivery = currentState.hasDelivery
                 )
 

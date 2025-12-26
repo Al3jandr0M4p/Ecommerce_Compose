@@ -35,8 +35,8 @@ fun SettingsButtonIcons(icon: ImageVector, clickable: (() -> Unit)? = {}) {
             )
             .graphicsLayer {
                 android.graphics.RenderEffect.createBlurEffect(
-                    40f,
-                    40f,
+                    35f,
+                    35f,
                     android.graphics.Shader.TileMode.CLAMP
                 )
                 alpha = 0.8f

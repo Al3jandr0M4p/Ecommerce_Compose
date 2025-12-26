@@ -1,8 +1,10 @@
 package com.clay.ecommerce_compose.data.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toUri
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.ProductInsertPayload
 import com.clay.ecommerce_compose.domain.model.ProductPayload
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
@@ -16,7 +18,7 @@ class BusinessRepository(private val supabase: SupabaseClient, private val conte
             val uri = imageUri.toUri()
 
             val byteArray =
-                context.contentResolver.openInputStream(uri).use {
+                context?.contentResolver?.openInputStream(uri).use {
                     it?.readBytes()
                 } ?: throw Exception("No se pudo leer el archivo de imagen")
 
@@ -32,12 +34,37 @@ class BusinessRepository(private val supabase: SupabaseClient, private val conte
         }
     }
 
-    suspend fun getProductsByBusinessId(businessId: Int?): List<ProductPayload> {
-        return supabase.from("products")
+    suspend fun getBusinessInfoByID(id: Int?): BusinessProfile? {
+        val businessResult = supabase.from("businesses")
             .select {
-                filter { businessId?.let { eq("business_id", it) } }
+                filter { id?.let { id -> eq("id", id) } }
+            }
+            .decodeSingleOrNull<BusinessProfile>()
+
+        return businessResult
+    }
+
+    suspend fun getProductsByBusinessId(businessId: Int?): List<ProductPayload> {
+        Log.e("BusinessRepositoryID", "getProductsByBusinessId: $businessId")
+
+        val result = supabase.from("products")
+            .select {
+                filter {
+                    businessId?.let { id ->
+                        Log.e("BusinessRepositoryID", "Aplicando filtro con id: $id")
+                        eq("business_id", id)
+                    }
+                }
             }
             .decodeList<ProductPayload>()
+
+        Log.e("BusinessRepositoryID", "Productos encontrados: ${result.size}")
+
+        result.forEach { product ->
+            Log.e("BusinessRepositoryID", "Producto: id=${product.id}, name=${product.name}, businessId=${product.businessId}")
+        }
+
+        return result
     }
 
     suspend fun getBusinessById(businessId: String): BusinessProfile? {
@@ -48,7 +75,7 @@ class BusinessRepository(private val supabase: SupabaseClient, private val conte
             .decodeSingleOrNull()
     }
 
-    suspend fun addProduct(product: ProductPayload): Result<Unit> {
+    suspend fun addProduct(product: ProductInsertPayload): Result<Unit> {
         return try {
             supabase.from("products").insert(product)
 
