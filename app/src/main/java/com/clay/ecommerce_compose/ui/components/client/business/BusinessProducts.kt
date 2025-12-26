@@ -1,6 +1,5 @@
 package com.clay.ecommerce_compose.ui.components.client.business
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,19 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.clay.ecommerce_compose.R
-
 
 @Composable
 fun ProductCard(
     title: String,
-    price: String,
-    image: Int,
+    price: Double,
+    image: String,
     modifier: Modifier = Modifier,
-    onAddClick: () -> Unit = {}
+    onAddClick: () -> Unit
 ) {
     Card(
         modifier = modifier
@@ -49,8 +47,8 @@ fun ProductCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.6.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white))
     ) {
-        Image(
-            painter = painterResource(id = image),
+        AsyncImage(
+            model = image,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

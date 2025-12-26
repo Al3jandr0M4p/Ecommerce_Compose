@@ -4,14 +4,49 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +55,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clay.ecommerce_compose.ui.components.admin.*
 import com.clay.ecommerce_compose.ui.screens.admin.users.EmptyState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,7 +64,6 @@ fun CategoriesScreen(
 ) {
     var showCreateCategoryDialog by remember { mutableStateOf(false) }
     var showCreateSubcategoryDialog by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
 
     val categories = remember { mutableStateListOf<Category>() }
@@ -41,7 +74,7 @@ fun CategoriesScreen(
                 title = { Text("Categorías", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -87,7 +120,6 @@ fun CategoriesScreen(
                             },
                             onDelete = {
                                 selectedCategory = category
-                                showDeleteDialog = true
                             },
                             onDeleteSubcategory = { subcategory ->
                                 category.subcategories.remove(subcategory)
@@ -127,7 +159,11 @@ fun CategoriesScreen(
             onConfirm = { name, description ->
                 selectedCategory?.subcategories?.add(
                     Subcategory(
-                        id = "${selectedCategory?.id}-${selectedCategory?.subcategories?.size?.plus(1)}",
+                        id = "${selectedCategory?.id}-${
+                            selectedCategory?.subcategories?.size?.plus(
+                                1
+                            )
+                        }",
                         name = name,
                         description = description
                     )
@@ -137,21 +173,6 @@ fun CategoriesScreen(
             }
         )
     }
-
-    ConfirmDialog(
-        show = showDeleteDialog && selectedCategory != null,
-        title = "Eliminar Categoría",
-        message = "¿Está seguro que desea eliminar ${selectedCategory?.name} y todas sus subcategorías?",
-        onConfirm = {
-            selectedCategory?.let { categories.remove(it) }
-            showDeleteDialog = false
-            selectedCategory = null
-        },
-        onDismiss = {
-            showDeleteDialog = false
-            selectedCategory = null
-        }
-    )
 }
 
 @Composable
@@ -265,7 +286,11 @@ fun CategoryCard(
                         )
 
                         TextButton(onClick = onAddSubcategory) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Agregar")
                         }

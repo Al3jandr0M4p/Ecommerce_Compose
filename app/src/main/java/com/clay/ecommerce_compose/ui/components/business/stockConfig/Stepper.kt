@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.components.business
+package com.clay.ecommerce_compose.ui.components.business.stockConfig
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -90,37 +90,18 @@ fun Stepper(
 
             Spacer(modifier = Modifier.padding(top = 10.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Controlar stock",
-                    style = MaterialTheme.typography.bodyMedium
-                )
 
-                Switch(
-                    checked = state.hasStockControl,
-                    onCheckedChange = { has ->
-                        viewModel.handleIntent(
-                            intent = BusinessAccountProductIntent.SetProductStockControl(has = has)
+            BasicField(
+                value = state.stock,
+                onValueChange = { stock ->
+                    viewModel.handleIntent(
+                        intent = BusinessAccountProductIntent.ProductStock(
+                            stock = stock.toString()
                         )
-                    }
-                )
-            }
-
-            if (state.hasStockControl) {
-                BasicField(
-                    value = state.stock,
-                    onValueChange = { stock ->
-                        viewModel.handleIntent(
-                            intent = BusinessAccountProductIntent.ProductStock(stock = stock.toString())
-                        )
-                    },
-                    placeholder = "Cantidad en stock",
-                )
-            }
+                    )
+                },
+                placeholder = "Cantidad en stock",
+            )
 
             Spacer(Modifier.padding(top = 8.dp))
 
@@ -179,14 +160,6 @@ fun Stepper(
                     }
                 )
             }
-//        BasicField(
-//            value = state?.imgUrl,
-//            onValueChange = {
-//                viewModel.handleIntent(
-//                    BusinessAccountProductIntent.ProductImage(state?.imgUrl)
-//                )
-//            }, placeholder = "Imagen"
-//        )
         }
     }
 }

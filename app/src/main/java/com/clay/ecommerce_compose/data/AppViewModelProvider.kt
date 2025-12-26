@@ -8,9 +8,13 @@ import com.clay.ecommerce_compose.activity.MainViewModel
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.data.repository.BusinessRepository
+import com.clay.ecommerce_compose.data.repository.CartRepository
 import com.clay.ecommerce_compose.data.repository.UserRepository
+import com.clay.ecommerce_compose.data.repository.WalletRepository
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
+import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
+import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusiness
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.HomeViewModel
@@ -32,6 +36,14 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
 
     private val userRepository by lazy {
         UserRepository(supabase = supabaseClient)
+    }
+
+    private val cartRepository by lazy {
+        CartRepository(supabase = supabaseClient)
+    }
+
+    private val walletRepository by lazy {
+        WalletRepository(supabase = supabaseClient)
     }
 
     private val getCurrentUserSessionUseCase by lazy {
@@ -69,7 +81,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
 
         if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return CartViewModel() as T
+            return CartViewModel(cartRepository = cartRepository) as T
         }
 
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
@@ -82,6 +94,16 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
             return BusinessAccountViewModel(
                 businessAccountRepository = businessRepository,
             ) as T
+        }
+
+        if (modelClass.isAssignableFrom(ModelViewUserBusiness::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return ModelViewUserBusiness(businessRepository) as T
+        }
+
+        if (modelClass.isAssignableFrom(WalletViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return WalletViewModel(walletRepository = walletRepository) as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

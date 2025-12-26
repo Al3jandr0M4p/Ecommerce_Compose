@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.components.business
+package com.clay.ecommerce_compose.ui.components.business.stockConfig
 
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme

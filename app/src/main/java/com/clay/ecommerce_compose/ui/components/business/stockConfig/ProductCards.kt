@@ -1,4 +1,4 @@
-package com.clay.ecommerce_compose.ui.components.business
+package com.clay.ecommerce_compose.ui.components.business.stockConfig
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

@@ -5,27 +5,30 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.BusinessRepository
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.ProductInsertPayload
 import com.clay.ecommerce_compose.domain.model.ProductPayload
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BusinessAccountViewModel(private val businessAccountRepository: BusinessRepository) :
     ViewModel() {
 
     private val _businessProfile = MutableStateFlow<BusinessProfile?>(null)
-    val businessProfile: StateFlow<BusinessProfile?> = _businessProfile
+    val businessProfile: StateFlow<BusinessProfile?> = _businessProfile.asStateFlow()
 
     private val _businessProduct = MutableStateFlow<List<ProductPayload>?>(null)
-    val businessProduct: StateFlow<List<ProductPayload>?> = _businessProduct
+    val businessProduct: StateFlow<List<ProductPayload>?> = _businessProduct.asStateFlow()
 
     private val _businessState = MutableStateFlow(value = BusinessAccountProductState())
-    val state: StateFlow<BusinessAccountProductState> = _businessState
+    val state: StateFlow<BusinessAccountProductState> = _businessState.asStateFlow()
 
     private val _uiEvents = MutableSharedFlow<UIEvents>()
-    val uiEvent: SharedFlow<UIEvents> = _uiEvents
+    val uiEvent: SharedFlow<UIEvents> = _uiEvents.asSharedFlow()
 
     fun loadBusinessById(businessId: String) {
         viewModelScope.launch {
@@ -35,7 +38,7 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
 
                 result?.let { profile ->
                     val businessIntId = _businessState.value.businessId.toIntOrNull()
-                    loadProductsBusinessById( businessIntId)
+                    loadProductsBusinessById(businessIntId)
                 }
             } catch (e: Exception) {
                 Log.e(
@@ -63,14 +66,14 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
         when (intent) {
             is BusinessAccountProductIntent.SetBusinessId -> {
                 _businessState.value = current.copy(businessId = intent.id)
-                loadProductsBusinessById(intent.id.toIntOrNull())
+                loadProductsBusinessById(businessId = intent.id.toIntOrNull())
             }
 
             is BusinessAccountProductIntent.ProductName -> _businessState.value =
                 current.copy(name = intent.name, nameError = null)
 
             is BusinessAccountProductIntent.ProductImage -> {
-                uploadImageToBucket(intent.imgUrl)
+                uploadImageToBucket(localUri = intent.imgUrl)
             }
 
             is BusinessAccountProductIntent.ProductDescription -> _businessState.value =
@@ -81,11 +84,6 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
 
             is BusinessAccountProductIntent.ProductStock -> _businessState.value =
                 current.copy(stock = intent.stock, stockError = null)
-
-            is BusinessAccountProductIntent.SetProductStockControl -> _businessState.value =
-                current.copy(
-                    hasStockControl = intent.has
-                )
 
             is BusinessAccountProductIntent.ProductActive -> _businessState.value =
                 current.copy(isActive = true)
@@ -109,7 +107,8 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
                 if (result.isSuccess) {
                     val publicUrl = result.getOrNull()
                     if (publicUrl != null) {
-                        _businessState.value = _businessState.value.copy(imgUrl = publicUrl.toString())
+                        _businessState.value =
+                            _businessState.value.copy(imgUrl = publicUrl)
                         _uiEvents.emit(UIEvents.ShowMessage("Imagen subida"))
                         Log.d("BusinessViewModel", "Imagen subida exitosamente $publicUrl")
                     }
@@ -137,13 +136,26 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
             ok = false
         }
 
-        if (s.hasStockControl) {
-            val stockVal = s.stock.toIntOrNull()
-            if (s.stock.isBlank() || stockVal == null || stockVal < 0) {
-                s = s.copy(stockError = "Stock invalido")
+        val stockInt = s.stock.toIntOrNull()
+
+        when {
+            s.stock.isBlank() -> {
+                s = s.copy(stockError = "Ingrese el stock")
+                ok = false
+            }
+
+            stockInt == null -> {
+                s = s.copy(stockError = "Solo números")
+                ok = false
+            }
+
+            stockInt <= 0 -> {
+                s = s.copy(stockError = "Debe ser mayor a 0")
                 ok = false
             }
         }
+
+
         return Pair(ok, s)
     }
 
@@ -159,13 +171,11 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
             if (result.isSuccess) {
                 _uiEvents.emit(UIEvents.ShowMessage("Producto desactivado"))
                 loadProductsBusinessById(current.id)
-            }
-            else _uiEvents.emit(UIEvents.ShowMessage("Error ${result.exceptionOrNull()?.message ?: "desconocido"}"))
+            } else _uiEvents.emit(UIEvents.ShowMessage("Error ${result.exceptionOrNull()?.message ?: "desconocido"}"))
         }
     }
 
-    private
-    fun addProduct() {
+    private fun addProduct() {
         val current = _businessState.value
 
         Log.d("DEBUG", "==== addProduct ====")
@@ -180,9 +190,14 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
             val (ok, validatedState) = validate(current)
             _businessState.value = validatedState
 
-            val businessIntId = validatedState.id
-            if (businessIntId == null) {
+            if (validatedState.businessId.isBlank()) {
                 _uiEvents.emit(UIEvents.ShowMessage("Business ID faltante"))
+                return@launch
+            }
+
+            val businessIntId = validatedState.businessId.toIntOrNull()
+            if (businessIntId == null) {
+                _uiEvents.emit(UIEvents.ShowMessage("Business ID inválido"))
                 return@launch
             }
 
@@ -191,38 +206,35 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
                 return@launch
             }
 
-            val stockValue = if (validatedState.hasStockControl) {
-                validatedState.stock.toIntOrNull() ?: 0
-            } else {
-                null
-            }
+            val stockInt = validatedState.stock.toIntOrNull() ?: 0
 
-            val payload = ProductPayload(
+            val payload = ProductInsertPayload(
                 name = validatedState.name,
                 description = validatedState.description,
                 price = validatedState.price.toDoubleOrNull() ?: 0.0,
                 isActive = validatedState.isActive,
                 imageUrl = validatedState.imgUrl,
-                stock = stockValue,
-                businessId = validatedState.businessId
+                stock = stockInt,
+                businessId = validatedState.businessId.toInt()
             )
 
-            if (validatedState.businessId.isBlank()) {
-                _uiEvents.emit(UIEvents.ShowMessage("Business ID faltante"))
-                return@launch
-            }
+            Log.d("PAYLOAD", "Stock enviado: $stockInt")
+
 
             val result = businessAccountRepository.addProduct(payload)
             if (result.isSuccess) {
                 _uiEvents.emit(UIEvents.ShowMessage("Producto creado"))
                 _uiEvents.emit(UIEvents.CloseSheet)
 
-                loadProductsBusinessById(businessIntId)
+                loadProductsBusinessById(businessId = businessIntId)
 
                 _businessState.value =
-                    BusinessAccountProductState(businessId = validatedState.businessId)
+                    BusinessAccountProductState(
+                        businessId = validatedState.businessId,
+                        stock = validatedState.stock
+                    )
             } else {
-                _uiEvents.emit(UIEvents.ShowMessage("Erro ${result.exceptionOrNull()?.message ?: "desconocido"}"))
+                _uiEvents.emit(value = UIEvents.ShowMessage(message = "Error: ${result.exceptionOrNull()?.message ?: "desconocido"}"))
             }
         }
     }
@@ -246,19 +258,14 @@ class BusinessAccountViewModel(private val businessAccountRepository: BusinessRe
 
             val productId = validatedState.id
 
-            val stockValue = if (validatedState.hasStockControl) {
-                validatedState.stock.toIntOrNull() ?: 0
-            } else {
-                null
-            }
-
             val updates = ProductPayload(
+                id = validatedState.id,
                 name = validatedState.name,
                 description = validatedState.description,
                 price = validatedState.price.toDoubleOrNull() ?: 0.0,
                 isActive = validatedState.isActive,
                 imageUrl = validatedState.imgUrl,
-                stock = stockValue,
+                stock = validatedState.stock,
                 businessId = validatedState.businessId
             )
 
