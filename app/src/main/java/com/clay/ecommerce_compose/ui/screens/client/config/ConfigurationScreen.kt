@@ -50,8 +50,8 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
             ) {
                 Text(
                     text = "Cuenta",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.W500),
-                    fontSize = 40.sp,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontSize = 28.sp,
                 )
             }
         }

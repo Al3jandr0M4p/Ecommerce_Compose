@@ -3,20 +3,12 @@ package com.clay.ecommerce_compose.ui.components.business.stockConfig
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -24,9 +16,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
@@ -45,9 +34,6 @@ fun Stepper(
     viewModel: BusinessAccountViewModel,
 ) {
     val state by viewModel.state.collectAsState()
-    val categories by viewModel.categories.collectAsState()
-
-    var showCategoryDropdown by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -55,7 +41,6 @@ fun Stepper(
         dragHandle = null,
         containerColor = colorResource(id = R.color.white)
     ) {
-        // Header con botones
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -72,9 +57,7 @@ fun Stepper(
                 )
             }
 
-            TextButton(onClick = {
-                viewModel.handleIntent(BusinessAccountProductIntent.AddProduct)
-            }) {
+            TextButton(onClick = { viewModel.handleIntent(BusinessAccountProductIntent.AddProduct) }) {
                 Text(
                     text = "Guardar",
                     fontSize = 16.sp,
@@ -85,12 +68,9 @@ fun Stepper(
         }
 
         Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 20.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 16.dp)
         ) {
-            // Nombre del producto
             BasicField(
                 value = state.name,
                 onValueChange = { name ->
@@ -99,153 +79,32 @@ fun Stepper(
                     )
                 },
                 placeholder = "Nombre del producto",
-                errorLabel = state.nameError
             )
-
-            // Precio
             BasicField(
-                value = state.price,
-                onValueChange = { price ->
+                value = state.price, onValueChange = { price ->
                     viewModel.handleIntent(
                         intent = BusinessAccountProductIntent.ProductPrice(price = price.toString())
                     )
-                },
-                placeholder = "Precio (0.00)",
-                errorLabel = state.priceError
+                }, placeholder = "Precio (0.00)"
             )
 
-            // Selector de Categoría
-            if (categories.isNotEmpty()) {
-                ExposedDropdownMenuBox(
-                    expanded = showCategoryDropdown,
-                    onExpandedChange = { showCategoryDropdown = it }
-                ) {
-                    OutlinedTextField(
-                        value = categories.find { it.id == state.categoryId }?.name
-                            ?: "Sin categoría",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Categoría") },
-                        trailingIcon = {
-                            Icon(Icons.Default.ArrowDropDown, "Seleccionar categoría")
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
+            Spacer(modifier = Modifier.padding(top = 10.dp))
 
-                    ExposedDropdownMenu(
-                        expanded = showCategoryDropdown,
-                        onDismissRequest = { showCategoryDropdown = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Sin categoría") },
-                            onClick = {
-                                viewModel.handleIntent(BusinessAccountProductIntent.SetCategory(null))
-                                showCategoryDropdown = false
-                            }
+
+            BasicField(
+                value = state.stock,
+                onValueChange = { stock ->
+                    viewModel.handleIntent(
+                        intent = BusinessAccountProductIntent.ProductStock(
+                            stock = stock.toString()
                         )
-
-                        categories.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category.name) },
-                                onClick = {
-                                    viewModel.handleIntent(
-                                        BusinessAccountProductIntent.SetCategory(category.id)
-                                    )
-                                    showCategoryDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Control de Stock
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "Controlar inventario",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Switch(
-                    checked = state.hasStockControl,
-                    onCheckedChange = {
-                        // Aquí podrías agregar un Intent para esto si lo necesitas
-                    }
-                )
-            }
-
-            // Campos de stock (solo si tiene control activado)
-            if (state.hasStockControl) {
-                BasicField(
-                    value = state.stock,
-                    onValueChange = { stock ->
-                        viewModel.handleIntent(
-                            intent = BusinessAccountProductIntent.ProductStock(stock = stock.toString())
-                        )
-                    },
-                    placeholder = "Cantidad en stock",
-                    errorLabel = state.stockError
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    BasicField(
-                        value = state.minStock.toString(),
-                        onValueChange = { minStock ->
-                            minStock?.toIntOrNull()?.let {
-                                viewModel.handleIntent(
-                                    intent = BusinessAccountProductIntent.SetMinStock(minStock = it)
-                                )
-                            }
-                        },
-                        placeholder = "Stock mínimo",
                     )
+                },
+                placeholder = "Cantidad en stock",
+            )
 
-                    BasicField(
-                        value = state.maxStock?.toString() ?: "",
-                        onValueChange = { maxStock ->
-                            viewModel.handleIntent(
-                                intent = BusinessAccountProductIntent.SetMaxStock(
-                                    maxStock = maxStock?.toIntOrNull()
-                                )
-                            )
-                        },
-                        placeholder = "Stock máximo (opcional)",
-                    )
-                }
+            Spacer(Modifier.padding(top = 8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Alertas de stock bajo",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Switch(
-                        checked = state.stockAlertEnabled,
-                        onCheckedChange = {
-                            viewModel.handleIntent(
-                                BusinessAccountProductIntent.SetStockAlertEnabled(it)
-                            )
-                        }
-                    )
-                }
-            }
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Imagen del producto
             Text(
                 "Imagen del producto",
                 style = MaterialTheme.typography.bodyMedium,
@@ -260,30 +119,31 @@ fun Stepper(
 
             if (state.imgUrl.isNotBlank()) {
                 Text(
-                    text = "✓ Imagen seleccionada",
+                    text = "Imagen seleccionada",
                     fontSize = 12.sp,
                     color = colorResource(id = R.color.green),
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            // Descripción
+            Spacer(Modifier.padding(top = 12.dp))
+
             BasicField(
                 value = state.description,
                 onValueChange = { description ->
                     viewModel.handleIntent(
-                        intent = BusinessAccountProductIntent.ProductDescription(
-                            description = description.toString()
-                        )
+                        intent = BusinessAccountProductIntent.ProductDescription(description = description.toString())
                     )
                 },
                 placeholder = "Descripción",
-                minLines = 3
             )
 
-            // Producto activo
+            Spacer(Modifier.padding(top = 10.dp))
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -291,6 +151,7 @@ fun Stepper(
                     "Producto activo",
                     style = MaterialTheme.typography.bodyMedium
                 )
+
                 Switch(
                     checked = state.isActive,
                     onCheckedChange = {

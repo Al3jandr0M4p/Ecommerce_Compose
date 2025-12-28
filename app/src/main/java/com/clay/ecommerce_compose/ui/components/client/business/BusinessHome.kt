@@ -213,7 +213,7 @@ fun UserBusinessComponent(
                                             price = product.price,
                                             imageUrl = product.imageUrl,
                                             quantity = 1,
-                                            stock = product.stock
+                                            stock = product.stock.toInt()
                                         )
                                     )
                                 )

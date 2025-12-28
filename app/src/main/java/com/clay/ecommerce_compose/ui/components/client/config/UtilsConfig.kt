@@ -77,5 +77,10 @@ fun UtilsHeader() {
             title = stringResource(id = R.string.monedero),
             func = {},
             modifier = Modifier.weight(weight = 1f))
+        UtilBoxHeader(
+            icon = Icons.Default.Email,
+            title = stringResource(id = R.string.bandeja_de_entrada),
+            func = {},
+            modifier = Modifier.weight(weight = 1f))
     }
 }

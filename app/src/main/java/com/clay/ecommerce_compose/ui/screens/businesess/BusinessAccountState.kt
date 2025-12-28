@@ -1,3 +1,5 @@
+package com.clay.ecommerce_compose.ui.screens.businesess
+
 data class BusinessAccountProductState(
     val id: Int? = null,
     val name: String = "",
@@ -6,19 +8,11 @@ data class BusinessAccountProductState(
     val description: String = "",
     val price: String = "",
 
-    // Control de stock
-    val hasStockControl: Boolean = true, // Por defecto activado
+    val hasStockControl: Boolean = false,
     val stock: String = "",
-
-    // Nuevos campos para categorías y gestión avanzada de stock
-    val categoryId: Int? = null,
-    val minStock: Int = 5,
-    val maxStock: Int? = null,
-    val stockAlertEnabled: Boolean = true,
 
     val isActive: Boolean = true,
 
-    // Errores
     val nameError: String? = null,
     val priceError: String? = null,
     val stockError: String? = null,

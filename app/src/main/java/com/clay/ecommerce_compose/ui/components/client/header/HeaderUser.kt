@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -139,7 +139,6 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp)
                 .background(color = Color(color = 0xFFFFC107))
                 .clickable {
                     if (!permissionState.status.isGranted) {
@@ -159,7 +158,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues = WindowInsets.statusBars.asPaddingValues())
-                    .padding(all = 20.dp)
+                    .padding(all = 18.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Place,
@@ -224,15 +223,6 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
             )
         }
 
-        Row {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = null,
-                    modifier = Modifier.size(size = 28.dp)
-                )
-            }
-            ShoppingCart(navController = navController, cartViewModel = cartViewModel)
-        }
+        ShoppingCart(navController = navController, cartViewModel = cartViewModel)
     }
 }

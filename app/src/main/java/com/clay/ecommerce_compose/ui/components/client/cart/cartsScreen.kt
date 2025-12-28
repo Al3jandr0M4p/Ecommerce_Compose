@@ -53,6 +53,7 @@ fun CartsScreen(
     val cartState by cartViewModel.state.collectAsState()
 
     val cartItems = cartState.items
+    val totalPrice = cartState.totalPrice
     val cartItemByBusiness = cartItems.groupBy { it.businessId }
 
     Scaffold(

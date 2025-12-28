@@ -69,7 +69,7 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
     }
 
 
-    private fun updateQuantity(itemId: Int?, quantity: Int) {
+    private fun updateQuantity(itemId: Int, quantity: Int) {
         viewModelScope.launch {
             val item = _state.value.items.find { it.id == itemId } ?: return@launch
 
@@ -89,7 +89,7 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
         }
     }
 
-    private fun removeItem(itemId: Int?) {
+    private fun removeItem(itemId: Int) {
         viewModelScope.launch {
             val newItems = _state.value.items.filterNot { it.id == itemId }
 

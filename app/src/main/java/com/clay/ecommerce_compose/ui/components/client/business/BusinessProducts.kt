@@ -34,7 +34,7 @@ import com.clay.ecommerce_compose.R
 fun ProductCard(
     title: String,
     price: Double,
-    image: String?,
+    image: String,
     modifier: Modifier = Modifier,
     onAddClick: () -> Unit
 ) {

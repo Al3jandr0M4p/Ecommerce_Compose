@@ -9,19 +9,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.clay.ecommerce_compose.utils.helpers.ConnectivityReceiver
-
+import com.clay.ecommerce_compose.utils.helpers.isNetworkAvailable
+import com.clay.ecommerce_compose.utils.helpers.showNoInternetNotification
 
 @Composable
 fun rememberNetworkStatus(): Boolean {
     val context = LocalContext.current
-    var networkAvailable by remember { mutableStateOf(ConnectivityReceiver.isNetworkAvailable(context)) }
+    var NetworkAvailable by remember { mutableStateOf(isNetworkAvailable(context)) }
 
     DisposableEffect(Unit) {
         val receiver = ConnectivityReceiver { isAvailable ->
             if (!isAvailable) {
-                ConnectivityReceiver.showNoInternetNotification(context)
+                showNoInternetNotification(context)
             }
-            networkAvailable = isAvailable
+            NetworkAvailable = isAvailable
         }
 
         val intentFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
@@ -32,5 +33,5 @@ fun rememberNetworkStatus(): Boolean {
         }
     }
 
-    return networkAvailable
+    return NetworkAvailable
 }

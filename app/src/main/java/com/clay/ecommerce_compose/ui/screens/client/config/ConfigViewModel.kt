@@ -5,13 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.data.repository.UserRepository
 import io.github.jan.supabase.auth.user.UserInfo
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.jsonPrimitive
 
-class ConfigViewModel(private val userRepository: UserRepository, private val authRepository: AuthRepository) : ViewModel() {
+class ConfigViewModel(private val userRepository: UserRepository) : ViewModel() {
     var userInfo by mutableStateOf<UserInfo?>(null)
         private set
 
@@ -29,7 +28,7 @@ class ConfigViewModel(private val userRepository: UserRepository, private val au
 
     fun signOut() {
         viewModelScope.launch {
-            authRepository.signOut()
+            userRepository.signOut()
         }
     }
 }

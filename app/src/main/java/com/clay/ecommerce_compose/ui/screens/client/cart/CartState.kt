@@ -13,13 +13,13 @@ data class CartState(
 )
 
 data class CartItem(
-    val id: Int?,
+    val id: Int,
     val businessName: String,
     val businessImg: String,
     val businessId: Int,
     val name: String,
     val price: Double,
-    val imageUrl: String?,
+    val imageUrl: String,
     val quantity: Int,
     val stock: Int
 )
