@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,7 +18,9 @@ import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
+import com.clay.ecommerce_compose.ui.components.client.header.HeaderUserHome
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.Activity
+import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartIntent
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
@@ -33,6 +34,7 @@ fun UserHomeScreen(
     cartViewModel: CartViewModel,
     homeViewModel: HomeViewModel,
     walletViewModel: WalletViewModel,
+    transactionsViewModel: TransactionsViewModel
 ) {
     LaunchedEffect(Unit) {
         homeViewModel.loadBusiness()
@@ -49,7 +51,10 @@ fun UserHomeScreen(
             )
         },
         Tabs.Activity to {
-            Activity(walletViewModel = walletViewModel)
+            Activity(
+                walletViewModel = walletViewModel,
+                transactionsViewModel = transactionsViewModel
+            )
         },
 
         Tabs.Configuration to {
@@ -72,7 +77,6 @@ fun UserHomeScreen(
         },
         containerColor = colorResource(id = R.color.white),
         modifier = Modifier.fillMaxWidth(),
-        contentWindowInsets = WindowInsets(0, 100, 0, 0)
     ) { paddingValues ->
         Box(
             modifier = Modifier

@@ -24,6 +24,7 @@ import com.clay.ecommerce_compose.ui.screens.admin.reports.ReportsScreen
 import com.clay.ecommerce_compose.ui.screens.admin.users.UsersScreen
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
+import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
 import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusiness
 import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
@@ -98,13 +99,15 @@ fun Navigation(
             val configViewModel: ConfigViewModel = viewModel(factory = factory)
             val homeViewModel: HomeViewModel = viewModel(factory = factory)
             val walletViewModel: WalletViewModel = viewModel(factory = factory)
+            val transactionsViewModel: TransactionsViewModel = viewModel(factory = factory)
 
             UserHomeScreen(
                 navController = navController,
                 configViewModel = configViewModel,
                 cartViewModel = cartViewModel,
                 homeViewModel = homeViewModel,
-                walletViewModel = walletViewModel
+                walletViewModel = walletViewModel,
+                transactionsViewModel = transactionsViewModel
             )
         }
 
