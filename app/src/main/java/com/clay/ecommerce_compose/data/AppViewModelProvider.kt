@@ -13,6 +13,7 @@ import com.clay.ecommerce_compose.data.repository.UserRepository
 import com.clay.ecommerce_compose.data.repository.WalletRepository
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
+import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
 import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusiness
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
@@ -76,7 +77,10 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
 
         if (modelClass.isAssignableFrom(ConfigViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ConfigViewModel(userRepository) as T
+            return ConfigViewModel(
+                userRepository = userRepository,
+                authRepository = authRepository
+            ) as T
         }
 
         if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
@@ -93,6 +97,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
             @Suppress("UNCHECKED_CAST")
             return BusinessAccountViewModel(
                 businessAccountRepository = businessRepository,
+                authRepository = authRepository
             ) as T
         }
 
@@ -104,6 +109,11 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         if (modelClass.isAssignableFrom(WalletViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return WalletViewModel(walletRepository = walletRepository) as T
+        }
+
+        if (modelClass.isAssignableFrom(TransactionsViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return TransactionsViewModel(walletRepository = walletRepository) as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

@@ -3,10 +3,15 @@ package com.clay.ecommerce_compose.ui.screens.client.cart.checkout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -67,6 +72,33 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                 )
             }
         },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 18.dp, vertical = 8.dp)
+                    .fillMaxWidth()
+            ) {
+                Button(
+                    onClick = {
+//                        navController.navigate(route = "")
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(size = 10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.black),
+                        contentColor = colorResource(id = R.color.white)
+                    )
+                ) {
+                    Text(
+                        text = "Continuar",
+                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorResource(id = R.color.white)
+                    )
+                }
+                Spacer(modifier = Modifier.height(height = 12.dp))
+            }
+        }
     ) { innerPadding ->
         LazyColumn(
             contentPadding = innerPadding,
@@ -108,7 +140,7 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
-
+                    // Pagos
                 }
             }
 
@@ -120,6 +152,10 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                     itbis = state.subTotal * 0.18,
                     total = state.totalPrice
                 )
+            }
+
+            item {
+                // Cupones
             }
 
         }

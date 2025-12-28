@@ -269,4 +269,8 @@ class AuthRepository(private val supabase: SupabaseClient) {
             throw e
         }
     }
+
+    suspend fun signOut() {
+        supabase.auth.signOut()
+    }
 }
