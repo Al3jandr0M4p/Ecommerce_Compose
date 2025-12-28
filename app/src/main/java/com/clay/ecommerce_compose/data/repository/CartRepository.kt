@@ -14,7 +14,7 @@ data class CartItemInsert(
     @SerialName("user_id")
     val userId: String,
     @SerialName("product_id")
-    val productId: Int,
+    val productId: Int?,
     @SerialName("business_id")
     val businessId: Int,
     val quantity: Int
@@ -78,6 +78,10 @@ class CartRepository(private val supabase: SupabaseClient) {
 
     suspend fun addItem(item: CartItem) {
         val uid = userId()
+        val productId = item.id ?: run {
+            Log.e("CART_REPO", "Product ID is null, cannot add to cart")
+            throw IllegalArgumentException("Product ID cannot be null")
+        }
 
         Log.d("CART_REPO", "Insert/Update cart uid=$uid product=${item.id}")
 
@@ -87,7 +91,7 @@ class CartRepository(private val supabase: SupabaseClient) {
                 .select {
                     filter {
                         eq("user_id", uid)
-                        eq("product_id", item.id)
+                        eq("product_id", productId)
                     }
                 }
                 .decodeList<CartItemResponse>()
@@ -100,7 +104,7 @@ class CartRepository(private val supabase: SupabaseClient) {
                 ) {
                     filter {
                         eq("user_id", uid)
-                        eq("product_id", item.id)
+                        eq("product_id", productId)
                     }
                 }
 
@@ -123,20 +127,30 @@ class CartRepository(private val supabase: SupabaseClient) {
         }
     }
 
-    suspend fun updateQuantity(productId: Int, quantity: Int) {
+    suspend fun updateQuantity(productId: Int?, quantity: Int) {
+        val notNullProductId = productId ?: run {
+            Log.e("CART_REPO", "Product ID is null, cannot update quantity")
+            throw IllegalArgumentException("Product ID cannot be null")
+        }
+
         supabase.from("cart_items").update(CartItemUpdate(quantity)) {
             filter {
                 eq("user_id", userId())
-                eq("product_id", productId)
+                eq("product_id", notNullProductId)
             }
         }
     }
 
-    suspend fun removeItem(productId: Int) {
+    suspend fun removeItem(productId: Int?) {
+        val notNullProductId = productId ?: run {
+            Log.e("CART_REPO", "Product ID is null, cannot remove item")
+            throw IllegalArgumentException("Product ID cannot be null")
+        }
+
         supabase.from("cart_items").delete {
             filter {
                 eq("user_id", userId())
-                eq("product_id", productId)
+                eq("product_id", notNullProductId)
             }
         }
     }

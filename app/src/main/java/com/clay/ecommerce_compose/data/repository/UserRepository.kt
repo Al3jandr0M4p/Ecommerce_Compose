@@ -18,8 +18,4 @@ class UserRepository(private val supabase: SupabaseClient) {
         return supabase.auth.retrieveUserForCurrentSession()
     }
 
-    suspend fun signOut() {
-        supabase.auth.signOut()
-    }
-
 }

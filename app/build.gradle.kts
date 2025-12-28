@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization") version "2.2.20"
+    id("com.google.gms.google-services")
 }
 
 val localProperties = rootProject.file("local.properties").takeIf { it.exists() }?.let {
@@ -96,6 +97,10 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:storage-kt")
     implementation("io.github.jan-tennert.supabase:functions-kt:3.2.6")
     implementation("io.ktor:ktor-client-android:3.3.2")
+
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
 
     implementation(libs.androidx.junit.ktx)
     implementation(libs.androidx.compose.foundation)

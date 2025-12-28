@@ -3,11 +3,34 @@ package com.clay.ecommerce_compose.data.repository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 data class Wallet(
     val balance: Double
+)
+
+data class WalletTransaction(
+    val id: String,
+    val amount: Double,
+    val type: String, // "credit" o "debit"
+    val reason: String?,
+    val createdAt: String
+)
+
+@Serializable
+data class WalletTransactionDTO(
+    val id: String,
+    @SerialName("user_id")
+    val userId: String,
+    val amount: Double,
+    val type: String, // "credit" | "debit"
+    val reason: String? = null,
+    @SerialName("reference_id")
+    val referenceId: String? = null,
+    @SerialName("created_at")
+    val createdAt: String
 )
 
 @Serializable
@@ -34,6 +57,25 @@ class WalletRepository(private val supabase: SupabaseClient) {
             }.decodeSingle<WalletDTO>()
 
         return Wallet(balance = result.balance)
+    }
+
+    suspend fun getTransactions(): List<WalletTransaction> {
+        val result = supabase.from("wallet_transactions")
+            .select {
+                filter { eq("user_id", userId()) }
+                order("created_at", Order.DESCENDING)
+            }
+            .decodeList<WalletTransactionDTO>()
+
+        return result.map { dto ->
+            WalletTransaction(
+                id = dto.id,
+                amount = dto.amount,
+                type = dto.type,
+                reason = dto.reason,
+                createdAt = dto.createdAt
+            )
+        }
     }
 
     suspend fun addBalance(amount: Double) {
