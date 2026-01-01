@@ -26,7 +26,6 @@ fun BusinessAdministrationHome(
     navController: NavHostController,
     viewModel: BusinessAccountViewModel
 ) {
-
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {

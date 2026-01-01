@@ -3,7 +3,7 @@ data class BusinessAccountProductState(
     val name: String = "",
     val businessId: String = "",
     val imgUrl: String = "",
-    val description: String = "",
+    val description: String? = null,
     val price: String = "",
 
     // Control de stock

@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Place
@@ -32,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,11 +44,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.ui.components.client.cart.ShoppingCart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.utils.helpers.updateLocationTextFromAddress
@@ -54,6 +60,17 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.delay
 
+data class NotificationItem(
+    val id: String,
+    val title: String,
+    val message: String,
+    val type: NotificationType, // STOCK_LOW, PROMO, MESSAGE, etc.
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+enum class NotificationType { STOCK_LOW, PROMO, MESSAGE }
+
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel) {
@@ -61,6 +78,9 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
+
+    val notifications by cartViewModel.notifications.collectAsState()
+    var showNotifications by remember { mutableStateOf(value = false) }
 
     var locationText by remember { mutableStateOf(value = "Tu ubicacion") }
     var showLocationBanner by remember { mutableStateOf(value = false) }
@@ -171,7 +191,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                     text = "La opcion de compartir ubicacion esta\ndesactivada. Haz clic aqui para activarla",
                     color = Color.Black,
                     style = MaterialTheme.typography.labelMedium,
-                    fontSize = 15.sp,
+                    fontSize = 12.sp,
                     textAlign = TextAlign.Left,
                     maxLines = 2,
                     modifier = Modifier
@@ -225,14 +245,62 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
         }
 
         Row {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = null,
-                    modifier = Modifier.size(size = 28.dp)
-                )
+            Box {
+                IconButton(onClick = { showNotifications = !showNotifications }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                if (notifications.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .background(Color.Red, CircleShape)
+                            .align(Alignment.TopEnd)
+                    )
+                }
             }
             ShoppingCart(navController = navController, cartViewModel = cartViewModel)
         }
+
+        if (showNotifications) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                Column {
+                    Text("Notificaciones", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    notifications.forEach { n ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    when (n.type) {
+                                        NotificationType.STOCK_LOW -> navController.navigate("product/${n.id.removePrefix("stock-")}")
+                                        NotificationType.PROMO -> navController.navigate("promo/${n.id}")
+                                        NotificationType.MESSAGE -> navController.navigate("messages")
+                                    }
+                                    cartViewModel.removeNotification(n.id)
+                                }
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(n.title, fontSize = 12.sp)
+                                Text(n.message, fontSize = 10.sp, color = Color.Gray)
+                            }
+                            Text(n.type.name, fontSize = 10.sp, color = Color.Blue)
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

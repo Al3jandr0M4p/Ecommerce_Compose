@@ -18,13 +18,12 @@ import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
 import com.clay.ecommerce_compose.ui.components.bars.MyBusinessTopAppBar
-import com.clay.ecommerce_compose.ui.components.business.economy.BusinessAdministrationBalance
 import com.clay.ecommerce_compose.ui.components.business.configuration.BusinessAdministrationConfiguration
+import com.clay.ecommerce_compose.ui.components.business.economy.BusinessAdministrationBalance
+import com.clay.ecommerce_compose.ui.components.business.fab.Fab
 import com.clay.ecommerce_compose.ui.components.business.home.BusinessAdministrationHome
 import com.clay.ecommerce_compose.ui.components.business.stockConfig.BusinessAdministrationStock
-import com.clay.ecommerce_compose.ui.components.business.fab.Fab
 import com.clay.ecommerce_compose.utils.hooks.useBusinessScreen
-
 
 @Composable
 fun BusinessScreen(
@@ -37,7 +36,6 @@ fun BusinessScreen(
 
     LaunchedEffect(businessId) {
         viewModel.loadBusinessById(businessId)
-
         viewModel.handleIntent(intent = BusinessAccountProductIntent.SetBusinessId(businessId))
     }
 
@@ -114,10 +112,11 @@ fun BusinessHomeScreen(
                         navController = navController,
                         openSheet = businessController.openSheet.value,
                         sheetState = businessController.sheetState,
-                        viewModel = viewModel
-                    ) {
-                        businessController.openSheet.value = false
-                    }
+                        viewModel = viewModel,
+                        onCloseSheet = {
+                            businessController.openSheet.value = false
+                        }
+                    )
                 }
 
                 is Tabs.Configuration -> {

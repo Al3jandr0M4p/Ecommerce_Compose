@@ -96,7 +96,8 @@ fun CartFooterCheckOut(
                     text = "Finalizar Compra ${formatPrice(finalTotal)}",
                     fontSize = 18.sp,
                     style = MaterialTheme.typography.labelMedium,
-                    color = colorResource(id = R.color.white)
+                    color = colorResource(id = R.color.white),
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
 

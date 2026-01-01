@@ -19,11 +19,12 @@ fun PaymentSummary(
     deliveryFee: Double,
     serviceFee: Double,
     itbis: Double,
-    total: Double
+    total: Double,
+    couponDiscount: Double = 0.0
 ) {
     Column(modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp)
+        .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         Text(
             text = "Resumen del pago",
@@ -36,6 +37,10 @@ fun PaymentSummary(
         SummaryRow("Delivery", deliveryFee)
         SummaryRow("Cargo de servicios", serviceFee)
         SummaryRow("ITBIS (18%)", itbis)
+
+        if (couponDiscount > 0) {
+            SummaryRow("Descuento cupon", -couponDiscount)
+        }
 
         HorizontalDivider(thickness = 2.5.dp, color = colorResource(id = R.color.lightGrey))
 

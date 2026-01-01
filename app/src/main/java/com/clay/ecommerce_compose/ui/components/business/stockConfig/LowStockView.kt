@@ -30,7 +30,7 @@ fun LowStockView(
     onRestockClick: (Int) -> Unit
 ) {
     if (lowStockProducts.isEmpty()) {
-        EmptyStateMessage("Todos los productos tienen stock suficiente ✓")
+        EmptyStateMessage(message = "Todos los productos tienen stock suficiente", navController = navController)
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

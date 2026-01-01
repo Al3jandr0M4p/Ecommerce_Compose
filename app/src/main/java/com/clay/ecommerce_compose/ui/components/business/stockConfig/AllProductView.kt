@@ -16,7 +16,7 @@ fun AllProductsView(
     navController: NavHostController,
 ) {
     if (products.isEmpty()) {
-        EmptyStateMessage("No hay productos creados")
+        EmptyStateMessage(message = "No hay productos creados", navController = navController)
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -27,6 +27,7 @@ fun AllProductsView(
 
                 ProductsCards(
                     id = product.id,
+                    businessId = product.businessId,
                     name = product.name,
                     price = product.price,
                     imageUrl = product.imageUrl ?: "",

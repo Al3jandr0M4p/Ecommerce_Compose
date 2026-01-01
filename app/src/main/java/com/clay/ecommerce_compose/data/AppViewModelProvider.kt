@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.clay.ecommerce_compose.activity.MainViewModel
+import com.clay.ecommerce_compose.data.remote.HttpClientKtor
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.data.repository.BusinessRepository
@@ -17,14 +18,17 @@ import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsVie
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
 import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusiness
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
+import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckoutViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.HomeViewModel
 import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import com.clay.ecommerce_compose.data.repository.OrderRepository
 
 class AppViewModelProvider(private val application: Application) : ViewModelProvider.Factory {
     val supabaseClient = SupabaseConfig.client
+    val httpClient = HttpClientKtor.client
     val appContext: Context? = application.applicationContext
 
     private val authRepository by lazy {
@@ -40,7 +44,11 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
     }
 
     private val cartRepository by lazy {
-        CartRepository(supabase = supabaseClient)
+        CartRepository(supabase = supabaseClient, httpClient = httpClient)
+    }
+
+    private val orderRepository by lazy {
+        OrderRepository(supabase = supabaseClient, httpClient = httpClient)
     }
 
     private val walletRepository by lazy {
@@ -104,6 +112,11 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         if (modelClass.isAssignableFrom(ModelViewUserBusiness::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return ModelViewUserBusiness(businessRepository) as T
+        }
+
+        if (modelClass.isAssignableFrom(CheckoutViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return CheckoutViewModel(orderRepository = orderRepository) as T
         }
 
         if (modelClass.isAssignableFrom(WalletViewModel::class.java)) {

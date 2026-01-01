@@ -12,7 +12,7 @@ fun CartStepper(steps: List<String>, currentStep: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         steps.forEachIndexed { index, step ->
             StepItem(

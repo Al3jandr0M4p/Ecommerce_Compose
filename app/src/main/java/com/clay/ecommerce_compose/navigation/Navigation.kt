@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import com.clay.ecommerce_compose.activity.MainViewModel
 import com.clay.ecommerce_compose.activity.SplashScreen
 import com.clay.ecommerce_compose.data.AppViewModelProvider
+import com.clay.ecommerce_compose.data.remote.HttpClientKtor
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
@@ -24,6 +25,7 @@ import com.clay.ecommerce_compose.ui.screens.admin.reports.ReportsScreen
 import com.clay.ecommerce_compose.ui.screens.admin.users.UsersScreen
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
+import com.clay.ecommerce_compose.ui.screens.businesess.product_details.BusinessProductDetails
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
 import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusiness
@@ -31,10 +33,13 @@ import com.clay.ecommerce_compose.ui.screens.client.business.UserBusinessScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.Cart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckOutScreen
+import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckoutViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
+import com.clay.ecommerce_compose.ui.screens.client.delivery.WaitingDelivery
 import com.clay.ecommerce_compose.ui.screens.client.home.HomeViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.UserHomeScreen
 import com.clay.ecommerce_compose.ui.screens.client.search.SearchBar
+import com.clay.ecommerce_compose.ui.screens.delivery.deliveryHome.DeliveryHomeScreen
 import com.clay.ecommerce_compose.ui.screens.login.LoginScreen
 import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
 import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
@@ -57,7 +62,6 @@ fun Navigation(
 
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
-
             SplashScreen(
                 modifier = Modifier,
                 navController = navController,
@@ -72,7 +76,6 @@ fun Navigation(
 
             LoginScreen(
                 navController = navController,
-                modifier = modifier,
                 viewModel = loginViewModel,
                 authRepository = authRepository
             )
@@ -123,6 +126,23 @@ fun Navigation(
             )
         }
 
+        composable(route = "products/details/{businessId}/{id}") { backStackEntry ->
+            val idProduct = backStackEntry.arguments?.getString("id")?.toInt()
+            val idBusiness = backStackEntry.arguments?.getString("businessId")?.toInt()
+            val businessAccountViewModel: BusinessAccountViewModel = viewModel(factory = factory)
+
+            BusinessProductDetails(
+                businessId = idBusiness,
+                productId = idProduct,
+                navController = navController,
+                viewModel = businessAccountViewModel
+            )
+        }
+
+        composable(route = "delivery/user") {
+            WaitingDelivery(cartViewModel = cartViewModel, navController = navController)
+        }
+
         composable(route = "businessHome/{businessId}") { backStackEntry ->
             val businessAccountViewModel: BusinessAccountViewModel = viewModel(factory = factory)
             val businessId = backStackEntry.arguments?.getString("businessId") ?: ""
@@ -149,7 +169,13 @@ fun Navigation(
         }
 
         composable(route = "checkout/all") {
-            CheckOutScreen(cartViewModel = cartViewModel, navController = navController)
+            val checkoutViewModel: CheckoutViewModel = viewModel(factory = factory)
+
+            CheckOutScreen(cartViewModel = cartViewModel, navController = navController, checkoutViewModel = checkoutViewModel)
+        }
+
+        composable(route = "delivery") {
+            DeliveryHomeScreen(navController = navController)
         }
 
         composable(route = "adminHome") {
