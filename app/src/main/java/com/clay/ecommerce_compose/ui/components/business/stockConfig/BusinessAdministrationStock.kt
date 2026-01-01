@@ -86,7 +86,6 @@ fun BusinessAdministrationStock(
             }
         }
 
-        // Contenido según tab seleccionado
         when (selectedTab) {
             0 -> ProductsByCategoryView(
                 productsByCategory = productsByCategory,
@@ -107,7 +106,6 @@ fun BusinessAdministrationStock(
             )
         }
 
-        // Sheet para agregar producto
         if (openSheet) {
             Stepper(
                 sheetState = sheetState,
@@ -116,7 +114,6 @@ fun BusinessAdministrationStock(
             )
         }
 
-        // Diálogo de reabastecimiento
         selectedProductForRestock?.let { productId ->
             val product = products?.find { it.id == productId }
             product?.let {

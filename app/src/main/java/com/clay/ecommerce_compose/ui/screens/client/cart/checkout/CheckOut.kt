@@ -1,5 +1,6 @@
 package com.clay.ecommerce_compose.ui.screens.client.cart.checkout
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,14 +30,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
+import com.clay.ecommerce_compose.ui.components.business.stockConfig.PaymentMethods
 import com.clay.ecommerce_compose.ui.components.client.cart.CartStepper
+import com.clay.ecommerce_compose.ui.components.client.cart.CouponInput
 import com.clay.ecommerce_compose.ui.components.client.cart.PaymentSummary
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartIntent
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostController) {
+fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostController, checkoutViewModel: CheckoutViewModel) {
     val state by cartViewModel.state.collectAsState()
+    val checkoutState by checkoutViewModel.state.collectAsState()
+    val paymentMethod = state.selectedPaymentMethod
+
+    LaunchedEffect(checkoutState.orderResult) {
+        checkoutState.orderResult?.let {
+            navController.navigate(route = "delivery/user") {
+                popUpTo(route = "checkout/all") {
+                    inclusive = true
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -48,7 +65,7 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                     title = {
                         Text(
                             text = "Finalizar Compra",
-                            fontSize = 22.sp,
+                            fontSize = 20.sp,
                             style = MaterialTheme.typography.labelSmall
                         )
                     }, navigationIcon = {
@@ -56,9 +73,9 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                             text = "Cancelar",
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.Companion.clickable {
-                                navController.navigate(route = "cart")
+                                navController.popBackStack()
                             },
-                            fontSize = 20.sp
+                            fontSize = 18.sp
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -75,28 +92,64 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
         bottomBar = {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 18.dp, vertical = 8.dp)
+                    .padding(horizontal = 18.dp, vertical = 10.dp)
                     .fillMaxWidth()
             ) {
                 Button(
                     onClick = {
-//                        navController.navigate(route = "")
+                        Log.d("CHECKOUT_UI", "Pay button clicked. Selected method: $paymentMethod")
+                        when (paymentMethod) {
+                            "Contra-Entrega" -> {
+                                Log.d("CHECKOUT_UI", "Processing Contra-Entrega payment")
+                                checkoutViewModel.handleIntent(
+                                    intent = CheckoutIntent.PlaceOrder(
+                                        paymentMethod = paymentMethod,
+                                        couponCode = state.appliedCoupon?.code,
+                                    ),
+                                    cartViewModel = cartViewModel
+                                )
+                            }
+
+                            "Tarjeta" -> {
+                                navController.navigate("payment/stripe")
+                            }
+
+                            "Transferencia" -> {
+                                navController.navigate(route = "payment/bank")
+                            }
+
+                            "Wallet" -> {
+                                navController.navigate("payment/wallet")
+                            }
+
+                            else -> Log.w("CHECKOUT_UI", "No payment method selected")
+                        }
                     },
+                    enabled = !paymentMethod.isNullOrBlank(),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(size = 10.dp),
+                    shape = RoundedCornerShape(size = 12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(id = R.color.black),
-                        contentColor = colorResource(id = R.color.white)
+                        contentColor = colorResource(id = R.color.white),
+                        disabledContainerColor = colorResource(id = R.color.lightGrey),
+                        disabledContentColor = colorResource(id = R.color.black)
                     )
                 ) {
                     Text(
-                        text = "Continuar",
+                        text = when (paymentMethod) {
+                            "Contra-Entrega" -> "Continuar"
+                            "Tarjeta" -> "Pagar con tarjeta"
+                            "Wallet" -> "Pago con Wallet"
+                            "Transferencia" -> "Elige tu banco"
+                            else -> "Elije un Pago"
+                        },
                         fontSize = 18.sp,
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorResource(id = R.color.white)
+                        color = colorResource(id = R.color.white),
+                        modifier = Modifier.padding(vertical = 4.dp),
                     )
                 }
-                Spacer(modifier = Modifier.height(height = 12.dp))
+                Spacer(modifier = Modifier.height(height = 16.dp))
             }
         }
     ) { innerPadding ->
@@ -115,7 +168,7 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                 ) {
                     Text(
                         text = "Elige un metodo\nde pago",
-                        fontSize = 55.sp,
+                        fontSize = 45.sp,
                         lineHeight = 70.sp,
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -135,13 +188,32 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
             }
 
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    // Pagos
-                }
+                PaymentMethods(
+                    selectedMethod = state.selectedPaymentMethod,
+                    onMethodSelected = { method ->
+                        cartViewModel.handleIntent(intent = CartIntent.SelectPaymentMethod(method))
+                    }
+                )
+            }
+
+            item {
+                CouponInput(
+                    appliedCoupon = state.appliedCoupon,
+                    couponError = state.couponError,
+                    couponDiscount = state.couponDiscount,
+                    onApplyCoupon = { code ->
+                        cartViewModel.handleIntent(intent = CartIntent.ApplyCoupon(code))
+                    },
+                    onRemoveCoupon = {
+                        cartViewModel.handleIntent(intent = CartIntent.RemoveCoupon)
+                    }
+                )
+
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    color = colorResource(id = R.color.lightGrey),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
 
             item {
@@ -150,12 +222,9 @@ fun CheckOutScreen(cartViewModel: CartViewModel, navController: NavHostControlle
                     deliveryFee = state.deliveryFee,
                     serviceFee = state.serviceFee,
                     itbis = state.subTotal * 0.18,
-                    total = state.totalPrice
+                    total = state.totalPrice,
+                    couponDiscount = state.couponDiscount
                 )
-            }
-
-            item {
-                // Cupones
             }
 
         }

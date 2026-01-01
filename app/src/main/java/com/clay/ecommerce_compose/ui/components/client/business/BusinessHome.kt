@@ -89,18 +89,29 @@ fun UserBusinessComponent(
                         .padding(start = 10.dp, end = 10.dp, top = 40.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SettingsButtonIcons(
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        clickable = { navController.navigate(route = "userHome") })
-                    Row {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         SettingsButtonIcons(
-                            icon = Icons.Outlined.Search, clickable = {
-                                navController.navigate(route = "searchInShop/${buss?.id}")
-                            })
-                        Spacer(modifier = Modifier.width(width = 5.dp))
-                        SettingsButtonIcons(icon = Icons.Outlined.FavoriteBorder)
-                        Spacer(modifier = Modifier.width(width = 5.dp))
-                        SettingsButtonIcons(icon = Icons.Outlined.MoreHoriz)
+                            icon = Icons.AutoMirrored.Filled.ArrowBack,
+                            clickable = { navController.navigate(route = "userHome") },
+                            modifier = Modifier.size(size = 40.dp)
+                        )
+                        Row {
+                            SettingsButtonIcons(
+                                icon = Icons.Outlined.Search, clickable = {
+                                    navController.navigate(route = "searchInShop/${buss?.id}")
+                                }, modifier = Modifier.size(size = 40.dp)
+                            )
+                            Spacer(modifier = Modifier.width(width = 5.dp))
+                            SettingsButtonIcons(
+                                icon = Icons.Outlined.FavoriteBorder,
+                                modifier = Modifier.size(size = 40.dp)
+                            )
+                            Spacer(modifier = Modifier.width(width = 5.dp))
+                            SettingsButtonIcons(
+                                icon = Icons.Outlined.MoreHoriz,
+                                modifier = Modifier.size(size = 40.dp)
+                            )
+                        }
                     }
                 }
 
@@ -196,29 +207,34 @@ fun UserBusinessComponent(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(items = products) { product ->
+                        val isOutOfStock = product.stock <= 0
                         ProductCard(
                             title = product.name,
                             price = product.price,
                             image = product.imageUrl,
                             modifier = Modifier.width(width = 200.dp),
                             onAddClick = {
-                                cartViewModel.handleIntent(
-                                    intent = CartIntent.AddItem(
-                                        item = CartItem(
-                                            id = product.id,
-                                            businessName = buss?.name.toString(),
-                                            businessImg = buss?.logoUrl.toString(),
-                                            businessId = buss!!.id,
-                                            name = product.name,
-                                            price = product.price,
-                                            imageUrl = product.imageUrl,
-                                            quantity = 1,
-                                            stock = product.stock
+                                if (!isOutOfStock) {
+                                    cartViewModel.handleIntent(
+                                        intent = CartIntent.AddItem(
+                                            item = CartItem(
+                                                id = product.id,
+                                                businessName = buss?.name.toString(),
+                                                businessImg = buss?.logoUrl.toString(),
+                                                businessId = buss!!.id,
+                                                name = product.name,
+                                                price = product.price,
+                                                imageUrl = product.imageUrl,
+                                                quantity = 1,
+                                                stock = product.stock
+                                            )
                                         )
                                     )
-                                )
+                                }
                                 Log.d("AddProduct", "Click add product: ${product.id}")
-                            })
+                            },
+                            enabled = !isOutOfStock
+                        )
                     }
                 }
             }

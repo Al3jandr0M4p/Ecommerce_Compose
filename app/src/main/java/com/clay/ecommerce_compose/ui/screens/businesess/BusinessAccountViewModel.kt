@@ -195,6 +195,23 @@ class BusinessAccountViewModel(
         return Pair(ok, s)
     }
 
+    fun setSelectedProduct(product: ProductPayload) {
+        _businessState.value = _businessState.value.copy(
+            id = product.id,
+            name = product.name,
+            description = product.description,
+            price = product.price.toString(),
+            stock = product.stock.toString(),
+            businessId = product.businessId.toString(),
+            categoryId = product.categoryId,
+            isActive = product.isActive,
+            minStock = product.minStock,
+            maxStock = product.maxStock,
+            stockAlertEnabled = product.stockAlertEnabled
+        )
+    }
+
+
     private fun disableProduct() {
         val current = _businessState.value
         viewModelScope.launch {

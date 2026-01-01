@@ -161,7 +161,6 @@ fun LoginTextFields(
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
     viewModel: LoginViewModel,
     authRepository: AuthRepository,
 ) {
@@ -192,6 +191,10 @@ fun LoginScreen(
                 "negocio" -> {
                     val businessId = session.value?.businessId
                     navController.navigate(route = "businessHome/${businessId}")
+                }
+
+                "repartidor" -> {
+                    navController.navigate(route = "delivery")
                 }
 
                 "admin" -> {

@@ -36,7 +36,8 @@ fun ProductCard(
     price: Double,
     image: String?,
     modifier: Modifier = Modifier,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    enabled: Boolean
 ) {
     Card(
         modifier = modifier
@@ -91,7 +92,9 @@ fun ProductCard(
                         .clip(shape = RoundedCornerShape(size = 10.dp)),
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = colorResource(id = R.color.black),
-                    )
+                        disabledContainerColor = colorResource(id = R.color.lightGrey)
+                    ),
+                    enabled = enabled
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,

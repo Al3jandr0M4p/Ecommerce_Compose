@@ -39,13 +39,14 @@ fun ProductsCards(
     stock: Int = 0,
     minStock: Int = 5,
     isLowStock: Boolean = false,
+    businessId: Int?,
     navController: NavHostController
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { navController.navigate("products/details/${id}") }
+            .clickable { navController.navigate("products/details/${businessId}/${id}") }
             .clip(shape = RoundedCornerShape(size = 16.dp)),
         colors = CardDefaults.cardColors(
             containerColor = if (isLowStock)

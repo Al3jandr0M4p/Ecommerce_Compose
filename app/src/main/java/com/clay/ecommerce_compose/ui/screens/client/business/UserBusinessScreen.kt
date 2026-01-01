@@ -34,6 +34,10 @@ fun UserBusinessScreen(
     }
     val scrollState = rememberLazyListState()
 
+    LaunchedEffect(products) {
+        cartViewModel.checkLowStock(products)
+    }
+
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->

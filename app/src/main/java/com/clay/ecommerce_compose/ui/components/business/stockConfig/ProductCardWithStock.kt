@@ -40,7 +40,7 @@ fun ProductCardWithStock(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate(route = "products/details/${product.id}")
+                navController.navigate(route = "products/details/${product.businessId}/${product.id}")
             },
         colors = CardDefaults.cardColors(
             containerColor = if (isLowStock)

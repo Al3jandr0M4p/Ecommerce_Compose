@@ -16,7 +16,7 @@ fun ProductsByCategoryView(
     navController: NavHostController,
 ) {
     if (productsByCategory.isEmpty()) {
-        EmptyStateMessage("No hay productos organizados por categoría")
+        EmptyStateMessage(message = "No hay productos organizados por categoría", navController = navController)
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

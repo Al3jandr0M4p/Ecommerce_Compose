@@ -15,7 +15,6 @@ val localProperties = rootProject.file("local.properties").takeIf { it.exists() 
 
 val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: "DEFAULT"
 val supabaseKey = localProperties.getProperty("SUPABASE_KEY") ?: "DEFAULT"
-val mapKey = localProperties.getProperty("MAP_KEY") ?: "DEFAULT"
 
 android {
     namespace = "com.clay.ecommerce_compose"
@@ -36,7 +35,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl}\"")
         buildConfigField("String", "SUPABASE_KEY", "\"${supabaseKey}\"")
-        buildConfigField("String", "MAP_KEY", "\"${mapKey}\"")
     }
 
     buildTypes {
@@ -68,9 +66,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    implementation("org.maplibre.gl:android-sdk:12.1.0")
-    implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.2")
-
     implementation("androidx.compose.ui:ui:1.9.4")
     implementation("androidx.compose.ui:ui-viewbinding:1.9.4")
 
@@ -85,10 +80,14 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-svg:3.3.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
 
+    implementation("com.mapbox.maps:android-ndk27:11.17.1")
+    implementation("com.mapbox.extension:maps-compose-ndk27:11.17.1")
+
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.maps.android:maps-compose:6.12.1")
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 
     implementation(platform("io.github.jan-tennert.supabase:bom:3.2.6"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
@@ -96,7 +95,13 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:realtime-kt")
     implementation("io.github.jan-tennert.supabase:storage-kt")
     implementation("io.github.jan-tennert.supabase:functions-kt:3.2.6")
-    implementation("io.ktor:ktor-client-android:3.3.2")
+    implementation("io.ktor:ktor-client-android:3.3.3")
+
+    implementation("io.ktor:ktor-client-core:3.3.3")
+    implementation("io.ktor:ktor-client-okhttp:3.3.3")
+    implementation("io.ktor:ktor-client-content-negotiation:3.3.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.3")
+
 
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-analytics")

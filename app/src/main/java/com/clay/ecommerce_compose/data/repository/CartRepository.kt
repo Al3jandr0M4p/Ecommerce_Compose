@@ -3,9 +3,17 @@ package com.clay.ecommerce_compose.data.repository
 import android.util.Log
 import com.clay.ecommerce_compose.domain.model.CartItemEntity
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartItem
+import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.Coupon
+import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.CouponType
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -35,10 +43,44 @@ data class CartItemResponse(
     val quantity: Int
 )
 
+@Serializable
+data class ApplyCouponRequest(
+    val code: String,
+    val subtotal: Double = 0.0,
+    @SerialName("totalQuantity")
+    val totalQuantity: Int
+)
 
-class CartRepository(private val supabase: SupabaseClient) {
+@Serializable
+data class ApplyCouponResponse(
+    val code: String,
+    val percentage: Double = 0.0,
+    val discount: Double = 0.0,
+)
+
+
+class CartRepository(private val supabase: SupabaseClient, private val httpClient: HttpClient) {
     private fun userId(): String = supabase.auth.currentUserOrNull()?.id
         ?: throw IllegalStateException("Usuario no autenticado")
+
+    suspend fun applyCoupon(
+        code: String,
+        subtotal: Double,
+        totalQuantity: Int
+    ): ApplyCouponResponse {
+
+        return httpClient.post("https://6gszhspz-3000.use2.devtunnels.ms/api/payments/coupons/apply") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                ApplyCouponRequest(
+                    code=code,
+                    subtotal=subtotal,
+                    totalQuantity=totalQuantity
+                )
+            )
+        }.body()
+
+    }
 
     suspend fun getCart(): List<CartItem> {
         try {
@@ -54,7 +96,10 @@ class CartRepository(private val supabase: SupabaseClient) {
             Log.d("CART_REPO", "getCart response: ${response.size} items")
 
             response.forEach { entity ->
-                Log.d("CART_REPO", "Item: ${entity.name}, qty: ${entity.quantity}, stock: ${entity.stock}")
+                Log.d(
+                    "CART_REPO",
+                    "Item: ${entity.name}, qty: ${entity.quantity}, stock: ${entity.stock}"
+                )
             }
 
             return response.map { entity ->
