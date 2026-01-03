@@ -17,12 +17,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.clay.ecommerce_compose.domain.model.User
 import com.clay.ecommerce_compose.ui.components.admin.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsersScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: UsersViewModel
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -30,7 +33,7 @@ fun UsersScreen(
     var selectedUser by remember { mutableStateOf<User?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
-    val users = remember { mutableStateListOf<User>() }
+    val users by viewModel.users.collectAsState()
 
     Scaffold(
         topBar = {
@@ -119,13 +122,7 @@ fun UsersScreen(
         CreateUserDialog(
             onDismiss = { showCreateDialog = false },
             onConfirm = { name, email, role, password ->
-                users.add(User(
-                    id = (users.size + 1).toString().padStart(3, '0'),
-                    name = name,
-                    email = email,
-                    role = role,
-                    status = "Activo"
-                ))
+                viewModel.createUser(name, email, role, password)
                 showCreateDialog = false
             }
         )
@@ -140,14 +137,7 @@ fun UsersScreen(
                 selectedUser = null
             },
             onConfirm = { name, email, role ->
-                val index = users.indexOf(selectedUser)
-                if (index != -1) {
-                    users[index] = selectedUser!!.copy(
-                        name = name,
-                        email = email,
-                        role = role
-                    )
-                }
+                viewModel.updateUser(selectedUser!!.copy(name = name, email = email, role = role))
                 showEditDialog = false
                 selectedUser = null
             }
@@ -308,6 +298,7 @@ fun EmptyState(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateUserDialog(
     onDismiss: () -> Unit,
@@ -315,8 +306,10 @@ fun CreateUserDialog(
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val roles = listOf("admin", "usuario", "negocio", "repartidor")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedRole by remember { mutableStateOf(roles[0]) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -351,14 +344,48 @@ fun CreateUserDialog(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = selectedRole,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Rol") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            singleLine = true
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            roles.forEach { role ->
+                                DropdownMenuItem(
+                                    text = { Text(role) },
+                                    onClick = {
+                                        selectedRole = role
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (name.isNotBlank() && email.isNotBlank() &&
-                        role.isNotBlank() && password.isNotBlank()) {
-                        onConfirm(name, email, role, password)
+                    if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
+                        onConfirm(name, email, selectedRole, password)
                     }
                 }
             ) {
@@ -373,6 +400,7 @@ fun CreateUserDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditUserDialog(
     user: User,
@@ -381,7 +409,9 @@ fun EditUserDialog(
 ) {
     var name by remember { mutableStateOf(user.name) }
     var email by remember { mutableStateOf(user.email) }
-    var role by remember { mutableStateOf(user.role) }
+    val roles = listOf("admin", "usuario", "negocio", "repartidor")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedRole by remember { mutableStateOf(user.role) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -400,12 +430,47 @@ fun EditUserDialog(
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = selectedRole,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Rol") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            singleLine = true
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            roles.forEach { role ->
+                                DropdownMenuItem(
+                                    text = { Text(role) },
+                                    onClick = {
+                                        selectedRole = role
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                if (name.isNotBlank() && email.isNotBlank() && role.isNotBlank()) {
-                    onConfirm(name, email, role)
+                if (name.isNotBlank() && email.isNotBlank()) {
+                    onConfirm(name, email, selectedRole)
                 }
             }) {
                 Text("Guardar", color = Color(0xFF3498DB))
@@ -418,11 +483,3 @@ fun EditUserDialog(
         }
     )
 }
-
-data class User(
-    val id: String,
-    val name: String,
-    val email: String,
-    val role: String,
-    val status: String
-)

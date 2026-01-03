@@ -23,6 +23,7 @@ import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryScreen
 import com.clay.ecommerce_compose.ui.screens.admin.orders.OrdersScreen
 import com.clay.ecommerce_compose.ui.screens.admin.reports.ReportsScreen
 import com.clay.ecommerce_compose.ui.screens.admin.users.UsersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.users.UsersViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.businesess.product_details.BusinessProductDetails
@@ -58,7 +59,7 @@ fun Navigation(
     val factory = AppViewModelProvider(application)
     val cartViewModel: CartViewModel = viewModel(factory = factory)
 
-    NavHost(navController = navController, startDestination = "splash") {
+    NavHost(navController = navController, startDestination = "adminHome") {
 
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
@@ -192,7 +193,11 @@ fun Navigation(
         }
 
         composable(route = "adminUsers") {
-            UsersScreen(onBack = { navController.popBackStack() })
+            val usersViewModel: UsersViewModel = viewModel(factory = factory)
+            UsersScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = usersViewModel
+            )
         }
 
 //        composable(route = "adminBusinesses") {

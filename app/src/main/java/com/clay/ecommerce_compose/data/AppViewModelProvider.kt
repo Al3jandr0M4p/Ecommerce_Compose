@@ -13,6 +13,7 @@ import com.clay.ecommerce_compose.data.repository.CartRepository
 import com.clay.ecommerce_compose.data.repository.UserRepository
 import com.clay.ecommerce_compose.data.repository.WalletRepository
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
+import com.clay.ecommerce_compose.ui.screens.admin.users.UsersViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
@@ -63,6 +64,11 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return LoginViewModel(authRepository) as T
+        }
+
+        if (modelClass.isAssignableFrom(UsersViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return UsersViewModel(userRepository = userRepository) as T
         }
 
         if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
