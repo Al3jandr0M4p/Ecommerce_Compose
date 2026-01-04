@@ -56,6 +56,7 @@ import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.domain.model.UserSession
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.components.auth.users.BottomComp
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import kotlinx.coroutines.delay
 
 
@@ -162,50 +163,19 @@ fun LoginTextFields(
 fun LoginScreen(
     navController: NavHostController,
     viewModel: LoginViewModel,
-    authRepository: AuthRepository,
 ) {
     var showPassword by remember { mutableStateOf(value = false) }
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    val session = remember { mutableStateOf<UserSession?>(null) }
 
     LaunchedEffect(state.error, state.loggedIn) {
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
+
         if (state.loggedIn) {
-            val getSessionUseCase = GetCurrentUserSessionUseCase(authRepository = authRepository)
-            session.value = getSessionUseCase.invoke()
-
-            val userRole = session.value?.role ?: "guest"
-
-            Toast.makeText(context, "Bienvenido ${session.value?.role}", Toast.LENGTH_SHORT)
-                .show()
-
-            delay(300)
-            when (userRole) {
-                "usuario" -> {
-                    navController.navigate(route = "userHome")
-                }
-
-                "negocio" -> {
-                    val businessId = session.value?.businessId
-                    navController.navigate(route = "businessHome/${businessId}")
-                }
-
-                "repartidor" -> {
-                    navController.navigate(route = "delivery")
-                }
-
-                "admin" -> {
-                    navController.navigate(route = "adminHome")
-                }
-
-                else -> {
-                    Toast.makeText(context, "Rol no reconocido: $userRole", Toast.LENGTH_SHORT)
-                        .show()
-                    navController.navigate(route = "login")
-                }
+            navController.navigate("splash") {
+                popUpTo("login") { inclusive = true }
             }
         }
     }

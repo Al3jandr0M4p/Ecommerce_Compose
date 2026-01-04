@@ -152,7 +152,7 @@ fun CartsScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(text = item.name)
-                                    Text(text = formatPrice(item.price * item.quantity))
+                                    Text(text = formatPrice(amount = item.price * item.quantity))
                                 }
 
                                 Spacer(modifier = Modifier.height(height = 10.dp))

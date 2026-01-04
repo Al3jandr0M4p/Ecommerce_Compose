@@ -1,5 +1,7 @@
 package com.clay.ecommerce_compose.ui.components.client.business
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -25,24 +27,33 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.clay.ecommerce_compose.R
@@ -60,10 +71,14 @@ fun UserBusinessComponent(
     buss: BusinessProfile?,
     products: List<ProductPayload>,
     navController: NavHostController,
-    cartViewModel: CartViewModel
+    cartViewModel: CartViewModel,
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     LazyColumn(
-        state = scrollState, modifier = Modifier
+        state = scrollState,
+        modifier = Modifier
             .padding(paddingValues = innerPadding)
             .fillMaxSize()
     ) {
@@ -89,28 +104,80 @@ fun UserBusinessComponent(
                         .padding(start = 10.dp, end = 10.dp, top = 40.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    SettingsButtonIcons(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        clickable = {
+                            navController.navigate(route = "userHome")
+                        },
+                        modifier = Modifier.size(size = 40.dp)
+                    )
+                    Row {
                         SettingsButtonIcons(
-                            icon = Icons.AutoMirrored.Filled.ArrowBack,
-                            clickable = { navController.navigate(route = "userHome") },
+                            icon = Icons.Outlined.Search, clickable = {
+                                navController.navigate(route = "searchInShop/${buss?.id}") {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }, modifier = Modifier.size(size = 40.dp)
+                        )
+                        Spacer(modifier = Modifier.width(width = 5.dp))
+                        SettingsButtonIcons(
+                            icon = Icons.Outlined.FavoriteBorder,
                             modifier = Modifier.size(size = 40.dp)
                         )
-                        Row {
-                            SettingsButtonIcons(
-                                icon = Icons.Outlined.Search, clickable = {
-                                    navController.navigate(route = "searchInShop/${buss?.id}")
-                                }, modifier = Modifier.size(size = 40.dp)
+                        Spacer(modifier = Modifier.width(width = 5.dp))
+                        SettingsButtonIcons(
+                            icon = Icons.Outlined.MoreHoriz,
+                            modifier = Modifier.size(size = 40.dp),
+                            clickable = { expanded = true }
+                        )
+
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    val url =
+                                        "https://wa.me/+1${buss?.phone}?text=${Uri.encode("hola")}"
+                                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                                    context.startActivity(intent)
+                                    expanded = false
+                                },
+                                leadingIcon = {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ic_whatsapp),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(size = 22.dp)
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        text = "Contactar por whatsapp",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 14.sp
+                                    )
+                                }
                             )
-                            Spacer(modifier = Modifier.width(width = 5.dp))
-                            SettingsButtonIcons(
-                                icon = Icons.Outlined.FavoriteBorder,
-                                modifier = Modifier.size(size = 40.dp)
+
+                            DropdownMenuItem(
+                                onClick = {
+                                    navController.navigate(route = "activity/${buss!!.id}")
+                                    expanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.Message,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(size = 20.dp)
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        text = "Mensaje Interno",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 14.sp
+                                    )
+                                }
                             )
-                            Spacer(modifier = Modifier.width(width = 5.dp))
-                            SettingsButtonIcons(
-                                icon = Icons.Outlined.MoreHoriz,
-                                modifier = Modifier.size(size = 40.dp)
-                            )
+
                         }
                     }
                 }

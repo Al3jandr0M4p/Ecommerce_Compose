@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.CartRepository
+import com.clay.ecommerce_compose.data.repository.NotificationRepository
 import com.clay.ecommerce_compose.domain.model.Order
 import com.clay.ecommerce_compose.domain.model.ProductPayload
+import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.components.client.header.NotificationItem
 import com.clay.ecommerce_compose.ui.components.client.header.NotificationType
 import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.Coupon
 import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.CouponType
+import com.clay.ecommerce_compose.utils.Orders
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +22,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
+class CartViewModel(
+    private val cartRepository: CartRepository,
+    private val notificationRepository: NotificationRepository,
+    private val getCurrentUserSession: GetCurrentUserSessionUseCase
+) : ViewModel() {
     private val _state = MutableStateFlow(value = CartState())
     val state: StateFlow<CartState> = _state.asStateFlow()
 
@@ -32,8 +39,45 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
     )
 
     init {
-        loadCart()
+        initializeNotifications()
     }
+
+    private fun initializeNotifications() {
+        viewModelScope.launch {
+            getCurrentUserSession().collect { session ->
+                if (session == null) return@collect
+
+                loadCart()
+                loadActiveOrder(userId = session.id)
+                loadNotifications()
+                observeNotifications()
+            }
+        }
+    }
+
+    private fun loadActiveOrder(userId: String) {
+        viewModelScope.launch {
+            try {
+                val order = cartRepository.getActiveOrder(userId)
+
+                val activeOrder = order?.takeIf {
+                    it.status == Orders.paid || it.status == Orders.pending
+                }
+
+                _state.update {
+                    it.copy(activeOrder = activeOrder)
+                }
+
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error loading active order", e)
+
+                _state.update {
+                    it.copy(activeOrder = null)
+                }
+            }
+        }
+    }
+
 
     fun handleIntent(intent: CartIntent) {
         when (intent) {
@@ -52,42 +96,124 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
         }
     }
 
+    private fun loadNotifications() {
+        viewModelScope.launch {
+            try {
+                val list = notificationRepository.getNotifications()
+                _notifications.value = list
+                Log.d("CartViewModel", "Loaded ${list.size} notifications")
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error loading notifications", e)
+            }
+        }
+    }
+
+    private fun observeNotifications() {
+        viewModelScope.launch {
+            try {
+                notificationRepository.listenNotifications()
+                    .collect { notification ->
+                        _notifications.update { current ->
+                            if (current.none { it.id == notification.id }) {
+                                val updated = current + notification
+                                Log.d(
+                                    "CartViewModel",
+                                    "Notifications updated. Total ${updated.size}"
+                                )
+                                updated
+                            } else {
+                                Log.d(
+                                    "CartViewModel",
+                                    "Notification alredy exists: ${notification.id}"
+                                )
+                                current
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error listening to notifications", e)
+            }
+        }
+    }
+
     fun addNotification(notification: NotificationItem) {
-        _notifications.update { current ->
-            current + notification
+        viewModelScope.launch {
+            try {
+
+                val realId = notificationRepository.insertNotification(notification)
+
+                _notifications.update { current ->
+                    if (current.none { it.id == notification.id }) {
+                        current + notification
+                    } else {
+                        current
+                    }
+                }
+
+                Log.d("CartViewModel", "notification added: $realId")
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error adding notification", e)
+            }
         }
     }
 
     fun removeNotification(id: String) {
-        _notifications.update { current ->
-            current.filterNot { it.id == id }
+        viewModelScope.launch {
+            try {
+
+                _notifications.update { current ->
+                    current.filterNot { it.id == id }
+                }
+
+                notificationRepository.deleteNotification(id)
+
+                Log.d("CartViewModel", "Notification removed: $id")
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error removing notification", e)
+
+                loadNotifications()
+            }
         }
     }
 
-    fun clearNotifications() {
-        _notifications.value = emptyList()
+    fun markNotificationAsRead(id: String) {
+        viewModelScope.launch {
+            try {
+                notificationRepository.markAsRead(id)
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error marking notification as read", e)
+            }
+        }
     }
 
     // Ejemplo de stock bajo
     fun checkLowStock(products: List<ProductPayload>) {
-        val lowStockNotifs = products
-            .filter { it.stock in 1..5 }
-            .map {
-                NotificationItem(
-                    id = "stock-${it.id}",
-                    title = "Stock bajo",
-                    message = "${it.name} tiene solo ${it.stock} unidades restantes",
-                    type = NotificationType.STOCK_LOW
-                )
+        viewModelScope.launch {
+            try {
+                val lowStockProduct = products.filter { it.stock in 1..5 }
+
+                lowStockProduct.forEach { product ->
+                    val notification = NotificationItem(
+                        id = "",
+                        title = "Stock bajo",
+                        message = "${product.name} tiene solo ${product.stock} unidades restantes",
+                        type = NotificationType.STOCK_LOW
+                    )
+
+                    notificationRepository.insertNotification(notification)
+                }
+
+                loadNotifications()
+
+                Log.d("CartViewModel", "Low Stock notification sent: ${lowStockProduct.size}")
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error checking low stock", e)
             }
-        _notifications.update { current ->
-            current.filterNot { it.type == NotificationType.STOCK_LOW } + lowStockNotifs
         }
     }
 
     fun onOrderCreated(order: Order) {
         _state.update { it.copy(activeOrder = order) }
-        clearCart()
     }
 
     private fun loadCart() {
@@ -123,7 +249,14 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
             runCatching {
                 cartRepository.addItem(item)
             }.onSuccess {
-                Log.d("CART_VM", "Item insertado en DB")
+                addNotification(
+                    NotificationItem(
+                        id = "",
+                        title = "Producto agregado",
+                        message = "${item.name} fue agregado al carrito exitosamente",
+                        type = NotificationType.ORDER_STATUS
+                    )
+                )
                 loadCart()
             }.onFailure {
                 Log.e("CART_VM", "Error insertando item", it)
@@ -145,7 +278,7 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
             updateLocalState(newItems)
 
             runCatching {
-                cartRepository.updateQuantity(itemId, quantity)
+                cartRepository.updateQuantity(productId = itemId, quantity)
             }.onFailure {
                 loadCart()
             }
@@ -159,7 +292,7 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
             updateLocalState(newItems)
 
             runCatching {
-                cartRepository.removeItem(itemId)
+                cartRepository.removeItem(productId = itemId)
             }.onFailure {
                 loadCart()
             }
@@ -194,6 +327,11 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
     }
 
     private fun applyCoupon(code: String) {
+        if (code.isBlank()) {
+            removeCoupon()
+            return
+        }
+
         viewModelScope.launch {
             val subTotal = _state.value.subTotal
             val totalQty = _state.value.items.sumOf { it.quantity }
@@ -264,5 +402,16 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
             couponDiscount = couponDiscount,
             totalPrice = total.coerceAtLeast(0.0)
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelScope.launch {
+            try {
+                notificationRepository.cleanup()
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error cleaning up notifications", e)
+            }
+        }
     }
 }

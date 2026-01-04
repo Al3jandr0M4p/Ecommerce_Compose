@@ -3,8 +3,6 @@ package com.clay.ecommerce_compose.ui.screens.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.AuthRepository
-import com.clay.ecommerce_compose.domain.model.UserSession
-import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -26,7 +24,7 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    private fun login() = viewModelScope.launch {
+    private fun login() {
         _state.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
@@ -36,16 +34,11 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
             )
 
             if (user != null) {
-                val userSession = GetCurrentUserSessionUseCase(authRepository = authRepository).invoke()
                 _state.update {
                     it.copy(
                         isLoading = false,
                         loggedIn = true,
-                        currentUser = user.copy(
-                            id = userSession?.id,
-                            roleName = userSession?.role,
-                            businessId = userSession?.businessId
-                        ),
+                        currentUser = user
                     )
                 }
 

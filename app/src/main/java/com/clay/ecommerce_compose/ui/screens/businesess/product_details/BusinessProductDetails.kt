@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.ui.components.business.stockConfig.EmptyStateMessage
 import com.clay.ecommerce_compose.ui.components.business.stockConfig.ProductDetails
@@ -18,8 +19,10 @@ fun BusinessProductDetails(
     navController: NavHostController
 ) {
 
-    LaunchedEffect(Unit) {
-        viewModel.loadProductsBusinessById(businessId)
+    val currentBusinessId = remember { businessId }
+
+    LaunchedEffect(currentBusinessId) {
+        viewModel.loadProductsBusinessById(currentBusinessId)
     }
 
     val products by viewModel.businessProduct.collectAsState()

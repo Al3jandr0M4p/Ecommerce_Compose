@@ -5,5 +5,7 @@ import com.clay.ecommerce_compose.domain.model.UserSession
 
 sealed class SplashState {
     object Loading : SplashState()
-    data class Success(val session: UserSession?) : SplashState()
+    object NotAuthenticated : SplashState()
+
+    data class Authenticated(val session: UserSession?) : SplashState()
 }

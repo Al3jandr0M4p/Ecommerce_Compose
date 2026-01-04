@@ -8,25 +8,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.data.repository.WalletTransaction
 import com.clay.ecommerce_compose.utils.helpers.formatPrice
 
 @Composable
 fun TransactionItem(transaction: WalletTransaction) {
-    val isCredit = transaction.type == "credit"
-    val icon = if (isCredit) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward
-    val color = if (isCredit) Color(0xFF4CAF50) else Color(0xFFF44336)
-
     val dateTime = transaction.createdAt.substringBefore("T")
         .split("-")
         .reversed()
@@ -35,24 +32,28 @@ fun TransactionItem(transaction: WalletTransaction) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(id = R.color.white)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(all = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = icon,
-                    contentDescription = if (isCredit) "Ingreso" else "Egreso",
-                    tint = color,
-                    modifier = Modifier.size(24.dp)
+                    imageVector = Icons.Default.ArrowDownward,
+                    contentDescription = "Egreso",
+                    tint = colorResource(id = R.color.tintRed),
+                    modifier = Modifier.size(size = 24.dp)
                 )
 
                 Column {
@@ -69,9 +70,9 @@ fun TransactionItem(transaction: WalletTransaction) {
             }
 
             Text(
-                text = "${if (isCredit) "+" else "-"}${formatPrice(transaction.amount)}",
+                text = "-${formatPrice(amount = transaction.amount)}",
                 style = MaterialTheme.typography.titleMedium,
-                color = color
+                color = colorResource(id = R.color.tintRed)
             )
         }
     }

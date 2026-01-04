@@ -43,7 +43,7 @@ class OrderRepository(private val supabase: SupabaseClient, private val httpClie
             "Creando orden con paymentMethod=$paymentMethod, couponCode=$couponCode"
         )
 
-        return httpClient.post("https://6gszhspz-3000.use2.devtunnels.ms/api/orders/") {
+        return httpClient.post("https://6gszhspz-3002.use2.devtunnels.ms/api/orders/") {
             contentType(ContentType.Application.Json)
             header("Authorization", "Bearer $token")
             setBody(

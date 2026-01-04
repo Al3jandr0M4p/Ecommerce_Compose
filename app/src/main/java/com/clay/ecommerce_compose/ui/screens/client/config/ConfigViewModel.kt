@@ -18,12 +18,17 @@ class ConfigViewModel(private val userRepository: UserRepository, private val au
     var userName by mutableStateOf("")
         private set
 
-    fun getUserInfoById() {
+    private var hasLoadedUserInfo = false
+
+    fun getUserInfoById(force: Boolean = false) {
+        if (hasLoadedUserInfo && !force) return
+
         viewModelScope.launch {
-            userName =
-                userRepository.getUserInfoById().userMetadata?.get("username")?.jsonPrimitive?.content
-                    ?: ""
-            userInfo = userRepository.getUserInfoById()
+            val info = userRepository.getUserInfoById()
+            userName = info.userMetadata?.get("username")?.jsonPrimitive?.content ?: ""
+            userInfo = info
+
+            hasLoadedUserInfo = true
         }
     }
 

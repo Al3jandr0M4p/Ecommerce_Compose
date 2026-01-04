@@ -9,11 +9,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.ui.components.client.business.UserBusinessComponent
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @RequiresApi(Build.VERSION_CODES.S)
 @SuppressLint("FrequentlyChangingValue")
@@ -38,6 +41,15 @@ fun UserBusinessScreen(
         cartViewModel.checkLowStock(products)
     }
 
+    val systemUIController = rememberSystemUiController()
+
+    SideEffect {
+        systemUIController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = false
+        )
+    }
+
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
@@ -47,7 +59,7 @@ fun UserBusinessScreen(
             buss = buss,
             products = products,
             navController = navController,
-            cartViewModel = cartViewModel
+            cartViewModel = cartViewModel,
         )
     }
 }

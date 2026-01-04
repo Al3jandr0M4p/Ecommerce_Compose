@@ -11,6 +11,15 @@ data class Wallet(
     val balance: Double
 )
 
+@Serializable
+data class WalletTransactionInsertDTO(
+    val user_id: String,
+    val amount: Double,
+    val type: String,
+    val reason: String
+)
+
+
 data class WalletTransaction(
     val id: String,
     val amount: Double,
@@ -92,6 +101,19 @@ class WalletRepository(private val supabase: SupabaseClient) {
             )
         )
     }
+
+    suspend fun registerPayment(amount: Double, reason: String, type: String = "debit") {
+        val dto = WalletTransactionInsertDTO(
+            user_id = userId(),
+            amount = amount,
+            type = type,
+            reason = reason
+        )
+
+        supabase.from("wallet_transactions").insert(dto)
+    }
+
+
     suspend fun deductBalance(amount: Double) {
         supabase.from("wallets").update(mapOf("balance" to "balance - $amount")) {
             filter { eq("user_id", userId()) }

@@ -2,7 +2,6 @@ package com.clay.ecommerce_compose.ui.screens.client.app_activity
 
 //noinspection SuspiciousImport
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.clay.ecommerce_compose.ui.components.client.cart.TransactionItem
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderActivity
 
@@ -45,15 +45,20 @@ fun Activity(walletViewModel: WalletViewModel, transactionsViewModel: Transactio
         }
 
         item {
-            Text(text = "Historial de transacciones")
+            Text(
+                text = "Historial de pagos",
+                fontSize = 28.sp,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.Companion.padding(start = 16.dp)
+            )
         }
 
         if (transactionsState.isLoading) {
             item {
                 Box(
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .fillMaxWidth()
-                        .padding(32.dp),
+                        .padding(all = 32.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -67,7 +72,7 @@ fun Activity(walletViewModel: WalletViewModel, transactionsViewModel: Transactio
                     text = "No hay transacciones",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.Companion.padding(all = 16.dp)
                 )
             }
         }

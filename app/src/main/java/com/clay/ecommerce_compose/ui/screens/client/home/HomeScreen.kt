@@ -12,15 +12,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SportsMotorsports
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +34,7 @@ import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.ui.components.client.business.Business
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderUserHome
 import com.clay.ecommerce_compose.ui.components.client.search.SearchBarContainer
+import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -41,10 +42,12 @@ import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 fun Home(
     navController: NavHostController,
     cartViewModel: CartViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    businessAccountViewModel: BusinessAccountViewModel
 ) {
     val isLoading by homeViewModel.isLoading.collectAsState()
     val hasActiveDelivery by cartViewModel.hasActiveDelivery.collectAsState()
+    val businessState by businessAccountViewModel.businessProfile.collectAsState()
 
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isLoading,
@@ -61,7 +64,13 @@ fun Home(
                 .fillMaxSize()
                 .background(color = colorResource(id = R.color.white))
         ) {
-            item { HeaderUserHome(navController = navController, cartViewModel = cartViewModel) }
+            item {
+                HeaderUserHome(
+                    navController = navController,
+                    cartViewModel = cartViewModel,
+                    businessId = businessState?.id
+                )
+            }
 
             item { SearchBarContainer(navController = navController) }
 
@@ -77,7 +86,6 @@ fun Home(
 
         if (hasActiveDelivery) {
             FloatingActionButton(
-                backgroundColor = colorResource(id = R.color.black),
                 shape = RoundedCornerShape(size = 10.dp),
                 onClick = { navController.navigate(route = "delivery/user") },
                 modifier = Modifier
@@ -85,7 +93,8 @@ fun Home(
                         Alignment.BottomEnd
                     )
                     .padding(all = 16.dp)
-                    .width(width = 200.dp)
+                    .width(width = 200.dp),
+                containerColor = colorResource(id = R.color.black)
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
                     Icon(

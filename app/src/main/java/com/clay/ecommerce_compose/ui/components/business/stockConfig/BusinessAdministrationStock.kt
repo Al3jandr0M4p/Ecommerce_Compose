@@ -43,12 +43,13 @@ fun BusinessAdministrationStock(
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Por Categoría", "Todos", "Stock Bajo")
 
-    LaunchedEffect(state.businessId) {
-        val businessId = state.businessId.toIntOrNull()
-        if (businessId != null) {
-            viewModel.loadProductsBusinessById(businessId)
-            viewModel.loadProductsByCategory(businessId)
-            viewModel.loadLowStockProducts(businessId)
+    val currentBusinessId = remember { state.businessId.toIntOrNull() }
+
+    LaunchedEffect(currentBusinessId) {
+        if (currentBusinessId != null) {
+            viewModel.loadProductsBusinessById(currentBusinessId)
+            viewModel.loadProductsByCategory(currentBusinessId)
+            viewModel.loadLowStockProducts(currentBusinessId)
         }
     }
 

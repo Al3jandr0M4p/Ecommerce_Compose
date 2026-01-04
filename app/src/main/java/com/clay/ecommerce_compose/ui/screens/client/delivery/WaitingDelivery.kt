@@ -128,7 +128,7 @@ fun WaitingDelivery(cartViewModel: CartViewModel, navController: NavHostControll
                     if (activeOrderId != null) {
                         Log.d("DELIVERY_SCREEN", "Active order ID: $activeOrderId")
                         val url =
-                            "https://6gszhspz-3000.use2.devtunnels.ms/api/orders/$activeOrderId/invoice/pdf"
+                            "https://6gszhspz-3002.use2.devtunnels.ms/api/orders/$activeOrderId/invoice/pdf"
                         val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                         context.startActivity(intent)
                     } else {
@@ -157,7 +157,9 @@ fun WaitingDelivery(cartViewModel: CartViewModel, navController: NavHostControll
             )
 
             FloatingActionButton(
-                onClick = { navController.navigate(route = "userHome") },
+                onClick = {
+                    navController.navigate(route = "userHome")
+                },
                 containerColor = colorResource(id = R.color.white),
                 modifier = Modifier
                     .padding(16.dp)
