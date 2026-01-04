@@ -11,6 +11,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavHostController
@@ -18,13 +19,12 @@ import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
 import com.clay.ecommerce_compose.ui.components.bars.MyBusinessTopAppBar
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationBalance
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationConfiguration
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationHome
-import com.clay.ecommerce_compose.ui.components.business.BusinessAdministrationStock
+import com.clay.ecommerce_compose.ui.components.business.configuration.BusinessAdministrationConfiguration
+import com.clay.ecommerce_compose.ui.components.business.economy.BusinessAdministrationBalance
 import com.clay.ecommerce_compose.ui.components.business.fab.Fab
+import com.clay.ecommerce_compose.ui.components.business.home.BusinessAdministrationHome
+import com.clay.ecommerce_compose.ui.components.business.stockConfig.BusinessAdministrationStock
 import com.clay.ecommerce_compose.utils.hooks.useBusinessScreen
-
 
 @Composable
 fun BusinessScreen(
@@ -34,11 +34,11 @@ fun BusinessScreen(
 ) {
     val businessProfile = viewModel.businessProfile.collectAsState()
     val profile = businessProfile.value
+    val currentBusinessId = remember { businessId }
 
-    LaunchedEffect(businessId) {
-        viewModel.loadBusinessById(businessId)
-
-        viewModel.handleIntent(intent = BusinessAccountProductIntent.SetBusinessId(businessId))
+    LaunchedEffect(currentBusinessId) {
+        viewModel.loadBusinessById(currentBusinessId)
+        viewModel.handleIntent(intent = BusinessAccountProductIntent.SetBusinessId(currentBusinessId))
     }
 
     when (profile) {
@@ -112,13 +112,13 @@ fun BusinessHomeScreen(
                 is Tabs.Stock -> {
                     BusinessAdministrationStock(
                         navController = navController,
-                        profile = profile,
                         openSheet = businessController.openSheet.value,
                         sheetState = businessController.sheetState,
-                        viewModel = viewModel
-                    ) {
-                        businessController.openSheet.value = false
-                    }
+                        viewModel = viewModel,
+                        onCloseSheet = {
+                            businessController.openSheet.value = false
+                        }
+                    )
                 }
 
                 is Tabs.Configuration -> {

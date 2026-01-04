@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
@@ -35,6 +36,10 @@ import com.clay.ecommerce_compose.ui.components.client.config.UtilsHeader
 
 @Composable
 fun Configuration(navController: NavHostController, configViewModel: ConfigViewModel) {
+    LaunchedEffect(Unit) {
+        configViewModel.getUserInfoById()
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -50,8 +55,8 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
             ) {
                 Text(
                     text = "Cuenta",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontSize = 28.sp,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.W500),
+                    fontSize = 40.sp,
                 )
             }
         }

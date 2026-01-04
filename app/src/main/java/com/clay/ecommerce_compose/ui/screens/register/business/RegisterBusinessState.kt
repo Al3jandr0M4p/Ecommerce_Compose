@@ -14,18 +14,15 @@ data class RegisterBusinessState(
     val category: String = "",
     val horario_apertura: String = "",
     val horario_cierre: String = "",
-
-    // Step 2
-    val latitude: Double? = null,
-    val longitude: Double? = null,
     val telefono: String = "",
     val hasDelivery: Boolean = false,
+    val rnc: String = "",
+    val ncf: String = "",
 
     // UI State
-    val currentPage: Int = 1,
     val isLoading: Boolean = false,
     val isRegistrationSuccessful: Boolean = false,
     val error: String? = null,
 
-    val businessId: String? = null
+    val businessId: Int? = null,
 )

@@ -18,20 +18,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,13 +57,26 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.delay
 
+data class NotificationItem(
+    val id: String,
+    val title: String,
+    val message: String,
+    val type: NotificationType, // STOCK_LOW, PROMO, ORDER_STATE, etc.
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+enum class NotificationType { STOCK_LOW, PROMO, ORDER_STATUS }
+
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel) {
+fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel, businessId: Int?) {
     val context = LocalContext.current
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
+
+    val notifications by cartViewModel.notifications.collectAsState()
 
     var locationText by remember { mutableStateOf(value = "Tu ubicacion") }
     var showLocationBanner by remember { mutableStateOf(value = false) }
@@ -69,8 +85,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
     )
 
     LaunchedEffect(Unit) {
-        val locationManager =
-            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         while (true) {
             val hasPermission = permissionState.status.isGranted
             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -80,8 +95,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                     showLocationBanner = false
 
                     if (ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.ACCESS_FINE_LOCATION
+                            context, Manifest.permission.ACCESS_FINE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -89,9 +103,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                                 val geocoder = Geocoder(context)
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     geocoder.getFromLocation(
-                                        location.latitude,
-                                        location.longitude,
-                                        1
+                                        location.latitude, location.longitude, 1
                                     ) { addresses ->
                                         locationText = if (addresses.isNotEmpty()) {
                                             updateLocationTextFromAddress(addresses[0])
@@ -101,12 +113,10 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                                     }
                                 } else {
                                     try {
-                                        @Suppress("DEPRECATION")
-                                        val addresses = geocoder.getFromLocation(
-                                            location.latitude,
-                                            location.longitude,
-                                            1
-                                        )
+                                        @Suppress("DEPRECATION") val addresses =
+                                            geocoder.getFromLocation(
+                                                location.latitude, location.longitude, 1
+                                            )
                                         locationText = if (!addresses.isNullOrEmpty()) {
                                             updateLocationTextFromAddress(addresses[0])
                                         } else {
@@ -139,6 +149,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 10.dp)
                 .background(color = Color(color = 0xFFFFC107))
                 .clickable {
                     if (!permissionState.status.isGranted) {
@@ -149,8 +160,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                         )
                         context.startActivity(intent)
                     }
-                },
-            contentAlignment = Alignment.Center
+                }, contentAlignment = Alignment.Center
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -158,7 +168,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues = WindowInsets.statusBars.asPaddingValues())
-                    .padding(all = 18.dp)
+                    .padding(all = 20.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Place,
@@ -170,7 +180,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                     text = "La opcion de compartir ubicacion esta\ndesactivada. Haz clic aqui para activarla",
                     color = Color.Black,
                     style = MaterialTheme.typography.labelMedium,
-                    fontSize = 15.sp,
+                    fontSize = 12.sp,
                     textAlign = TextAlign.Left,
                     maxLines = 2,
                     modifier = Modifier
@@ -213,16 +223,33 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                             permissionState.launchPermissionRequest()
                         } else {
                             Toast.makeText(
-                                context,
-                                "Tu ubicación ya esta activa",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
+                                context, "Tu ubicación ya esta activa", Toast.LENGTH_SHORT
+                            ).show()
                         }
-                    }
-            )
+                    })
         }
 
-        ShoppingCart(navController = navController, cartViewModel = cartViewModel)
+        Row {
+            Box {
+                IconButton(onClick = { navController.navigate(route = "activity/${businessId}") }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                if (notifications.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .offset(x = (-6).dp, y = 6.dp)
+                            .size(size = 12.dp)
+                            .background(Color.Red, CircleShape)
+                            .align(Alignment.TopEnd)
+                    )
+                }
+            }
+            ShoppingCart(navController = navController, cartViewModel = cartViewModel)
+        }
     }
 }

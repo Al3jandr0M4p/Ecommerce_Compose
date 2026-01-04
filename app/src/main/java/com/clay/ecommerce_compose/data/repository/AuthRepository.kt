@@ -74,6 +74,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
                 Log.d("AuthRepository", "Usuario registrado: $newUserProfile")
                 return newUserProfile
+
             }
 
             return null
@@ -168,16 +169,14 @@ class AuthRepository(private val supabase: SupabaseClient) {
     suspend fun signUpBusiness(
         email: String,
         password: String,
-
         name: String,
         logo: Uri?,
         logoByteArray: ByteArray?,
         horarioApertura: String,
         horarioCierre: String,
         category: String,
-
-        latitude: Double?,
-        longitude: Double?,
+        rnc: String,
+        ncf: String,
         telefono: String,
         hasDelivery: Boolean
     ): BusinessProfile? {
@@ -209,7 +208,6 @@ class AuthRepository(private val supabase: SupabaseClient) {
                     "business_logo/${sessionUserId}_${System.currentTimeMillis()}.$fileExtension"
 
                 supabase.storage.from("logos").upload(logoPath, logoByteArray)
-
                 logoUrl = supabase.storage.from("logos").publicUrl(logoPath)
 
                 Log.d("AuthRepository", "Logo subido a $logoUrl")
@@ -219,13 +217,13 @@ class AuthRepository(private val supabase: SupabaseClient) {
                 buildJsonObject {
                     put("owner_id", JsonPrimitive(sessionUserId))
                     put("name", JsonPrimitive(name))
-                    put("longitude", JsonPrimitive(longitude))
-                    put("latitude", JsonPrimitive(latitude))
                     put("opening_time", JsonPrimitive(horarioApertura))
                     put("closing_time", JsonPrimitive(horarioCierre))
                     put("phone", JsonPrimitive(telefono))
                     put("has_delivery", JsonPrimitive(hasDelivery))
                     put("category", JsonPrimitive(category))
+                    put("rnc", JsonPrimitive(rnc))
+                    put("ncf", JsonPrimitive(ncf))
                     logoUrl?.let { put("logo_url", JsonPrimitive(it)) }
                 }
             ) {
@@ -241,11 +239,6 @@ class AuthRepository(private val supabase: SupabaseClient) {
             val roleId = businessRole?.id
                 ?: throw IllegalStateException("El rol 'negocio' no existe en la base de datos. Verifica la tabla roles.")
 
-            // supabase.from("profiles")
-            //     .update(buildJsonObject { put("role_id", JsonPrimitive(roleId)) }) {
-            //          filter { eq("id", sessionUserId) }
-            //     }
-            // esto lo reemplazo por esto
             supabase.from("profiles").upsert(
                 buildJsonObject {
                     put("id", JsonPrimitive(sessionUserId))
@@ -257,6 +250,8 @@ class AuthRepository(private val supabase: SupabaseClient) {
             return newBusinessProfile
 
         } catch (e: Exception) {
+            Log.e("AuthRepository", "Error en signUpBusiness", e)
+
             if (sessionUserId != null && logoPath != null) {
                 try {
                     supabase.storage.from("logos").delete(listOf(logoPath))
@@ -271,17 +266,11 @@ class AuthRepository(private val supabase: SupabaseClient) {
             }
 
             supabase.auth.signOut()
-
             throw e
         }
     }
 
     suspend fun signOut() {
-        try {
-            supabase.auth.signOut()
-        } catch (e: Exception) {
-            Log.e("AuthRepository", "Error al cerrar la session ${e.message}")
-        }
+        supabase.auth.signOut()
     }
-
 }

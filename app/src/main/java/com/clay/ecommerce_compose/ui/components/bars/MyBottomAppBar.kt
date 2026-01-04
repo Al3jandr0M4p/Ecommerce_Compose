@@ -29,7 +29,8 @@ fun MyBottomNavigationBar(
         modifier = modifier
             .height(height = 80.dp)
             .clip(shape = RoundedCornerShape(topEnd = 26.dp, topStart = 26.dp)),
-        containerColor = colorResource(id = R.color.lightGrey)
+        containerColor = colorResource(id = R.color.white),
+        tonalElevation = 4.dp
     ) {
         tabs.forEach { tab ->
             val isSelected = tab == selectedTab

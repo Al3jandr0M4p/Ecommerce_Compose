@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -21,6 +24,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +56,7 @@ import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.domain.model.UserSession
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.components.auth.users.BottomComp
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import kotlinx.coroutines.delay
 
 
@@ -156,48 +162,20 @@ fun LoginTextFields(
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
     viewModel: LoginViewModel,
-    authRepository: AuthRepository,
 ) {
     var showPassword by remember { mutableStateOf(value = false) }
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    val session = remember { mutableStateOf<UserSession?>(null) }
 
     LaunchedEffect(state.error, state.loggedIn) {
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
+
         if (state.loggedIn) {
-            val getSessionUseCase = GetCurrentUserSessionUseCase(authRepository = authRepository)
-            session.value = getSessionUseCase.invoke()
-
-            val userRole = session.value?.role ?: "guest"
-
-            Toast.makeText(context, "Bienvenido ${session.value?.role}", Toast.LENGTH_SHORT)
-                .show()
-
-            delay(300)
-            when (userRole) {
-                "usuario" -> {
-                    navController.navigate(route = "userHome")
-                }
-
-                "negocio" -> {
-                    val businessId = session.value?.businessId
-                    navController.navigate(route = "businessHome/${businessId}")
-                }
-
-                "admin" -> {
-                    navController.navigate(route = "adminHome")
-                }
-
-                else -> {
-                    Toast.makeText(context, "Rol no reconocido: $userRole", Toast.LENGTH_SHORT)
-                        .show()
-                    navController.navigate(route = "login")
-                }
+            navController.navigate("splash") {
+                popUpTo("login") { inclusive = true }
             }
         }
     }
@@ -307,6 +285,121 @@ fun LoginScreen(
                                 fontSize = 20.sp,
                                 modifier = Modifier.padding(vertical = 6.dp)
                             )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .weight(weight = 1f)
+                                .height(height = 1.dp),
+                            thickness = DividerDefaults.Thickness,
+                            color = Color.Gray
+                        )
+
+                        Text(
+                            text = "O continua con",
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 13.sp
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .weight(weight = 1f)
+                                .height(height = 1.dp),
+                            thickness = DividerDefaults.Thickness,
+                            color = Color.Gray
+                        )
+                    }
+
+                    Column {
+                        // Google Buttom
+                        BottomComp(
+                            onButtonAction = { },
+                            containerColor = colorResource(id = R.color.white),
+                            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+                            contentColor = colorResource(id = R.color.black),
+                            shape = CircleShape,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 6.dp, end = 6.dp, top = 9.dp)
+                                .height(height = 48.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(height = 56.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Iniciar con Google",
+                                    fontSize = 18.sp,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .padding(start = 18.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ic_google),
+                                        contentDescription = "Google logo",
+                                        modifier = Modifier.size(size = 24.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(height = 6.dp))
+
+                        // Boton de Apple
+                        BottomComp(
+                            onButtonAction = { },
+                            containerColor = colorResource(id = R.color.white),
+                            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp),
+                            contentColor = colorResource(id = R.color.black),
+                            shape = CircleShape,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 6.dp, end = 6.dp, bottom = 9.dp)
+                                .height(height = 48.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(height = 56.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Iniciar con Apple",
+                                    fontSize = 18.sp,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .padding(start = 18.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ic_apple),
+                                        contentDescription = "Apple logo",
+                                        modifier = Modifier.size(size = 24.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
+                            }
                         }
                     }
                 }

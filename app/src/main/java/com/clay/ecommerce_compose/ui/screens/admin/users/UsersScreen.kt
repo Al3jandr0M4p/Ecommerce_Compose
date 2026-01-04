@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,7 +38,7 @@ fun UsersScreen(
                 title = { Text("Usuarios", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -152,22 +153,6 @@ fun UsersScreen(
             }
         )
     }
-
-    // Dialog eliminar
-    ConfirmDialog(
-        show = showDeleteDialog,
-        title = "Eliminar Usuario",
-        message = "¿Está seguro que desea eliminar a ${selectedUser?.name}?",
-        onConfirm = {
-            selectedUser?.let { users.remove(it) }
-            showDeleteDialog = false
-            selectedUser = null
-        },
-        onDismiss = {
-            showDeleteDialog = false
-            selectedUser = null
-        }
-    )
 }
 
 @Composable
@@ -224,11 +209,6 @@ fun UserCard(
                         )
                     }
                 }
-
-                StatusBadge(
-                    text = user.status,
-                    status = if (user.status == "Activo") "success" else "danger"
-                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -364,13 +344,6 @@ fun CreateUserDialog(
                     singleLine = true
                 )
 
-                AdminDropdown(
-                    label = "Rol",
-                    selectedValue = role,
-                    options = listOf("Cliente", "Negocio", "Repartidor", "Cajero"),
-                    onValueChange = { role = it }
-                )
-
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -426,12 +399,6 @@ fun EditUserDialog(
                     onValueChange = { email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth()
-                )
-                AdminDropdown(
-                    label = "Rol",
-                    selectedValue = role,
-                    options = listOf("Cliente", "Negocio", "Repartidor", "Cajero"),
-                    onValueChange = { role = it }
                 )
             }
         },

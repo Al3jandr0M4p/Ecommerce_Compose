@@ -38,9 +38,9 @@ fun ShoppingCart(navController: NavHostController, cartViewModel: CartViewModel)
         if (state.items.isNotEmpty()) {
             Box(
                 modifier = Modifier
-                    .offset(x = (-6).dp, y = 6.dp)
-                    .size(20.dp)
-                    .background(color = Color(0xFF06C167), shape = CircleShape),
+                    .offset(x = (-6).dp, y = 3.dp)
+                    .size(size = 20.dp)
+                    .background(color = Color(color = 0xFF06C167), shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

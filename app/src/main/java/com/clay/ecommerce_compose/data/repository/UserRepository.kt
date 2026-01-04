@@ -9,15 +9,13 @@ import io.github.jan.supabase.postgrest.from
 class UserRepository(private val supabase: SupabaseClient) {
 
     suspend fun getAllBusiness(): List<BusinessProfile?> {
-        return supabase.from("businesses").select().decodeList<BusinessProfile>()
+        return supabase.from("businesses")
+            .select()
+            .decodeList<BusinessProfile>()
     }
 
     suspend fun getUserInfoById(): UserInfo {
         return supabase.auth.retrieveUserForCurrentSession()
-    }
-
-    suspend fun signOut() {
-        supabase.auth.signOut()
     }
 
 }

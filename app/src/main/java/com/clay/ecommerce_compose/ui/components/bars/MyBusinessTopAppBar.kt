@@ -75,7 +75,7 @@ fun MyBusinessTopAppBar(businessName: String, scrollBehavior: TopAppBarScrollBeh
             }
         },
 
-        actions = @Composable {
+        actions = {
             IconButton(onClick = { }, modifier = Modifier.size(size = 35.dp)) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
