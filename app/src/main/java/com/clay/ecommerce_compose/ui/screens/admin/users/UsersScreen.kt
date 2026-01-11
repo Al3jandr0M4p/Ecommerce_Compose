@@ -129,20 +129,20 @@ fun UsersScreen(
     }
 
     // Dialog editar usuario
-    if (showEditDialog && selectedUser != null) {
-        EditUserDialog(
-            user = selectedUser!!,
-            onDismiss = {
-                showEditDialog = false
-                selectedUser = null
-            },
-            onConfirm = { name, email, role ->
-                viewModel.updateUser(selectedUser!!.copy(name = name, email = email, role = role))
-                showEditDialog = false
-                selectedUser = null
-            }
-        )
-    }
+//    if (showEditDialog && selectedUser != null) {
+//        EditUserDialog(
+//            user = selectedUser!!,
+//            onDismiss = {
+//                showEditDialog = false
+//                selectedUser = null
+//            },
+//            onConfirm = { name, email, role ->
+//                viewModel.updateUser(selectedUser!!.copy(name = name, email = email, role = role))
+//                showEditDialog = false
+//                selectedUser = null
+//            }
+//        )
+//    }
 }
 
 @Composable
