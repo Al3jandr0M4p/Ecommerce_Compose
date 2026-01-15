@@ -20,6 +20,7 @@ import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
 import com.clay.ecommerce_compose.ui.screens.admin.categories.CategoriesScreen
 import com.clay.ecommerce_compose.ui.screens.admin.dashboard.AdminDashboardScreen
 import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryScreen
+import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.orders.OrdersScreen
 import com.clay.ecommerce_compose.ui.screens.admin.reports.ReportsScreen
 import com.clay.ecommerce_compose.ui.screens.admin.users.UsersScreen
@@ -47,6 +48,7 @@ import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusiness
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import com.clay.ecommerce_compose.ui.screens.admin.negocios.NegociosScreen
 
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -188,8 +190,20 @@ fun Navigation(
             )
         }
 
+        composable(route = "adminBusinesses") {
+            NegociosScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+
         composable(route = "adminDelivery") {
-            DeliveryScreen(onBack = { navController.popBackStack() })
+            val deliveryViewModel: DeliveryViewModel = viewModel(factory = factory)
+
+            DeliveryScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = deliveryViewModel
+            )
         }
 
         composable(route = "adminUsers") {
@@ -200,11 +214,6 @@ fun Navigation(
             )
         }
 
-//        composable(route = "adminBusinesses") {
-//            BusinessScreen(
-//                onBack = { navController.popBackStack() }
-//            )
-//        }
 
         composable(route = "adminCategories") {
             CategoriesScreen(

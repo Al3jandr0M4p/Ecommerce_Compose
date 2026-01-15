@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class UsersViewModel(
-    private val userRepository: UserRepository
-) : ViewModel() {
+class UsersViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users.asStateFlow()
@@ -23,30 +21,57 @@ class UsersViewModel(
 
     private fun loadUsers() {
         viewModelScope.launch {
-            val profiles = userRepository.getAllUsers()
-            _users.value = profiles.map {
+            val users = userRepository.getAllUsers()
+            _users.value = users.map {
                 User(
                     id = it.id,
-                    name = it.name ?: "Sin nombre",
-                    email = it.email ?: "Sin email",
-                    role = it.roleName ?: "Sin rol",
+                    name = it.name,
+                    email = it.email,
+                    role = it.role,
                     status = "Activo"
                 )
             }
         }
     }
 
+
     fun createUser(name: String, email: String, role: String, password: String) {
         viewModelScope.launch {
-            userRepository.createUser(
-                UserToInsert(
-                    email = email,
-                    password = password,
-                    userName = name,
-                    roleName = role
-                )
-            )
+            val userToInsert = UserToInsert(email = email, password = password, userName = name, roleName = role)
+            userRepository.createUser(userToInsert)
             loadUsers()
         }
     }
+
+    fun updateUser(user: User) {
+        viewModelScope.launch {
+
+            // 🔥 Actualiza primero la lista local (UI inmediata)
+            _users.value = _users.value.map {
+                if (it.id == user.id) user.copy() else it.copy()
+            }
+
+            // 🔄 Luego sincroniza con Supabase
+            userRepository.updateUser(user)
+
+            // 🔁 Recarga desde backend para validar
+            loadUsers()
+        }
+    }
+
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+
+            // 🔥 quitar de la UI inmediatamente
+            _users.value = _users.value.filterNot { it.id == user.id }
+
+            // 🔥 borrar en backend
+            userRepository.deleteUser(user.id)
+
+            // 🔄 refrescar
+            loadUsers()
+        }
+    }
+
+
 }

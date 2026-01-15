@@ -35,6 +35,11 @@ fun UsersScreen(
 
     val users by viewModel.users.collectAsState()
 
+    val filteredUsers = users.filter {
+        it.name.contains(searchQuery, ignoreCase = true) ||
+                it.email.contains(searchQuery, ignoreCase = true)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,12 +64,14 @@ fun UsersScreen(
             }
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color(0xFFF5F6FA))
         ) {
+
             // Buscador
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -76,7 +83,7 @@ fun UsersScreen(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         label = { Text("Buscar usuario") },
-                        placeholder = { Text("Nombre, email...") },
+                        placeholder = { Text("Nombre o email") },
                         leadingIcon = { Icon(Icons.Default.Search, null) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -85,21 +92,21 @@ fun UsersScreen(
                 }
             }
 
-            // Lista de usuarios
-            if (users.isEmpty()) {
-                EmptyState(
-                    icon = Icons.Default.People,
-                    message = "No hay usuarios registrados",
-                    actionText = "Agregar Usuario",
-                    onAction = { showCreateDialog = true }
-                )
+            // Lista
+            if (filteredUsers.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No hay usuarios registrados", color = Color.Gray)
+                }
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(users) { user ->
+                    items(filteredUsers) { user ->
                         UserCard(
                             user = user,
                             onEdit = {
@@ -117,7 +124,7 @@ fun UsersScreen(
         }
     }
 
-    // Dialog crear usuario
+    // Dialog Crear
     if (showCreateDialog) {
         CreateUserDialog(
             onDismiss = { showCreateDialog = false },
@@ -128,22 +135,64 @@ fun UsersScreen(
         )
     }
 
-    // Dialog editar usuario
-//    if (showEditDialog && selectedUser != null) {
-//        EditUserDialog(
-//            user = selectedUser!!,
-//            onDismiss = {
-//                showEditDialog = false
-//                selectedUser = null
-//            },
-//            onConfirm = { name, email, role ->
-//                viewModel.updateUser(selectedUser!!.copy(name = name, email = email, role = role))
-//                showEditDialog = false
-//                selectedUser = null
-//            }
-//        )
-//    }
+    // Dialog Editar
+    if (showEditDialog && selectedUser != null) {
+        EditUserDialog(
+            user = selectedUser!!,
+            onDismiss = {
+                showEditDialog = false
+                selectedUser = null
+            },
+            onConfirm = { name, email, role ->
+                viewModel.updateUser(
+                    selectedUser!!.copy(
+                        name = name,
+                        email = email,
+                        role = role
+                    )
+                )
+                showEditDialog = false
+                selectedUser = null
+            }
+        )
+    }
+
+    // Dialog Eliminar
+    if (showDeleteDialog && selectedUser != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                selectedUser = null
+            },
+            title = { Text("Eliminar usuario", fontWeight = FontWeight.Bold) },
+            text = {
+                Text("¿Seguro que deseas eliminar a ${selectedUser!!.name}? Esta acción no se puede deshacer.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteUser(selectedUser!!)
+                        showDeleteDialog = false
+                        selectedUser = null
+                    }
+                ) {
+                    Text("Eliminar", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        selectedUser = null
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
+
 
 @Composable
 fun UserCard(
