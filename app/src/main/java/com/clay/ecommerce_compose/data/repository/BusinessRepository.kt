@@ -3,7 +3,17 @@ package com.clay.ecommerce_compose.data.repository
 import android.content.Context
 import android.util.Log
 import androidx.core.net.toUri
-import com.clay.ecommerce_compose.domain.model.*
+import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.CategoryRequest
+import com.clay.ecommerce_compose.domain.model.LowStockProduct
+import com.clay.ecommerce_compose.domain.model.ProductCategory
+import com.clay.ecommerce_compose.domain.model.ProductInsertPayload
+import com.clay.ecommerce_compose.domain.model.ProductPayload
+import com.clay.ecommerce_compose.domain.model.ProductsByCategory
+import com.clay.ecommerce_compose.domain.model.StockAdjustmentRequest
+import com.clay.ecommerce_compose.domain.model.StockMovement
+import com.clay.ecommerce_compose.domain.model.StockMovementType
+import com.clay.ecommerce_compose.ui.screens.businesess.TopProductReport
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -11,13 +21,25 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class BusinessSalesSummary(
+    @SerialName("total_orders")
+    val totalOrders: Int,
+
+    @SerialName("total_revenue")
+    val totalRevenue: Double,
+
+    @SerialName("total_discounts")
+    val totalDiscounts: Double
+)
 
 class BusinessRepository(
     private val supabase: SupabaseClient,
     private val context: Context?
 ) {
-
-    // ===== MÉTODOS EXISTENTES =====
 
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun uploadProductImage(imageUri: String): Result<String> {
@@ -78,6 +100,27 @@ class BusinessRepository(
             .decodeSingleOrNull()
     }
 
+    suspend fun getBusinessSalesSummary(businessId: String): BusinessSalesSummary {
+        return supabase.postgrest.rpc(
+            "get_business_sales_summary",
+            mapOf("bid" to businessId)
+        ).decodeSingle<BusinessSalesSummary>()
+    }
+
+    suspend fun getTopProducts(businessId: Int): Result<List<TopProductReport>> {
+        return try {
+            val result = supabase
+                .postgrest
+                .rpc("get_top_products", mapOf("bid" to businessId))
+                .decodeList<TopProductReport>()
+
+            Result.success(result)
+        } catch (e: Exception) {
+            Log.e("BusinessRepository", "Error getTopProducts: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
     suspend fun addProduct(product: ProductInsertPayload): Result<Unit> {
         return try {
             supabase.from("products").insert(product)
@@ -116,8 +159,6 @@ class BusinessRepository(
             Result.failure(e)
         }
     }
-
-    // ===== NUEVOS MÉTODOS PARA CATEGORÍAS =====
 
     suspend fun getCategories(businessId: Int): Result<List<ProductCategory>> {
         return try {
@@ -177,8 +218,6 @@ class BusinessRepository(
         }
     }
 
-    // ===== MÉTODOS PARA PRODUCTOS POR CATEGORÍA =====
-
     suspend fun getProductsByCategory(businessId: Int): Result<List<ProductsByCategory>> {
         return try {
             // Opción 1: Usando la función RPC de PostgreSQL
@@ -189,7 +228,10 @@ class BusinessRepository(
 
             Result.success(result)
         } catch (e: Exception) {
-            Log.e("BusinessRepository", "Error al obtener productos por categoría (RPC): ${e.message}")
+            Log.e(
+                "BusinessRepository",
+                "Error al obtener productos por categoría (RPC): ${e.message}"
+            )
 
             // Opción 2: Fallback - Agrupar manualmente
             try {
@@ -208,7 +250,7 @@ class BusinessRepository(
                                 }
                                 .decodeSingle<ProductCategory>().name
                         } catch (e: Exception) {
-                            "Categoría $categoryId"
+                            "Categoría $categoryId Error $e"
                         }
                     }
 
@@ -241,7 +283,10 @@ class BusinessRepository(
 
             Result.success(result)
         } catch (e: Exception) {
-            Log.e("BusinessRepository", "Error al obtener productos con stock bajo (vista): ${e.message}")
+            Log.e(
+                "BusinessRepository",
+                "Error al obtener productos con stock bajo (vista): ${e.message}"
+            )
 
             // Opción 2: Fallback - Filtrar manualmente
             try {
@@ -302,6 +347,7 @@ class BusinessRepository(
             val newStock = when (adjustment.movementType) {
                 StockMovementType.RESTOCK, StockMovementType.RETURN ->
                     currentStock + adjustment.quantity
+
                 StockMovementType.ADJUSTMENT ->
                     adjustment.quantity // En ajuste, quantity es el nuevo stock total
                 StockMovementType.SALE ->

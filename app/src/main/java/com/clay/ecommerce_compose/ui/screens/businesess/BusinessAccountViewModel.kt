@@ -59,6 +59,9 @@ class BusinessAccountViewModel(
     private val _productStockState = MutableStateFlow(value = StockManagementState())
     val productStockState: StateFlow<StockManagementState> = _productStockState.asStateFlow()
 
+    private val _reportsState = MutableStateFlow(value = BusinessReportsState())
+    val reportsState: StateFlow<BusinessReportsState> = _reportsState.asStateFlow()
+
     private var hasLoadedBusiness = false
 
     private var hasLoadedProducts = false
@@ -103,6 +106,36 @@ class BusinessAccountViewModel(
             val products = businessAccountRepository.getProductsByBusinessId(businessId)
             _businessProduct.value = products
             hasLoadedProducts = true
+        }
+    }
+
+    fun loadBusinessReports(businessId: String) {
+        viewModelScope.launch {
+            _reportsState.value = _reportsState.value.copy(isLoading = true)
+
+            try {
+                val lowStock = businessAccountRepository.getLowStockProducts(businessId.toInt())
+                val stockMovements = businessAccountRepository.getStockMovements(businessId.toInt())
+
+                val summary = businessAccountRepository.getBusinessSalesSummary(businessId)
+                val topProducts = businessAccountRepository.getTopProducts(businessId.toInt())
+
+
+                _reportsState.value = BusinessReportsState(
+                    lowStock = lowStock.getOrNull() ?: emptyList(),
+                    stockMovements = stockMovements.getOrNull() ?: emptyList(),
+                    totalOrders =  summary.totalOrders,
+                    totalRevenue = summary.totalRevenue,
+                    totalDiscounts = summary.totalDiscounts,
+                    topProducts = topProducts.getOrNull() ?: emptyList(),
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                _reportsState.value = BusinessReportsState(
+                    error = e.message,
+                    isLoading = false
+                )
+            }
         }
     }
 

@@ -13,6 +13,9 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -81,19 +84,51 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
     }
 
     suspend fun getActiveOrder(userId: String): Order? {
-        return supabase.from("orders")
+        val list = supabase.from("orders")
             .select {
                 filter {
-//                    Order::status isIn listOf("waiting_delivery", "on_the_way")
                     eq("user_id", userId)
+                    isIn("status", listOf("pending", "paid", "waiting_delivery", "on_the_way"))
                 }
                 order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
-                limit(1)
             }
             .decodeList<Order>()
-            .firstOrNull()
+
+        return list.firstOrNull()
     }
 
+    suspend fun getOrderInvoice(orderId: String): Order? {
+        return try {
+            supabase.from("orders")
+                .select {
+                    filter {
+                        eq("id", orderId)
+                    }
+                }
+                .decodeSingle<Order>()
+        } catch (e: Exception) {
+            Log.e("CART_REPO", "Error getting invoice for order: $orderId", e)
+            null
+        }
+    }
+
+    fun observeActiveOrder(userId: String): Flow<Order?> = flow {
+        Log.d("ORDER_POLLING", "=== Flow started for user: $userId ===")
+
+        while (true) {
+            try {
+                Log.d("ORDER_POLLING", "Checking active order...")
+                val order = getActiveOrder(userId)
+                Log.d("ORDER_POLLING", "Active order result: $order")
+                emit(order)
+            } catch (e: Exception) {
+                Log.e("ORDER_POLLING", "Error checking active order", e)
+                emit(null)
+            }
+            Log.d("ORDER_POLLING", "Waiting 6.5 seconds before next check...")
+            delay(6500L)
+        }
+    }
 
     suspend fun getCart(): List<CartItem> {
         val uid = userIdOrNull() ?: return emptyList()
@@ -152,6 +187,8 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
                         eq("product_id", productId)
                     }
                 }
+
+
 
                 Log.d("CART_REPO", "Quantity updated to $newQuantity")
             } else {

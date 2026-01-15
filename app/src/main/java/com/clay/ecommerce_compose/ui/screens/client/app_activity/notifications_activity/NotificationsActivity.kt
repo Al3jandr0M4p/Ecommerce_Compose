@@ -21,14 +21,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +52,9 @@ import com.clay.ecommerce_compose.ui.components.client.header.NotificationType
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.message_activity.ChatIntent
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.message_activity.ChatViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.message_activity.MessageActivity
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartIntent
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
+import kotlinx.coroutines.launch
 
 enum class ActivityTab {
     NOTIFICATIONS,
@@ -56,20 +64,33 @@ enum class ActivityTab {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsActivity(
-    businessId: Int?,
     navController: NavHostController,
     cartViewModel: CartViewModel,
     chatViewModel: ChatViewModel,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    autoOpenBusinessChat: Int? = null,
 ) {
     val notifications by cartViewModel.notifications.collectAsState()
     var selectedTab by remember { mutableStateOf(value = ActivityTab.NOTIFICATIONS) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(autoOpenBusinessChat) {
+        if (autoOpenBusinessChat != null) {
+            selectedTab = ActivityTab.MESSAGES
+        }
+    }
 
     LaunchedEffect(notifications.size) {
         Log.d("NotificationsActivity", "Notifications count: ${notifications.size}")
     }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            )
+        },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -81,7 +102,7 @@ fun NotificationsActivity(
                 }, navigationIcon = {
                     IconButton(
                         onClick = { navController.navigate(route = "userHome") },
-                        modifier = Modifier.Companion.size(size = 30.dp)
+                        modifier = Modifier.size(size = 30.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
@@ -95,7 +116,7 @@ fun NotificationsActivity(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .background(color = colorResource(id = R.color.white))
                 .padding(paddingValues = innerPadding)
@@ -105,7 +126,7 @@ fun NotificationsActivity(
                     .fillMaxWidth()
                     .padding(start = 15.dp, end = 15.dp, bottom = 8.dp)
             ) {
-                Box(modifier = Modifier.Companion.padding(end = 16.dp)) {
+                Box(modifier = Modifier.padding(end = 16.dp)) {
                     Text(
                         text = "Notificaciones",
                         fontSize = 22.sp,
@@ -113,7 +134,7 @@ fun NotificationsActivity(
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.W500),
                         color = if (selectedTab == ActivityTab.NOTIFICATIONS) colorResource(id = R.color.black)
                         else colorResource(id = R.color.coolGreyLight),
-                        modifier = Modifier.Companion
+                        modifier = Modifier
                             .padding(end = 10.dp)
                             .clickable {
                                 selectedTab = ActivityTab.NOTIFICATIONS
@@ -135,7 +156,7 @@ fun NotificationsActivity(
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.W500),
                     color = if (selectedTab == ActivityTab.MESSAGES) colorResource(id = R.color.black)
                     else colorResource(id = R.color.coolGreyLight),
-                    modifier = Modifier.Companion.clickable {
+                    modifier = Modifier.clickable {
                         selectedTab = ActivityTab.MESSAGES
                     }
                 )
@@ -146,31 +167,58 @@ fun NotificationsActivity(
                     if (notifications.isEmpty()) {
                         EmptyNotifications(modifier = Modifier.weight(weight = 1f))
                     } else {
-                        LazyColumn(modifier = Modifier.Companion.fillMaxSize()) {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(
                                 items = notifications,
                                 key = { it.id }
                             ) { n ->
-                                NotificationItems(
-                                    notification = n,
-                                    onClick = {
-                                        when (n.type) {
-                                            NotificationType.STOCK_LOW -> {
-                                                val productId = n.id
-                                                    .removePrefix("stock-")
-                                                    .substringBefore("-")
-                                                navController.navigate("product/$productId")
+
+                                val dismissState = rememberSwipeToDismissBoxState(
+                                    confirmValueChange = { value ->
+                                        if (value == SwipeToDismissBoxValue.StartToEnd ||
+                                            value == SwipeToDismissBoxValue.EndToStart
+                                        ) {
+                                            cartViewModel.removeNotification(n.id)
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Notification eliminada"
+                                                )
                                             }
-
-                                            NotificationType.PROMO ->
-                                                navController.navigate("promo/${n.id}")
-
-                                            NotificationType.ORDER_STATUS ->
-                                                navController.navigate("order-status")
+                                            true
+                                        } else {
+                                            false
                                         }
-
-                                        cartViewModel.removeNotification(n.id)
                                     }
+                                )
+
+                                SwipeToDismissBox(
+                                    state = dismissState,
+                                    backgroundContent = {},
+                                    content = {
+                                        NotificationItems(
+                                            notification = n,
+                                            onClick = {
+                                                when (n.type) {
+                                                    NotificationType.STOCK_LOW -> {
+                                                        val productId = n.id
+                                                            .removePrefix("stock-")
+                                                            .substringBefore("-")
+                                                        navController.navigate("product/$productId")
+                                                    }
+
+                                                    NotificationType.PROMO ->
+                                                        navController.navigate("promo/${n.id}")
+
+                                                    NotificationType.ORDER_STATUS ->
+                                                        navController.navigate("order-status")
+                                                }
+
+                                                cartViewModel.removeNotification(n.id)
+                                            }
+                                        )
+                                    },
+                                    enableDismissFromEndToStart = true,
+                                    enableDismissFromStartToEnd = true
                                 )
                             }
                         }
@@ -181,11 +229,11 @@ fun NotificationsActivity(
                     MessageActivity(
                         chatViewModel = chatViewModel,
                         mainViewModel = mainViewModel,
-                        businessId = businessId,
+                        autoOpenBusinessChat = autoOpenBusinessChat,
                         onThreadClick = { thread ->
                             chatViewModel.handleIntent(intent = ChatIntent.SelectThread(thread = thread))
                             navController.navigate(route = "chat")
-                        }
+                        },
                     )
                 }
             }

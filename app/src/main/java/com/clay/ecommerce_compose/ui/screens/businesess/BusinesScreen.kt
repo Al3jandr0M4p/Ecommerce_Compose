@@ -51,7 +51,8 @@ fun BusinessScreen(
             BusinessHomeScreen(
                 navController = navController,
                 viewModel = viewModel,
-                profile = profile
+                profile = profile,
+                businessId = businessId
             )
         }
     }
@@ -63,7 +64,8 @@ fun BusinessScreen(
 fun BusinessHomeScreen(
     navController: NavHostController,
     viewModel: BusinessAccountViewModel,
-    profile: BusinessProfile?
+    profile: BusinessProfile?,
+    businessId: String,
 ) {
     val businessController = useBusinessScreen(viewModel = viewModel)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -81,7 +83,7 @@ fun BusinessHomeScreen(
             MyBottomNavigationBar(
                 selectedTab = businessController.selectedTab.value,
                 onTabSelected = { businessController.selectedTab.value = it },
-                tabs = listOf(Tabs.Home, Tabs.Balance, Tabs.Stock, Tabs.Configuration)
+                tabs = listOf(Tabs.Home, Tabs.Balance, Tabs.Stock, Tabs.Report, Tabs.Configuration)
             )
         },
         floatingActionButton = {
@@ -123,6 +125,10 @@ fun BusinessHomeScreen(
 
                 is Tabs.Configuration -> {
                     BusinessAdministrationConfiguration()
+                }
+
+                is Tabs.Report -> {
+                    ReportsBusinessScreen(viewModel = viewModel, businessId = businessId)
                 }
 
                 is Tabs.Activity -> {}

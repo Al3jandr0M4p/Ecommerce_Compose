@@ -1,5 +1,6 @@
 package com.clay.ecommerce_compose.ui.components.client.business
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -37,6 +36,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,8 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -63,6 +63,7 @@ import com.clay.ecommerce_compose.ui.screens.client.cart.CartIntent
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartItem
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun UserBusinessComponent(
@@ -73,8 +74,11 @@ fun UserBusinessComponent(
     navController: NavHostController,
     cartViewModel: CartViewModel,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(value = false) }
     val context = LocalContext.current
+    val activity = context as? Activity ?: return
+    val windowSize = calculateWindowSizeClass(activity)
+    val isTablet = windowSize.widthSizeClass != WindowWidthSizeClass.Compact
 
     LazyColumn(
         state = scrollState,
@@ -86,7 +90,7 @@ fun UserBusinessComponent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(height = 360.dp)
+                    .height(height = if (isTablet) 480.dp else 300.dp)
             ) {
                 AsyncImage(
                     model = buss?.logoUrl,
@@ -94,7 +98,7 @@ fun UserBusinessComponent(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(height = 300.dp)
+                        .height(height = if (isTablet) 480.dp else 300.dp)
                 )
 
                 Row(
@@ -111,6 +115,7 @@ fun UserBusinessComponent(
                         },
                         modifier = Modifier.size(size = 40.dp)
                     )
+
                     Row {
                         SettingsButtonIcons(
                             icon = Icons.Outlined.Search, clickable = {
@@ -159,7 +164,7 @@ fun UserBusinessComponent(
 
                             DropdownMenuItem(
                                 onClick = {
-                                    navController.navigate(route = "activity/${buss!!.id}")
+                                    navController.navigate(route = "activity/business/${buss!!.id}")
                                     expanded = false
                                 },
                                 leadingIcon = {
@@ -181,17 +186,6 @@ fun UserBusinessComponent(
                         }
                     }
                 }
-
-                Image(
-                    painter = painterResource(id = R.drawable.ic_nike_logo),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset(y = 260.dp)
-                        .height(height = 90.dp)
-                        .clip(shape = CircleShape)
-                        .shadow(elevation = 6.dp)
-                )
             }
         }
 
@@ -203,8 +197,12 @@ fun UserBusinessComponent(
             ) {
                 Text(
                     text = buss?.name.toString(),
-                    fontSize = 20.sp,
-                    style = MaterialTheme.typography.labelSmall
+                    fontSize = if (isTablet) 30.sp else 20.sp,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(
+                        top = if (isTablet) 12.dp else 8.dp,
+                        bottom = if (isTablet) 8.dp else 4.dp
+                    )
                 )
 
                 Row(
@@ -264,44 +262,78 @@ fun UserBusinessComponent(
             ) {
                 Text(
                     text = "Productos destacados",
-                    fontSize = 18.sp,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    fontSize = if (isTablet) 28.sp else 20.sp,
+                    style = if (isTablet) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(bottom = if (isTablet) 10.dp else 8.dp)
                 )
 
-                LazyRow(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(items = products) { product ->
-                        val isOutOfStock = product.stock <= 0
-                        ProductCard(
-                            title = product.name,
-                            price = product.price,
-                            image = product.imageUrl,
-                            modifier = Modifier.width(width = 200.dp),
-                            onAddClick = {
-                                if (!isOutOfStock) {
-                                    cartViewModel.handleIntent(
-                                        intent = CartIntent.AddItem(
-                                            item = CartItem(
-                                                id = product.id,
-                                                businessName = buss?.name.toString(),
-                                                businessImg = buss?.logoUrl.toString(),
-                                                businessId = buss!!.id,
-                                                name = product.name,
-                                                price = product.price,
-                                                imageUrl = product.imageUrl,
-                                                quantity = 1,
-                                                stock = product.stock
+                if (isTablet) {
+                    LazyRow(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(items = products) { product ->
+                            val isOutOfStock = product.stock <= 0
+                            ProductCard(
+                                title = product.name,
+                                price = product.price,
+                                image = product.imageUrl,
+                                onAddClick = {
+                                    if (!isOutOfStock) {
+                                        cartViewModel.handleIntent(
+                                            intent = CartIntent.AddItem(
+                                                item = CartItem(
+                                                    id = product.id,
+                                                    businessName = buss?.name.toString(),
+                                                    businessImg = buss?.logoUrl.toString(),
+                                                    businessId = buss!!.id,
+                                                    name = product.name,
+                                                    price = product.price,
+                                                    imageUrl = product.imageUrl,
+                                                    quantity = 1,
+                                                    stock = product.stock
+                                                )
                                             )
                                         )
-                                    )
-                                }
-                                Log.d("AddProduct", "Click add product: ${product.id}")
-                            },
-                            enabled = !isOutOfStock
-                        )
+                                    }
+                                    Log.d("AddProduct", "Click add product: ${product.id}")
+                                },
+                                enabled = !isOutOfStock
+                            )
+                        }
+                    }
+                } else {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        products.forEach { product ->
+                            val isOutOfStock = product.stock <= 0
+                            ProductCard(
+                                title = product.name,
+                                price = product.price,
+                                image = product.imageUrl,
+                                onAddClick = {
+                                    if (!isOutOfStock) {
+                                        cartViewModel.handleIntent(
+                                            intent = CartIntent.AddItem(
+                                                item = CartItem(
+                                                    id = product.id,
+                                                    businessName = buss?.name.toString(),
+                                                    businessImg = buss?.logoUrl.toString(),
+                                                    businessId = buss!!.id,
+                                                    name = product.name,
+                                                    price = product.price,
+                                                    imageUrl = product.imageUrl,
+                                                    quantity = 1,
+                                                    stock = product.stock
+                                                )
+                                            )
+                                        )
+                                    }
+                                    Log.d("AddProduct", "Click add product: ${product.id}")
+                                },
+                                enabled = !isOutOfStock
+                            )
+                            Spacer(modifier = Modifier.height(height = 30.dp))
+                        }
                     }
                 }
             }

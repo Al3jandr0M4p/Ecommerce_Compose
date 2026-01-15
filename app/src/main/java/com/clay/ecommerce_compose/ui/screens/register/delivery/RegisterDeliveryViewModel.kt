@@ -1,7 +1,8 @@
-package com.clay.ecommerce_compose.ui.screens.register
+package com.clay.ecommerce_compose.ui.screens.register.delivery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -9,8 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+class RegisterDeliveryViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
-class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _state = MutableStateFlow(value = State())
     val state: StateFlow<State> = _state.asStateFlow()
 
@@ -28,17 +29,17 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
             is Intent.PasswordChanged -> _state.value =
                 _state.value.copy(password = intent.password)
 
-            is Intent.Submit -> register()
+            is Intent.Submit -> registerDelivery()
         }
     }
 
-    private fun register() {
+    private fun registerDelivery() {
         val current = _state.value
         _state.value = _state.value.copy(isLoading = true, error = null)
 
         viewModelScope.launch {
             try {
-                val user = authRepository.signUp(
+                val user = authRepository.signUpDelivery(
                     email = current.email,
                     password = current.password,
                     name = current.name,
@@ -74,5 +75,4 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
             }
         }
     }
-
 }

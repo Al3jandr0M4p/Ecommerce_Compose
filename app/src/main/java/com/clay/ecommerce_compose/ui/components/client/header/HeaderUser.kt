@@ -1,6 +1,7 @@
 package com.clay.ecommerce_compose.ui.components.client.header
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -32,6 +33,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,11 +47,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.ui.components.client.cart.ShoppingCart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.utils.helpers.updateLocationTextFromAddress
@@ -62,16 +68,21 @@ data class NotificationItem(
     val title: String,
     val message: String,
     val type: NotificationType, // STOCK_LOW, PROMO, ORDER_STATE, etc.
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val orderId: String? = null
 )
 
 enum class NotificationType { STOCK_LOW, PROMO, ORDER_STATUS }
 
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel, businessId: Int?) {
+fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel) {
     val context = LocalContext.current
+    val activity = context as? Activity ?: return
+    val windowSize = calculateWindowSizeClass(activity)
+    val isTablet = windowSize.widthSizeClass != WindowWidthSizeClass.Compact
+
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
@@ -149,7 +160,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp)
+                .padding(vertical = if (isTablet) 18.dp else 14.dp)
                 .background(color = Color(color = 0xFFFFC107))
                 .clickable {
                     if (!permissionState.status.isGranted) {
@@ -168,7 +179,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues = WindowInsets.statusBars.asPaddingValues())
-                    .padding(all = 20.dp)
+                    .padding(all = if (isTablet) 32.dp else 22.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Place,
@@ -177,21 +188,21 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                 )
 
                 Text(
-                    text = "La opcion de compartir ubicacion esta\ndesactivada. Haz clic aqui para activarla",
+                    text = "Compartir la ubicacion esta desactivado",
                     color = Color.Black,
                     style = MaterialTheme.typography.labelMedium,
-                    fontSize = 12.sp,
+                    fontSize = if (isTablet) 20.sp else 12.sp,
                     textAlign = TextAlign.Left,
                     maxLines = 2,
                     modifier = Modifier
                         .weight(weight = 1f)
-                        .padding(horizontal = 8.dp)
+                        .padding(horizontal = if (isTablet) 14.dp else 8.dp)
                 )
 
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                     contentDescription = null,
-                    modifier = Modifier.size(size = 20.dp)
+                    modifier = Modifier.size(size = if (isTablet) 24.dp else 20.dp)
                 )
             }
         }
@@ -202,22 +213,22 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp, bottom = 10.dp)
+            .padding(all = if (isTablet) 22.dp else 20.dp)
     ) {
         Column {
             Text(
                 text = "Entregar ahora",
-                fontSize = 12.sp,
+                fontSize = if (isTablet) 16.sp else 12.sp,
                 style = MaterialTheme.typography.labelSmall
             )
 
             Text(
                 text = locationText,
                 style = MaterialTheme.typography.labelSmall,
-                fontSize = 16.sp,
+                fontSize = if (isTablet) 22.sp else 16.sp,
                 maxLines = 3,
                 modifier = Modifier
-                    .width(width = 190.dp)
+                    .width(width = if (isTablet) 380.dp else 300.dp)
                     .clickable {
                         if (!permissionState.status.isGranted) {
                             permissionState.launchPermissionRequest()
@@ -231,25 +242,32 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
 
         Row {
             Box {
-                IconButton(onClick = { navController.navigate(route = "activity/${businessId}") }) {
+                IconButton(onClick = { navController.navigate(route = "activity") }) {
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
                         contentDescription = null,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(size = if (isTablet) 40.dp else 28.dp)
                     )
                 }
 
                 if (notifications.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .offset(x = (-6).dp, y = 6.dp)
-                            .size(size = 12.dp)
-                            .background(Color.Red, CircleShape)
+                            .offset(
+                                x = if (isTablet) (-5).dp else (-6).dp,
+                                y = if (isTablet) 5.dp else 6.dp
+                            )
+                            .size(size = if (isTablet) 18.dp else 12.dp)
+                            .background(color = colorResource(id = R.color.tintRed), shape = CircleShape)
                             .align(Alignment.TopEnd)
                     )
                 }
             }
-            ShoppingCart(navController = navController, cartViewModel = cartViewModel)
+            ShoppingCart(
+                navController = navController,
+                cartViewModel = cartViewModel,
+                isTablet = isTablet
+            )
         }
     }
 }

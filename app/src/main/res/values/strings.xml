@@ -9,4 +9,5 @@
     <string name="notification">notification</string>
     <string name="propietario">Propietario</string>
     <string name="tu_carrito_esta_vacio_continua_disfrutando_nuestros_negocios">Tu carrito esta vacio continua disfrutando nuestros negocios</string>
+    <string name="polity_privici_text">Esta Política de Privacidad describe cómo %1$s recopila, usa\ny protege la información de los usuarios que utilizan nuestra aplicación móvil y/o sitio\nweb.</string>
 </resources>

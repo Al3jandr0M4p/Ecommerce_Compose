@@ -28,10 +28,12 @@ import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusine
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckoutViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
+import com.clay.ecommerce_compose.ui.screens.client.home.FavoriteViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.HomeViewModel
 import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import com.clay.ecommerce_compose.ui.screens.register.delivery.RegisterDeliveryViewModel
 
 class AppViewModelProvider(private val application: Application) : ViewModelProvider.Factory {
 
@@ -170,11 +172,23 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(DeliveryViewModel::class.java)) {
+          @Suppress("UNCHECKED_CAST")
             return DeliveryViewModel(deliveryRepository = deliveryRepository) as T
         }
 
         if (modelClass.isAssignableFrom(NegocioAdminViewModel::class.java)) {
+          @Suppress("UNCHECKED_CAST")
             return NegocioAdminViewModel(negocioRepository) as T
+        }
+          
+        if (modelClass.isAssignableFrom(FavoriteViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return FavoriteViewModel() as T
+        }
+
+        if (modelClass.isAssignableFrom(RegisterDeliveryViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return RegisterDeliveryViewModel(authRepository = authRepository) as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

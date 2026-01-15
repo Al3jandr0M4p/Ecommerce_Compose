@@ -1,5 +1,6 @@
 package com.clay.ecommerce_compose.ui.screens.client.app_activity.message_activity
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,7 +51,7 @@ fun MessageActivity(
     chatViewModel: ChatViewModel,
     onThreadClick: (ChatThreadView) -> Unit,
     mainViewModel: MainViewModel,
-    businessId: Int?,
+    autoOpenBusinessChat: Int? = null,
 ) {
     val uiState by chatViewModel.uiState.collectAsState()
 
@@ -59,28 +61,36 @@ fun MessageActivity(
         ?.id
         ?: return
 
-    val autoNavigated = remember { mutableStateOf(false) }
+    var isCreatingThread by remember { mutableStateOf(false) }
 
-    LaunchedEffect(businessId) {
-        if (businessId != null) {
-            chatViewModel.handleIntent(
-                intent = ChatIntent.CreateUserBusinessThread(
-                    userId = currentUserId,
-                    businessId = businessId
-                )
-            )
-        } else {
+    LaunchedEffect(Unit) {
+        if (autoOpenBusinessChat == null) {
+            Log.d("MessageActivity", "Cargando todos los threads para usuario: $currentUserId")
             chatViewModel.handleIntent(intent = ChatIntent.LoadThreads(currentUserId))
         }
     }
 
-    LaunchedEffect(uiState.currentThreadId) {
-        if (
-            businessId != null &&
+    LaunchedEffect(autoOpenBusinessChat) {
+        if (autoOpenBusinessChat != null && !isCreatingThread) {
+            Log.d("MessageActivity", "Creando thread con negocio: $autoOpenBusinessChat")
+            isCreatingThread = true
+            chatViewModel.handleIntent(
+                intent = ChatIntent.CreateUserBusinessThread(
+                    userId = currentUserId,
+                    businessId = autoOpenBusinessChat
+                )
+            )
+        }
+    }
+
+    LaunchedEffect(uiState.currentThreadId, isCreatingThread) {
+        if (autoOpenBusinessChat != null &&
             uiState.currentThreadId != null &&
-            !autoNavigated.value
+            uiState.currentThread != null &&
+            isCreatingThread
         ) {
-            autoNavigated.value = true
+            Log.d("MessageActivity", "Thread creado/encontrado: ${uiState.currentThreadId}, navegando...")
+            isCreatingThread = false
             onThreadClick(uiState.currentThread!!)
         }
     }
@@ -88,6 +98,22 @@ fun MessageActivity(
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
+
+            isCreatingThread -> {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Preparando conversación...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             uiState.isLoading && uiState.threads.isEmpty() -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
@@ -111,7 +137,10 @@ fun MessageActivity(
                     items(items = uiState.threads) { thread ->
                         ThreadItem(
                             thread = thread,
-                            onClick = { onThreadClick(thread) }
+                            onClick = {
+                                Log.d("MessageActivity", "Click en thread: ${thread.id}")
+                                onThreadClick(thread)
+                            }
                         )
                         HorizontalDivider()
                     }

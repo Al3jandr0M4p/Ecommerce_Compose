@@ -23,30 +23,37 @@ import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 
 @Composable
-fun ShoppingCart(navController: NavHostController, cartViewModel: CartViewModel) {
+fun ShoppingCart(
+    navController: NavHostController,
+    cartViewModel: CartViewModel,
+    isTablet: Boolean? = null
+) {
     val state by cartViewModel.state.collectAsState()
 
     Box(contentAlignment = Alignment.TopEnd) {
-        IconButton(onClick = { navController.navigate("cart") }) {
+        IconButton(onClick = { navController.navigate(route = "cart") }) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
                 contentDescription = "User cart",
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(size = if (isTablet == true) 40.dp else 28.dp)
             )
         }
 
         if (state.items.isNotEmpty()) {
             Box(
                 modifier = Modifier
-                    .offset(x = (-6).dp, y = 3.dp)
-                    .size(size = 20.dp)
+                    .offset(
+                        x = if (isTablet == true) (-3).dp else (-6).dp,
+                        y = if (isTablet == true) 1.dp else 3.dp
+                    )
+                    .size(size = if (isTablet == true) 28.dp else 20.dp)
                     .background(color = Color(color = 0xFF06C167), shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = state.items.size.toString(),
                     color = Color.White,
-                    fontSize = 12.sp,
+                    fontSize = if (isTablet == true) 16.sp else 12.sp,
                     style = MaterialTheme.typography.labelSmall
                 )
             }
