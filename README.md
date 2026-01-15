@@ -26,10 +26,23 @@ Ecommerce Compose es una aplicación móvil de e-commerce que permite a los usua
 - **Networking**: Ktor Client
 - **Navegación**: Navigation Compose
 - **Imágenes**: Coil
-- **Mapas**: Mapbox, Google Maps
+- **Mapas**: Mapbox
 - **Notificaciones**: Firebase Cloud Messaging
 - **Arquitectura**: Clean Architecture + MVVM
 - **Build**: Gradle 8.13
+
+## Api
+```bash
+EndPoints
+api/payments
+    / # EndPoint para verificar que la api esta activa
+    /coupons/aply # EndPoint para aplicar los cupones
+    
+api/orders
+    / # EndPoint para crear una orden
+    /:orderId/invoice # EndPoint para debugear los datos de la factura
+    /:orderId/invoice/pdf # EndPoint para descargar la factura del lado del cliente por id de la orden
+```
 
 ## Requisitos Previos
 
