@@ -1,21 +1,119 @@
 package com.clay.ecommerce_compose.data.repository
 
+import android.util.Log
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.Profile
+import com.clay.ecommerce_compose.domain.model.RoleIdDto
+import com.clay.ecommerce_compose.domain.model.User
+import com.clay.ecommerce_compose.domain.model.UserToInsert
+import com.clay.ecommerce_compose.domain.model.UserView
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 
 class UserRepository(private val supabase: SupabaseClient) {
 
-    suspend fun getAllBusiness(): List<BusinessProfile?> {
+    suspend fun getAllBusiness(): List<BusinessProfile> {
         return supabase.from("businesses")
             .select()
             .decodeList<BusinessProfile>()
     }
 
+    ///  suspend fun getAllUsers(): List<Profile> {
+    ///      return supabase.from("profiles")
+    ///           .select()
+    //          .decodeList<Profile>()
+    //  }
+
+    suspend fun getAllUsers(): List<UserView> {
+        return supabase.from("users_view")
+            .select()
+            .decodeList<UserView>()
+    }
+
+
     suspend fun getUserInfoById(): UserInfo {
         return supabase.auth.retrieveUserForCurrentSession()
     }
 
+    suspend fun createUser(user: UserToInsert) {
+        try {
+            // 1️⃣ Crear usuario en Auth (following AuthRepository pattern)
+            val authResult = supabase.auth.signUpWith(Email) {
+                this.email = user.email
+                this.password = user.password
+                data = buildJsonObject {
+                    put("username", JsonPrimitive(user.userName))
+                }
+            }
+
+            val userId = authResult?.id
+                ?: throw IllegalStateException("No se pudo obtener el ID del usuario")
+
+            // 2️⃣ Obtener role_id
+            val role = supabase.from("roles")
+                .select(Columns.list("id")) {
+                    filter { eq("name", user.roleName) }
+                }
+                .decodeSingle<RoleIdDto>()
+
+            // 3️⃣ Insertar / actualizar profile
+            supabase.from("profiles").upsert(
+                buildJsonObject {
+                    put("id", JsonPrimitive(userId))
+                    put("role_id", JsonPrimitive(role.id))
+                }
+            )
+
+            Log.d("UserRepository", "Usuario creado correctamente: ${user.email}")
+
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error creando usuario", e)
+            throw e
+        }
+    }
+
+    suspend fun updateUser(user: User) {
+        try {
+            supabase.postgrest.rpc(
+                function = "update_user_admin",
+                parameters = buildJsonObject {
+                    put("p_user_id", JsonPrimitive(user.id))
+                    put("p_email", JsonPrimitive(user.email))
+                    put("p_name", JsonPrimitive(user.name))
+                    put("p_role_name", JsonPrimitive(user.role))
+                }
+            )
+
+            Log.d("UserRepository", "Usuario actualizado: ${user.email}")
+
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error actualizando usuario", e)
+            throw e
+        }
+    }
+
+    suspend fun deleteUser(userId: String) {
+        try {
+            supabase.postgrest.rpc(
+                function = "delete_user_admin",
+                parameters = buildJsonObject {
+                    put("p_user_id", JsonPrimitive(userId))
+                }
+            )
+
+            Log.d("UserRepository", "Usuario eliminado: $userId")
+
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error eliminando usuario", e)
+            throw e
+        }
+    }
 }

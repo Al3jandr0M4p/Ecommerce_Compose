@@ -17,9 +17,11 @@ import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
 import com.clay.ecommerce_compose.ui.screens.admin.categories.CategoriesScreen
 import com.clay.ecommerce_compose.ui.screens.admin.dashboard.AdminDashboardScreen
 import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryScreen
+import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.orders.OrdersScreen
 import com.clay.ecommerce_compose.ui.screens.admin.reports.ReportsScreen
 import com.clay.ecommerce_compose.ui.screens.admin.users.UsersScreen
+import com.clay.ecommerce_compose.ui.screens.admin.users.UsersViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessScreen
 import com.clay.ecommerce_compose.ui.screens.businesess.product_details.BusinessProductDetails
@@ -46,6 +48,7 @@ import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusiness
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import com.clay.ecommerce_compose.ui.screens.admin.negocios.NegociosScreen
 
 
 /**
@@ -61,7 +64,7 @@ fun Navigation(
     val factory = AppViewModelProvider(application)
     val cartViewModel: CartViewModel = viewModel(factory = factory)
 
-    NavHost(navController = navController, startDestination = "splash") {
+    NavHost(navController = navController, startDestination = "adminHome") {
 
         composable(route = "splash") {
             val mainViewModel: MainViewModel = viewModel(factory = factory)
@@ -220,19 +223,30 @@ fun Navigation(
             )
         }
 
+        composable(route = "adminBusinesses") {
+            NegociosScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+
         composable(route = "adminDelivery") {
-            DeliveryScreen(onBack = { navController.popBackStack() })
+            val deliveryViewModel: DeliveryViewModel = viewModel(factory = factory)
+
+            DeliveryScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = deliveryViewModel
+            )
         }
 
         composable(route = "adminUsers") {
-            UsersScreen(onBack = { navController.popBackStack() })
+            val usersViewModel: UsersViewModel = viewModel(factory = factory)
+            UsersScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = usersViewModel
+            )
         }
 
-//        composable(route = "adminBusinesses") {
-//            BusinessScreen(
-//                onBack = { navController.popBackStack() }
-//            )
-//        }
 
         composable(route = "adminCategories") {
             CategoriesScreen(

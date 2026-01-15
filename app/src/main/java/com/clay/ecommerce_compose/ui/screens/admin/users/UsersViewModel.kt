@@ -1,0 +1,77 @@
+package com.clay.ecommerce_compose.ui.screens.admin.users
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.clay.ecommerce_compose.data.repository.UserRepository
+import com.clay.ecommerce_compose.domain.model.User
+import com.clay.ecommerce_compose.domain.model.UserToInsert
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+class UsersViewModel(private val userRepository: UserRepository) : ViewModel() {
+
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users: StateFlow<List<User>> = _users.asStateFlow()
+
+    init {
+        loadUsers()
+    }
+
+    private fun loadUsers() {
+        viewModelScope.launch {
+            val users = userRepository.getAllUsers()
+            _users.value = users.map {
+                User(
+                    id = it.id,
+                    name = it.name,
+                    email = it.email,
+                    role = it.role,
+                    status = "Activo"
+                )
+            }
+        }
+    }
+
+
+    fun createUser(name: String, email: String, role: String, password: String) {
+        viewModelScope.launch {
+            val userToInsert = UserToInsert(email = email, password = password, userName = name, roleName = role)
+            userRepository.createUser(userToInsert)
+            loadUsers()
+        }
+    }
+
+    fun updateUser(user: User) {
+        viewModelScope.launch {
+
+            // 🔥 Actualiza primero la lista local (UI inmediata)
+            _users.value = _users.value.map {
+                if (it.id == user.id) user.copy() else it.copy()
+            }
+
+            // 🔄 Luego sincroniza con Supabase
+            userRepository.updateUser(user)
+
+            // 🔁 Recarga desde backend para validar
+            loadUsers()
+        }
+    }
+
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+
+            // 🔥 quitar de la UI inmediatamente
+            _users.value = _users.value.filterNot { it.id == user.id }
+
+            // 🔥 borrar en backend
+            userRepository.deleteUser(user.id)
+
+            // 🔄 refrescar
+            loadUsers()
+        }
+    }
+
+
+}
