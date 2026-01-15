@@ -28,3 +28,21 @@ data class BusinessProfile(
     val ncf: String = ""
 )
 
+@Serializable
+data class Business(
+    val id: Int? = null,
+    val owner_id: String,
+    val name: String,
+    val rnc: String,
+    val ncf: String,
+    val opening_time: String,
+    val closing_time: String,
+    val phone: String,
+    val description: String,
+    val has_delivery: Boolean,
+    val category: String,
+    val logo_url: String,
+    val status: String,
+    val created_at: String? = null
+)
+

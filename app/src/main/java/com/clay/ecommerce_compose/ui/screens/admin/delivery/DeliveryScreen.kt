@@ -1,73 +1,44 @@
 package com.clay.ecommerce_compose.ui.screens.admin.delivery
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-// Modelo de datos para Delivery
-data class Delivery(
-    val id: String,
-    val orderId: String,
-    val customerName: String,
-    val deliveryPerson: String,
-    val status: DeliveryStatus,
-    val address: String,
-    val phone: String,
-    val total: String
-)
-
-enum class DeliveryStatus(val displayName: String, val color: Color) {
-    PENDING("Pendiente", Color(0xFFF39C12)),
-    IN_TRANSIT("En Camino", Color(0xFF3498DB)),
-    DELIVERED("Entregado", Color(0xFF27AE60)),
-    CANCELLED("Cancelado", Color(0xFFE74C3C))
-}
+import com.clay.ecommerce_compose.domain.model.Delivery
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeliveryScreen(onBack: () -> Unit) {
-    // Lista vacía - conectar con Supabase
-    val deliveries = remember { mutableStateListOf<Delivery>() }
-    var selectedFilter by remember { mutableStateOf<DeliveryStatus?>(null) }
-    var showAddDialog by remember { mutableStateOf(false) }
+fun DeliveryScreen(
+    onBack: () -> Unit,
+    viewModel: DeliveryViewModel
+) {
+    var showCreateDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedDelivery by remember { mutableStateOf<Delivery?>(null) }
+
+    val deliveries by viewModel.deliveries.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Gestión de Delivery",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                },
+                title = { Text("Deliveries", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -78,258 +49,321 @@ fun DeliveryScreen(onBack: () -> Unit) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = Color(0xFF3498DB),
-                contentColor = Color.White
+                onClick = { showCreateDialog = true },
+                containerColor = Color(0xFF3498DB)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar delivery")
+                Icon(Icons.Default.Add, "Agregar", tint = Color.White)
             }
         }
     ) { padding ->
-        Column(
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFFF5F6FA))
         ) {
-            // Estadísticas rápidas
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                DeliveryStatCard(
-                    title = "Pendientes",
-                    count = deliveries.count { it.status == DeliveryStatus.PENDING }.toString(),
-                    color = Color(0xFFF39C12),
-                    modifier = Modifier.weight(1f)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
                 )
-                DeliveryStatCard(
-                    title = "En Ruta",
-                    count = deliveries.count { it.status == DeliveryStatus.IN_TRANSIT }.toString(),
-                    color = Color(0xFF3498DB),
-                    modifier = Modifier.weight(1f)
-                )
-                DeliveryStatCard(
-                    title = "Entregados",
-                    count = deliveries.count { it.status == DeliveryStatus.DELIVERED }.toString(),
-                    color = Color(0xFF27AE60),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // Filtros con scroll horizontal
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = selectedFilter == null,
-                    onClick = { selectedFilter = null },
-                    label = { Text("Todos") }
-                )
-                FilterChip(
-                    selected = selectedFilter == DeliveryStatus.PENDING,
-                    onClick = { selectedFilter = DeliveryStatus.PENDING },
-                    label = { Text("Pendiente") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DeliveryStatus.PENDING.color.copy(alpha = 0.2f)
-                    )
-                )
-                FilterChip(
-                    selected = selectedFilter == DeliveryStatus.IN_TRANSIT,
-                    onClick = { selectedFilter = DeliveryStatus.IN_TRANSIT },
-                    label = { Text("En Camino") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DeliveryStatus.IN_TRANSIT.color.copy(alpha = 0.2f)
-                    )
-                )
-                FilterChip(
-                    selected = selectedFilter == DeliveryStatus.DELIVERED,
-                    onClick = { selectedFilter = DeliveryStatus.DELIVERED },
-                    label = { Text("Entregado") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DeliveryStatus.DELIVERED.color.copy(alpha = 0.2f)
-                    )
-                )
-            }
-
-            // Lista de deliveries o mensaje vacío
-            if (deliveries.isEmpty()) {
-                // Estado vacío
+            } else if (deliveries.isEmpty()) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeliveryDining,
-                            contentDescription = null,
-                            tint = Color(0xFFBDC3C7),
-                            modifier = Modifier.size(80.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No hay deliveries",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF7F8C8D)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Los pedidos para entregar aparecerán aquí",
-                            fontSize = 14.sp,
-                            color = Color(0xFFBDC3C7),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Text("No hay deliveries registrados", color = Color.Gray)
                 }
             } else {
-                val filteredDeliveries = if (selectedFilter == null) {
-                    deliveries
-                } else {
-                    deliveries.filter { it.status == selectedFilter }
-                }
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp),
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(filteredDeliveries) { delivery ->
-                        DeliveryCard(
+                    items(deliveries) { delivery ->
+                        DeliveryItem(
                             delivery = delivery,
-                            onStatusChange = { newStatus ->
-                                val index = deliveries.indexOf(delivery)
-                                if (index != -1) {
-                                    deliveries[index] = delivery.copy(status = newStatus)
-                                }
+                            onEdit = {
+                                selectedDelivery = delivery
+                                showEditDialog = true
+                            },
+                            onDelete = {
+                                selectedDelivery = delivery
+                                showDeleteDialog = true
                             }
                         )
                     }
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
                 }
             }
         }
+    }
 
-        // Diálogo para agregar delivery
-        if (showAddDialog) {
-            AddDeliveryDialog(
-                onDismiss = { showAddDialog = false },
-                onAdd = { newDelivery ->
-                    deliveries.add(newDelivery)
-                    showAddDialog = false
+    // Crear delivery
+    if (showCreateDialog) {
+        DeliveryDialog(
+            title = "Nuevo Delivery",
+            delivery = null,
+            onDismiss = { showCreateDialog = false },
+            onConfirm = { customer, person, phone ->
+                viewModel.createDelivery(customer, person, phone)
+                showCreateDialog = false
+            }
+        )
+    }
+
+    // Editar delivery
+    if (showEditDialog && selectedDelivery != null) {
+        DeliveryDialog(
+            title = "Editar Delivery",
+            delivery = selectedDelivery,
+            onDismiss = {
+                showEditDialog = false
+                selectedDelivery = null
+            },
+            onConfirm = { customer, person, phone ->
+                viewModel.updateDelivery(
+                    selectedDelivery!!.id,
+                    customer,
+                    person,
+                    phone
+                )
+                showEditDialog = false
+                selectedDelivery = null
+            }
+        )
+    }
+
+    // Eliminar delivery
+    if (showDeleteDialog && selectedDelivery != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                selectedDelivery = null
+            },
+            title = { Text("Eliminar Delivery") },
+            text = {
+                Text("¿Seguro que deseas eliminar el delivery de ${selectedDelivery!!.customer_name}?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteDelivery(selectedDelivery!!.id)
+                        showDeleteDialog = false
+                        selectedDelivery = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    )
+                ) {
+                    Text("Eliminar")
                 }
-            )
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    selectedDelivery = null
+                }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun DeliveryItem(
+    delivery: Delivery,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = delivery.customer_name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2C3E50)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Orden: ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = delivery.order_id,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Repartidor: ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = delivery.delivery_person,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Teléfono: ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = delivery.phone,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    // Badge de estado
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = when (delivery.status) {
+                            "PENDING" -> Color(0xFFF39C12)
+                            "IN_TRANSIT" -> Color(0xFF3498DB)
+                            "DELIVERED" -> Color(0xFF27AE60)
+                            "CANCELLED" -> Color(0xFFE74C3C)
+                            else -> Color.Gray
+                        }
+                    ) {
+                        Text(
+                            text = when (delivery.status) {
+                                "PENDING" -> "Pendiente"
+                                "IN_TRANSIT" -> "En camino"
+                                "DELIVERED" -> "Entregado"
+                                "CANCELLED" -> "Cancelado"
+                                else -> delivery.status
+                            },
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onEdit,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF3498DB)
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Editar",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Editar")
+                }
+
+                Button(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE74C3C)
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Eliminar")
+                }
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddDeliveryDialog(
+fun DeliveryDialog(
+    title: String,
+    delivery: Delivery?,
     onDismiss: () -> Unit,
-    onAdd: (Delivery) -> Unit
+    onConfirm: (
+        customer: String,
+        person: String,
+        phone: String
+    ) -> Unit
 ) {
-    var orderId by remember { mutableStateOf("") }
-    var customerName by remember { mutableStateOf("") }
-    var deliveryPerson by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var total by remember { mutableStateOf("") }
+    var customer by remember { mutableStateOf(delivery?.customer_name ?: "") }
+    var person by remember { mutableStateOf(delivery?.delivery_person ?: "") }
+    var phone by remember { mutableStateOf(delivery?.phone ?: "") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                "Agregar Delivery",
-                fontWeight = FontWeight.Bold
-            )
-        },
+        title = { Text(title) },
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = orderId,
-                    onValueChange = { orderId = it },
-                    label = { Text("ID de Orden") },
-                    placeholder = { Text("ORD-001") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = customerName,
-                    onValueChange = { customerName = it },
-                    label = { Text("Nombre del Cliente") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = deliveryPerson,
-                    onValueChange = { deliveryPerson = it },
-                    label = { Text("Repartidor") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    label = { Text("Dirección") },
+                    value = customer,
+                    onValueChange = { customer = it },
+                    label = { Text("Nombre del cliente *") },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 2
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = person,
+                    onValueChange = { person = it },
+                    label = { Text("Repartidor *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = { Text("Teléfono") },
-                    placeholder = { Text("809-555-1234") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = total,
-                    onValueChange = { total = it },
-                    label = { Text("Total") },
-                    placeholder = { Text("1250.00") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Teléfono *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    if (orderId.isNotBlank() && customerName.isNotBlank()) {
-                        val newDelivery = Delivery(
-                            id = System.currentTimeMillis().toString(),
-                            orderId = orderId,
-                            customerName = customerName,
-                            deliveryPerson = deliveryPerson.ifBlank { "Sin asignar" },
-                            status = DeliveryStatus.PENDING,
-                            address = address,
-                            phone = phone,
-                            total = "RD$ ${total}"
-                        )
-                        onAdd(newDelivery)
-                    }
+                    onConfirm(customer, person, phone)
                 },
-                enabled = orderId.isNotBlank() && customerName.isNotBlank()
+                enabled = customer.isNotBlank() &&
+                        person.isNotBlank() &&
+                        phone.isNotBlank()
             ) {
-                Text("Agregar")
+                Text(if (delivery == null) "Crear" else "Guardar")
             }
         },
         dismissButton = {
@@ -338,244 +372,4 @@ fun AddDeliveryDialog(
             }
         }
     )
-}
-
-@Composable
-fun DeliveryStatCard(
-    title: String,
-    count: String,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.height(90.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(color.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = count,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = color
-                )
-            }
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = Color(0xFF7F8C8D)
-            )
-        }
-    }
-}
-
-@Composable
-fun DeliveryCard(
-    delivery: Delivery,
-    onStatusChange: (DeliveryStatus) -> Unit
-) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(2.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // Header con ID de orden y status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = delivery.orderId,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2C3E50)
-                )
-
-                Box {
-                    Surface(
-                        color = delivery.status.color.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.clickable { showMenu = true }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = delivery.status.displayName,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = delivery.status.color
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = null,
-                                tint = delivery.status.color,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DeliveryStatus.values().forEach { status ->
-                            DropdownMenuItem(
-                                text = { Text(status.displayName) },
-                                onClick = {
-                                    onStatusChange(status)
-                                    showMenu = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Información del cliente
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = Color(0xFF7F8C8D),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = delivery.customerName,
-                    fontSize = 14.sp,
-                    color = Color(0xFF2C3E50)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Repartidor
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DeliveryDining,
-                    contentDescription = null,
-                    tint = Color(0xFF7F8C8D),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = delivery.deliveryPerson,
-                    fontSize = 14.sp,
-                    color = Color(0xFF2C3E50)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Dirección
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = Color(0xFF7F8C8D),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = delivery.address,
-                    fontSize = 13.sp,
-                    color = Color(0xFF7F8C8D),
-                    lineHeight = 18.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Color(0xFFECF0F1))
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Footer con total y acciones
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Total",
-                        fontSize = 12.sp,
-                        color = Color(0xFF7F8C8D)
-                    )
-                    Text(
-                        text = delivery.total,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF27AE60)
-                    )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    IconButton(
-                        onClick = { /* TODO: Llamar al cliente */ },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF3498DB).copy(alpha = 0.1f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Phone,
-                            contentDescription = "Llamar",
-                            tint = Color(0xFF3498DB),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { /* TODO: Ver en mapa */ },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF27AE60).copy(alpha = 0.1f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Map,
-                            contentDescription = "Mapa",
-                            tint = Color(0xFF27AE60),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
 }
