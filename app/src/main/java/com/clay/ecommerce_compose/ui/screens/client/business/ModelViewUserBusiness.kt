@@ -1,6 +1,5 @@
 package com.clay.ecommerce_compose.ui.screens.client.business
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.BusinessRepository
@@ -11,13 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
 class ModelViewUserBusiness(val businessRepository: BusinessRepository) : ViewModel() {
     private val _businessInfo = MutableStateFlow<BusinessProfile?>(value = null)
     val businessInfo: StateFlow<BusinessProfile?> = _businessInfo.asStateFlow()
-
     private val _businessProductsInfo = MutableStateFlow<List<ProductPayload>>(value = emptyList())
     val businessProductsInfo: StateFlow<List<ProductPayload>> = _businessProductsInfo.asStateFlow()
-
     private var lastBusinessId: Int? = null
 
     fun getBusinessInfoById(id: Int?) {

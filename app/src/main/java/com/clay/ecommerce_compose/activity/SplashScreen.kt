@@ -1,5 +1,6 @@
 package com.clay.ecommerce_compose.activity
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -10,13 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.clay.ecommerce_compose.R
-import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 
 
@@ -39,26 +40,52 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     navController: NavController,
     mainViewModel: MainViewModel,
-    modifier: Modifier = Modifier,
 ) {
     val splashState by mainViewModel.splashState.collectAsState()
 
-    LaunchedEffect(splashState) {
-        if (splashState is SplashState.Success) {
-            delay(1000)
+    val systemUIController = rememberSystemUiController()
 
-            val session = (splashState as SplashState.Success).session
-            val destination = when {
-                session == null -> "login"
-                session.role == "admin" -> "adminHome"
-                session.role == "repartidor" -> "delivery"
-                session.role == "usuario" -> "userHome"
-                session.role == "negocio" -> session.businessId?.let { "businessHome/$it" } ?: "login"
-                else -> "login"
+    SideEffect {
+        systemUIController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = false
+        )
+    }
+
+    LaunchedEffect(splashState) {
+        delay(1450L)
+
+        when (splashState) {
+            is SplashState.NotAuthenticated -> {
+                navController.navigate("login") {
+                    popUpTo("splash") { inclusive = true }
+                }
             }
-            navController.navigate(destination) {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+
+            is SplashState.Authenticated -> {
+                val session = (splashState as SplashState.Authenticated).session
+                when (session?.role) {
+                    "admin" -> navController.navigate("adminHome")
+                    "repartidor" -> navController.navigate("delivery")
+                    "usuario" -> navController.navigate("userHome")
+                    "negocio" -> {
+                        val businessIdInt = session.businessId?.toIntOrNull()
+                        if (businessIdInt != null) {
+                            Log.d("SplashScreen", "Navigate → businessHome/$businessIdInt")
+                            navController.navigate("businessHome/$businessIdInt") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        } else {
+                            Log.e("SplashScreen", "businessId es null o no es un número")
+                            navController.navigate("login") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        }
+                    }
+                }
             }
+
+            is SplashState.Loading -> Unit
         }
     }
 

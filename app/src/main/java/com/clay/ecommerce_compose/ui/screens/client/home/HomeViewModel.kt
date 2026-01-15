@@ -3,7 +3,6 @@ package com.clay.ecommerce_compose.ui.screens.client.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.data.repository.UserRepository
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +28,7 @@ class HomeViewModel(private val userRepository: UserRepository) : ViewModel() {
             try {
                 val result = userRepository.getAllBusiness()
                 _businessProfile.value = result
+                hasLoaded = true
                 Log.d("HomeViewModel", "Los negocios se cargaron correctamente $result")
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error al cargar Los negocios ${e.message}")

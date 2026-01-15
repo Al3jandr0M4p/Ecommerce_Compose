@@ -6,8 +6,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.AuthRepository
 import com.clay.ecommerce_compose.data.repository.BusinessRepository
-import com.clay.ecommerce_compose.domain.model.*
-import kotlinx.coroutines.flow.*
+import com.clay.ecommerce_compose.domain.model.BusinessProfile
+import com.clay.ecommerce_compose.domain.model.CategoryRequest
+import com.clay.ecommerce_compose.domain.model.LowStockProduct
+import com.clay.ecommerce_compose.domain.model.ProductCategory
+import com.clay.ecommerce_compose.domain.model.ProductInsertPayload
+import com.clay.ecommerce_compose.domain.model.ProductPayload
+import com.clay.ecommerce_compose.domain.model.ProductsByCategory
+import com.clay.ecommerce_compose.domain.model.StockAdjustmentRequest
+import com.clay.ecommerce_compose.domain.model.StockMovement
+import com.clay.ecommerce_compose.domain.model.StockMovementType
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BusinessAccountViewModel(
@@ -29,7 +43,8 @@ class BusinessAccountViewModel(
     private val _categories = MutableStateFlow<List<ProductCategory>>(value = emptyList())
     val categories: StateFlow<List<ProductCategory>> = _categories.asStateFlow()
 
-    private val _productsByCategory = MutableStateFlow<List<ProductsByCategory>>(value = emptyList())
+    private val _productsByCategory =
+        MutableStateFlow<List<ProductsByCategory>>(value = emptyList())
     val productsByCategory: StateFlow<List<ProductsByCategory>> = _productsByCategory.asStateFlow()
 
     private val _lowStockProducts = MutableStateFlow<List<LowStockProduct>>(value = emptyList())
@@ -44,38 +59,50 @@ class BusinessAccountViewModel(
     private val _productStockState = MutableStateFlow(value = StockManagementState())
     val productStockState: StateFlow<StockManagementState> = _productStockState.asStateFlow()
 
-    fun loadBusinessById(businessId: String) {
+    private var hasLoadedBusiness = false
+
+    private var hasLoadedProducts = false
+    private var hasLoadedCategories = false
+    private var hasLoadedProductsByCategory = false
+    private var hasLoadedLowStockProducts = false
+
+    fun loadBusinessById(businessId: String, force: Boolean = false) {
+        if (hasLoadedBusiness && !force) return
+
+
         viewModelScope.launch {
             try {
                 val result = businessAccountRepository.getBusinessById(businessId)
                 _businessProfile.value = result
 
                 result?.let { profile ->
-                    val businessIntId = _businessState.value.businessId.toIntOrNull()
-                    loadProductsBusinessById(businessId = businessIntId)
-
-                    // Cargar datos de stock management
-                    businessIntId?.let { id ->
+                    val businessIntId = profile.id
+                    businessIntId.let { id ->
+                        loadProductsBusinessById(businessId = id)
                         loadCategories(businessId = id)
                         loadProductsByCategory(businessId = id)
                         loadLowStockProducts(businessId = id)
                     }
                 }
+
+                hasLoadedBusiness = true
             } catch (e: Exception) {
-                Log.e("BusinessAccountViewModel", "Error al cargar el perfil del negocio ${e.message}")
+                Log.e(
+                    "BusinessAccountViewModel",
+                    "Error al cargar el perfil del negocio ${e.message}"
+                )
             }
         }
     }
 
-    fun loadProductsBusinessById(businessId: Int?) {
+    fun loadProductsBusinessById(businessId: Int?, force: Boolean = false) {
+        if (hasLoadedProducts && !force) return
+
         viewModelScope.launch {
-            try {
-                if (businessId == null) return@launch
-                val products = businessAccountRepository.getProductsByBusinessId(businessId)
-                _businessProduct.value = products
-            } catch (e: Exception) {
-                Log.e("BusinessAccountViewModel", "Error al cargar los productos ${e.message}")
-            }
+            if (businessId == null) return@launch
+            val products = businessAccountRepository.getProductsByBusinessId(businessId)
+            _businessProduct.value = products
+            hasLoadedProducts = true
         }
     }
 
@@ -181,10 +208,12 @@ class BusinessAccountViewModel(
                     s = s.copy(stockError = "Ingrese el stock")
                     ok = false
                 }
+
                 stockInt == null -> {
                     s = s.copy(stockError = "Solo números")
                     ok = false
                 }
+
                 stockInt < 0 -> {
                     s = s.copy(stockError = "No puede ser negativo")
                     ok = false
@@ -438,14 +467,20 @@ class BusinessAccountViewModel(
                         isLoading = false,
                         error = errorMsg
                     )
-                    Log.e("BusinessAccountViewModel", "Error al cargar productos por categoría: $errorMsg")
+                    Log.e(
+                        "BusinessAccountViewModel",
+                        "Error al cargar productos por categoría: $errorMsg"
+                    )
                 }
             } catch (e: Exception) {
                 _productStockState.value = _productStockState.value.copy(
                     isLoading = false,
                     error = e.message
                 )
-                Log.e("BusinessAccountViewModel", "Error al cargar productos por categoría: ${e.message}")
+                Log.e(
+                    "BusinessAccountViewModel",
+                    "Error al cargar productos por categoría: ${e.message}"
+                )
             }
         }
     }
@@ -464,10 +499,16 @@ class BusinessAccountViewModel(
                         showLowStockAlert = lowStock.isNotEmpty()
                     )
                 } else {
-                    Log.e("BusinessAccountViewModel", "Error al cargar productos con stock bajo: ${result.exceptionOrNull()?.message}")
+                    Log.e(
+                        "BusinessAccountViewModel",
+                        "Error al cargar productos con stock bajo: ${result.exceptionOrNull()?.message}"
+                    )
                 }
             } catch (e: Exception) {
-                Log.e("BusinessAccountViewModel", "Error al cargar productos con stock bajo: ${e.message}")
+                Log.e(
+                    "BusinessAccountViewModel",
+                    "Error al cargar productos con stock bajo: ${e.message}"
+                )
             }
         }
     }
@@ -479,7 +520,10 @@ class BusinessAccountViewModel(
                 if (result.isSuccess) {
                     _stockMovements.value = result.getOrNull() ?: emptyList()
                 } else {
-                    Log.e("BusinessAccountViewModel", "Error al cargar movimientos: ${result.exceptionOrNull()?.message}")
+                    Log.e(
+                        "BusinessAccountViewModel",
+                        "Error al cargar movimientos: ${result.exceptionOrNull()?.message}"
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("BusinessAccountViewModel", "Error al cargar movimientos: ${e.message}")

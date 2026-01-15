@@ -8,6 +8,14 @@ import com.clay.ecommerce_compose.activity.MainViewModel
 import com.clay.ecommerce_compose.data.remote.HttpClientKtor
 import com.clay.ecommerce_compose.data.remote.SupabaseConfig
 import com.clay.ecommerce_compose.data.repository.*
+import com.clay.ecommerce_compose.data.repository.AuthRepository
+import com.clay.ecommerce_compose.data.repository.BusinessRepository
+import com.clay.ecommerce_compose.data.repository.CartRepository
+import com.clay.ecommerce_compose.data.repository.ChatRepository
+import com.clay.ecommerce_compose.data.repository.NotificationRepository
+import com.clay.ecommerce_compose.data.repository.OrderRepository
+import com.clay.ecommerce_compose.data.repository.UserRepository
+import com.clay.ecommerce_compose.data.repository.WalletRepository
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
 import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.negocios.NegocioAdminViewModel
@@ -15,6 +23,7 @@ import com.clay.ecommerce_compose.ui.screens.admin.users.UsersViewModel
 import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
+import com.clay.ecommerce_compose.ui.screens.client.app_activity.message_activity.ChatViewModel
 import com.clay.ecommerce_compose.ui.screens.client.business.ModelViewUserBusiness
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckoutViewModel
@@ -32,6 +41,10 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
 
     private val authRepository by lazy {
         AuthRepository(supabase = supabaseClient)
+    }
+
+    private val notificationRepository by lazy {
+        NotificationRepository(supabase = supabaseClient)
     }
 
     private val businessRepository by lazy {
@@ -62,14 +75,19 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         NegocioRepository(supabase = supabaseClient)
     }
 
+    private val chatRepository by lazy {
+        ChatRepository(supabase = supabaseClient)
+    }
+
     private val getCurrentUserSessionUseCase by lazy {
-        GetCurrentUserSessionUseCase(authRepository)
+        GetCurrentUserSessionUseCase(authRepository = authRepository)
     }
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(authRepository) as T
+            @Suppress("UNCHECKED_CAST")
+            return LoginViewModel(authRepository = authRepository) as T
         }
 
         if (modelClass.isAssignableFrom(UsersViewModel::class.java)) {
@@ -77,7 +95,8 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
-            return RegisterViewModel(authRepository) as T
+            @Suppress("UNCHECKED_CAST")
+            return RegisterViewModel(authRepository = authRepository) as T
         }
 
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
@@ -88,7 +107,11 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(RegisterBusinessViewModel::class.java)) {
-            return RegisterBusinessViewModel(authRepository, application) as T
+            @Suppress("UNCHECKED_CAST")
+            return RegisterBusinessViewModel(
+                authRepository = authRepository,
+                application = application
+            ) as T
         }
 
         if (modelClass.isAssignableFrom(ConfigViewModel::class.java)) {
@@ -99,7 +122,12 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
-            return CartViewModel(cartRepository = cartRepository) as T
+            @Suppress("UNCHECKED_CAST")
+            return CartViewModel(
+                cartRepository = cartRepository,
+                notificationRepository = notificationRepository,
+                getCurrentUserSession = getCurrentUserSessionUseCase
+            ) as T
         }
 
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
@@ -114,18 +142,30 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(ModelViewUserBusiness::class.java)) {
-            return ModelViewUserBusiness(businessRepository) as T
+            @Suppress("UNCHECKED_CAST")
+            return ModelViewUserBusiness(businessRepository = businessRepository) as T
         }
 
         if (modelClass.isAssignableFrom(CheckoutViewModel::class.java)) {
-            return CheckoutViewModel(orderRepository = orderRepository) as T
+            @Suppress("UNCHECKED_CAST")
+            return CheckoutViewModel(
+                orderRepository = orderRepository,
+                walletRepository = walletRepository
+            ) as T
+        }
+
+        if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return ChatViewModel(chatRepository = chatRepository) as T
         }
 
         if (modelClass.isAssignableFrom(WalletViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return WalletViewModel(walletRepository = walletRepository) as T
         }
 
         if (modelClass.isAssignableFrom(TransactionsViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return TransactionsViewModel(walletRepository = walletRepository) as T
         }
 

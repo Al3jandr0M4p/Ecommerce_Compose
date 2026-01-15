@@ -15,11 +15,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -44,13 +43,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.ui.components.client.cart.ShoppingCart
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.utils.helpers.updateLocationTextFromAddress
@@ -64,23 +61,22 @@ data class NotificationItem(
     val id: String,
     val title: String,
     val message: String,
-    val type: NotificationType, // STOCK_LOW, PROMO, MESSAGE, etc.
+    val type: NotificationType, // STOCK_LOW, PROMO, ORDER_STATE, etc.
     val timestamp: Long = System.currentTimeMillis()
 )
 
-enum class NotificationType { STOCK_LOW, PROMO, MESSAGE }
+enum class NotificationType { STOCK_LOW, PROMO, ORDER_STATUS }
 
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel) {
+fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewModel, businessId: Int?) {
     val context = LocalContext.current
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
 
     val notifications by cartViewModel.notifications.collectAsState()
-    var showNotifications by remember { mutableStateOf(value = false) }
 
     var locationText by remember { mutableStateOf(value = "Tu ubicacion") }
     var showLocationBanner by remember { mutableStateOf(value = false) }
@@ -89,8 +85,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
     )
 
     LaunchedEffect(Unit) {
-        val locationManager =
-            context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         while (true) {
             val hasPermission = permissionState.status.isGranted
             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -100,8 +95,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                     showLocationBanner = false
 
                     if (ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.ACCESS_FINE_LOCATION
+                            context, Manifest.permission.ACCESS_FINE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -109,9 +103,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                                 val geocoder = Geocoder(context)
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     geocoder.getFromLocation(
-                                        location.latitude,
-                                        location.longitude,
-                                        1
+                                        location.latitude, location.longitude, 1
                                     ) { addresses ->
                                         locationText = if (addresses.isNotEmpty()) {
                                             updateLocationTextFromAddress(addresses[0])
@@ -121,12 +113,10 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                                     }
                                 } else {
                                     try {
-                                        @Suppress("DEPRECATION")
-                                        val addresses = geocoder.getFromLocation(
-                                            location.latitude,
-                                            location.longitude,
-                                            1
-                                        )
+                                        @Suppress("DEPRECATION") val addresses =
+                                            geocoder.getFromLocation(
+                                                location.latitude, location.longitude, 1
+                                            )
                                         locationText = if (!addresses.isNullOrEmpty()) {
                                             updateLocationTextFromAddress(addresses[0])
                                         } else {
@@ -170,8 +160,7 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                         )
                         context.startActivity(intent)
                     }
-                },
-            contentAlignment = Alignment.Center
+                }, contentAlignment = Alignment.Center
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -234,19 +223,15 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                             permissionState.launchPermissionRequest()
                         } else {
                             Toast.makeText(
-                                context,
-                                "Tu ubicación ya esta activa",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
+                                context, "Tu ubicación ya esta activa", Toast.LENGTH_SHORT
+                            ).show()
                         }
-                    }
-            )
+                    })
         }
 
         Row {
             Box {
-                IconButton(onClick = { showNotifications = !showNotifications }) {
+                IconButton(onClick = { navController.navigate(route = "activity/${businessId}") }) {
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
                         contentDescription = null,
@@ -257,7 +242,8 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
                 if (notifications.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
+                            .offset(x = (-6).dp, y = 6.dp)
+                            .size(size = 12.dp)
                             .background(Color.Red, CircleShape)
                             .align(Alignment.TopEnd)
                     )
@@ -265,42 +251,5 @@ fun HeaderUserHome(navController: NavHostController, cartViewModel: CartViewMode
             }
             ShoppingCart(navController = navController, cartViewModel = cartViewModel)
         }
-
-        if (showNotifications) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(16.dp)
-            ) {
-                Column {
-                    Text("Notificaciones", fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    notifications.forEach { n ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    when (n.type) {
-                                        NotificationType.STOCK_LOW -> navController.navigate("product/${n.id.removePrefix("stock-")}")
-                                        NotificationType.PROMO -> navController.navigate("promo/${n.id}")
-                                        NotificationType.MESSAGE -> navController.navigate("messages")
-                                    }
-                                    cartViewModel.removeNotification(n.id)
-                                }
-                                .padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(n.title, fontSize = 12.sp)
-                                Text(n.message, fontSize = 10.sp, color = Color.Gray)
-                            }
-                            Text(n.type.name, fontSize = 10.sp, color = Color.Blue)
-                        }
-                    }
-                }
-            }
-        }
-
     }
 }

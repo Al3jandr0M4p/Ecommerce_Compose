@@ -2,9 +2,8 @@ package com.clay.ecommerce_compose.data.repository
 
 import android.util.Log
 import com.clay.ecommerce_compose.domain.model.CartItemEntity
+import com.clay.ecommerce_compose.domain.model.Order
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartItem
-import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.Coupon
-import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.CouponType
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -45,7 +44,7 @@ data class CartItemResponse(
 
 @Serializable
 data class ApplyCouponRequest(
-    val code: String,
+    val code: String? = null,
     val subtotal: Double = 0.0,
     @SerialName("totalQuantity")
     val totalQuantity: Int
@@ -60,69 +59,70 @@ data class ApplyCouponResponse(
 
 
 class CartRepository(private val supabase: SupabaseClient, private val httpClient: HttpClient) {
-    private fun userId(): String = supabase.auth.currentUserOrNull()?.id
-        ?: throw IllegalStateException("Usuario no autenticado")
+    private fun userIdOrNull(): String? = supabase.auth.currentUserOrNull()?.id
 
     suspend fun applyCoupon(
-        code: String,
+        code: String?,
         subtotal: Double,
         totalQuantity: Int
     ): ApplyCouponResponse {
 
-        return httpClient.post("https://6gszhspz-3000.use2.devtunnels.ms/api/payments/coupons/apply") {
+        return httpClient.post("https://6gszhspz-3002.use2.devtunnels.ms/api/payments/coupons/apply") {
             contentType(ContentType.Application.Json)
             setBody(
                 ApplyCouponRequest(
-                    code=code,
-                    subtotal=subtotal,
-                    totalQuantity=totalQuantity
+                    code = code,
+                    subtotal = subtotal,
+                    totalQuantity = totalQuantity
                 )
             )
         }.body()
 
     }
 
-    suspend fun getCart(): List<CartItem> {
-        try {
-            Log.d("CART_REPO", "Getting cart for user: ${userId()}")
-
-            val response = supabase.from("cart_items_view")
-                .select()
-                {
-                    filter { eq("user_id", userId()) }
+    suspend fun getActiveOrder(userId: String): Order? {
+        return supabase.from("orders")
+            .select {
+                filter {
+//                    Order::status isIn listOf("waiting_delivery", "on_the_way")
+                    eq("user_id", userId)
                 }
-                .decodeList<CartItemEntity>()
-
-            Log.d("CART_REPO", "getCart response: ${response.size} items")
-
-            response.forEach { entity ->
-                Log.d(
-                    "CART_REPO",
-                    "Item: ${entity.name}, qty: ${entity.quantity}, stock: ${entity.stock}"
-                )
+                order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                limit(1)
             }
+            .decodeList<Order>()
+            .firstOrNull()
+    }
 
-            return response.map { entity ->
-                CartItem(
-                    id = entity.productId,
-                    businessName = entity.businessName,
-                    businessImg = entity.businessImg,
-                    businessId = entity.businessId,
-                    name = entity.name,
-                    price = entity.price,
-                    imageUrl = entity.imageUrl,
-                    quantity = entity.quantity,
-                    stock = entity.stock
-                )
+
+    suspend fun getCart(): List<CartItem> {
+        val uid = userIdOrNull() ?: return emptyList()
+
+        val response = supabase.from("cart_items_view")
+            .select()
+            {
+                filter { eq("user_id", uid) }
             }
-        } catch (e: Exception) {
-            Log.e("CART_REPO", "Error getting cart", e)
-            throw e
+            .decodeList<CartItemEntity>()
+
+        return response.map { entity ->
+            CartItem(
+                id = entity.productId,
+                businessName = entity.businessName,
+                businessImg = entity.businessImg,
+                businessId = entity.businessId,
+                name = entity.name,
+                price = entity.price,
+                imageUrl = entity.imageUrl,
+                quantity = entity.quantity,
+                stock = entity.stock
+            )
         }
     }
 
     suspend fun addItem(item: CartItem) {
-        val uid = userId()
+        val uid = userIdOrNull() ?: ""
+
         val productId = item.id ?: run {
             Log.e("CART_REPO", "Product ID is null, cannot add to cart")
             throw IllegalArgumentException("Product ID cannot be null")
@@ -180,7 +180,7 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
 
         supabase.from("cart_items").update(CartItemUpdate(quantity)) {
             filter {
-                eq("user_id", userId())
+                eq("user_id", userIdOrNull() ?: "")
                 eq("product_id", notNullProductId)
             }
         }
@@ -194,7 +194,7 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
 
         supabase.from("cart_items").delete {
             filter {
-                eq("user_id", userId())
+                eq("user_id", userIdOrNull() ?: "")
                 eq("product_id", notNullProductId)
             }
         }
@@ -202,7 +202,7 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
 
     suspend fun clearCart() {
         supabase.from("cart_items").delete {
-            filter { eq("user_id", userId()) }
+            filter { eq("user_id", userIdOrNull() ?: "") }
         }
     }
 }

@@ -33,10 +33,6 @@ fun ConfigHeader(viewModel: ConfigViewModel) {
     val userInfo = viewModel.userInfo
     val userName = viewModel.userName
 
-    LaunchedEffect(Unit) {
-        viewModel.getUserInfoById()
-    }
-
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,

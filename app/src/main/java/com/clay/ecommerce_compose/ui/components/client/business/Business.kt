@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
@@ -45,15 +46,10 @@ fun Business(
 ) {
     val business by viewModel.businessState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadBusiness()
-    }
-
     Box(
         modifier = Modifier
     ) {
         when {
-
             business.isEmpty() -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -94,7 +90,9 @@ fun Business(
                                 .clip(shape = RoundedCornerShape(size = 10.dp)),
                             onError = {
                                 Log.e("BusinessImage", "Error al cargar la imagen")
-                            })
+                            },
+                            filterQuality = FilterQuality.Low
+                        )
 
                         Spacer(modifier = Modifier.height(height = 10.dp))
 

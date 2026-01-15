@@ -3,9 +3,10 @@
     <string name="app_version">1.0.0</string>
     <string name="app_author">Alejandro</string>
     <string name="business">Negocios</string>
-    <string name="monedero">Monedero</string>
+    <string name="monedero">Wallet</string>
     <string name="bandeja_de_entrada">Bandeja de entrada</string>
     <string name="help">Ayuda</string>
     <string name="notification">notification</string>
     <string name="propietario">Propietario</string>
+    <string name="tu_carrito_esta_vacio_continua_disfrutando_nuestros_negocios">Tu carrito esta vacio continua disfrutando nuestros negocios</string>
 </resources>

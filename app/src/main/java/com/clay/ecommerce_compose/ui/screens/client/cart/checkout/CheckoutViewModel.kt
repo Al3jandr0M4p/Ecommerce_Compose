@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.OrderRepository
+import com.clay.ecommerce_compose.data.repository.WalletRepository
 import com.clay.ecommerce_compose.domain.model.Order
 import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.utils.Orders
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CheckoutViewModel(private val orderRepository: OrderRepository) : ViewModel() {
+class CheckoutViewModel(private val orderRepository: OrderRepository, private val walletRepository: WalletRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(CheckoutState())
     val state: StateFlow<CheckoutState> = _state.asStateFlow()
@@ -36,6 +37,14 @@ class CheckoutViewModel(private val orderRepository: OrderRepository) : ViewMode
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
+                if (paymentMethod == "Contra-Entrega") {
+                    walletRepository.registerPayment(
+                        amount = cartViewModel.state.value.totalPrice,
+                        reason = "Pago en efectivo",
+                        type = "debit"
+                    )
+                }
+
                 val result = orderRepository.createOrder(
                     paymentMethod = paymentMethod,
                     couponCode = couponCode
