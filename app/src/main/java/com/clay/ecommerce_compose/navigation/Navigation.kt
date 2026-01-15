@@ -35,17 +35,21 @@ import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckOutScreen
 import com.clay.ecommerce_compose.ui.screens.client.cart.checkout.CheckoutViewModel
 import com.clay.ecommerce_compose.ui.screens.client.config.ConfigViewModel
+import com.clay.ecommerce_compose.ui.screens.client.config.legal.PrivacyPolicy
 import com.clay.ecommerce_compose.ui.screens.client.delivery.WaitingDelivery
+import com.clay.ecommerce_compose.ui.screens.client.home.FavoriteViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.HomeViewModel
 import com.clay.ecommerce_compose.ui.screens.client.home.UserHomeScreen
 import com.clay.ecommerce_compose.ui.screens.client.search.SearchBar
-import com.clay.ecommerce_compose.ui.screens.delivery.deliveryHome.DeliveryHomeScreen
+import com.clay.ecommerce_compose.ui.screens.delivery.DeliveryHomeScreen
 import com.clay.ecommerce_compose.ui.screens.login.LoginScreen
 import com.clay.ecommerce_compose.ui.screens.login.LoginViewModel
 import com.clay.ecommerce_compose.ui.screens.register.RegisterScreen
 import com.clay.ecommerce_compose.ui.screens.register.RegisterViewModel
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusiness
 import com.clay.ecommerce_compose.ui.screens.register.business.RegisterBusinessViewModel
+import com.clay.ecommerce_compose.ui.screens.register.delivery.RegisterDelivery
+import com.clay.ecommerce_compose.ui.screens.register.delivery.RegisterDeliveryViewModel
 
 
 /**
@@ -102,7 +106,7 @@ fun Navigation(
             val homeViewModel: HomeViewModel = viewModel(factory = factory)
             val walletViewModel: WalletViewModel = viewModel(factory = factory)
             val transactionsViewModel: TransactionsViewModel = viewModel(factory = factory)
-            val businessAccountViewModel: BusinessAccountViewModel = viewModel(factory = factory)
+            val favoritesViewModel: FavoriteViewModel = viewModel(factory = factory)
 
             UserHomeScreen(
                 navController = navController,
@@ -111,7 +115,7 @@ fun Navigation(
                 homeViewModel = homeViewModel,
                 walletViewModel = walletViewModel,
                 transactionsViewModel = transactionsViewModel,
-                businessAccountViewModel = businessAccountViewModel
+                favoritesViewModel = favoritesViewModel
             )
         }
 
@@ -159,7 +163,23 @@ fun Navigation(
             Cart(navController = navController, cartViewModel = cartViewModel)
         }
 
-        composable(route = "activity/{businessId}") { backStackEntry ->
+        composable(route = "legal") {
+            PrivacyPolicy(navController = navController)
+        }
+
+        composable(route = "activity") {
+            val chatViewModel: ChatViewModel = viewModel(factory = factory)
+            val mainViewModel: MainViewModel = viewModel(factory = factory)
+
+            NotificationsActivity(
+                navController = navController,
+                cartViewModel = cartViewModel,
+                chatViewModel = chatViewModel,
+                mainViewModel = mainViewModel,
+            )
+        }
+
+        composable(route = "activity/business/{businessId}") { backStackEntry ->
             val businessId = backStackEntry.arguments?.getString("businessId")?.toInt() ?: 0
             val chatViewModel: ChatViewModel = viewModel(factory = factory)
             val mainViewModel: MainViewModel = viewModel(factory = factory)
@@ -169,7 +189,7 @@ fun Navigation(
                 cartViewModel = cartViewModel,
                 chatViewModel = chatViewModel,
                 mainViewModel = mainViewModel,
-                businessId = businessId
+                autoOpenBusinessChat = businessId
             )
         }
 
@@ -209,6 +229,13 @@ fun Navigation(
                 }
             )
         }
+
+        composable(route = "registerDelivery") {
+            val registerDeliveryViewModel: RegisterDeliveryViewModel = viewModel(factory = factory)
+
+            RegisterDelivery(navController = navController, viewModel = registerDeliveryViewModel)
+        }
+
 
 
         composable(route = "adminHome") {

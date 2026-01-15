@@ -18,15 +18,17 @@ import com.clay.ecommerce_compose.ui.components.client.header.NotificationItem
 @Composable
 fun NotificationItems(
     notification: NotificationItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
+        Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .padding(horizontal = 15.dp, vertical = 12.dp)
     ) {
-        Column {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clickable { onClick() }) {
             Text(
                 text = notification.title,
                 fontSize = 14.sp,
@@ -42,3 +44,4 @@ fun NotificationItems(
         }
     }
 }
+

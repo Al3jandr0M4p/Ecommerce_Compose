@@ -12,11 +12,12 @@ import com.clay.ecommerce_compose.ui.components.client.header.NotificationItem
 import com.clay.ecommerce_compose.ui.components.client.header.NotificationType
 import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.Coupon
 import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.CouponType
-import com.clay.ecommerce_compose.utils.Orders
+import com.clay.ecommerce_compose.ui.screens.register.delivery.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -33,51 +34,73 @@ class CartViewModel(
     private val _notifications = MutableStateFlow<List<NotificationItem>>(value = emptyList())
     val notifications: StateFlow<List<NotificationItem>> = _notifications.asStateFlow()
 
+    private val _invoiceState = MutableStateFlow<Order?>(null)
+    val invoiceState: StateFlow<Order?> = _invoiceState.asStateFlow()
+
     val hasActiveDelivery: StateFlow<Boolean> = state.map { it.activeOrder != null }.stateIn(
         viewModelScope,
-        started = SharingStarted.WhileSubscribed(), initialValue = false
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = false
     )
 
     init {
-        initializeNotifications()
+        viewModelScope.launch {
+            val session = getCurrentUserSession().firstOrNull() ?: return@launch
+
+            Log.d("CartViewModel", "User session found: ${session.id}")
+
+            loadCart()
+            loadNotifications()
+            observeNotifications()
+
+            Log.d("CartViewModel", "About to start observing active order for user: ${session.id}")
+            observeActiveOrder(session.id)
+        }
     }
 
-    private fun initializeNotifications() {
-        viewModelScope.launch {
-            getCurrentUserSession().collect { session ->
-                if (session == null) return@collect
+    fun observeActiveOrder(userId: String) {
+        Log.d("CartViewModel", "observeActiveOrder called for user: $userId")
 
-                loadCart()
-                loadActiveOrder(userId = session.id)
-                loadNotifications()
-                observeNotifications()
+        viewModelScope.launch {
+            try {
+                Log.d("CartViewModel", "Starting to collect active order flow...")
+
+                cartRepository.observeActiveOrder(userId)
+                    .collect { order ->
+                        Log.d("ORDER_SYNC", "Active order received in ViewModel: $order")
+
+                        _state.update {
+                            it.copy(activeOrder = order)
+                        }
+                    }
+
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error observing active order", e)
             }
         }
     }
+
+    fun refreshActiveOrder() {
+        viewModelScope.launch {
+            val session = getCurrentUserSession().firstOrNull() ?: return@launch
+            loadActiveOrder(session.id)
+        }
+    }
+
 
     private fun loadActiveOrder(userId: String) {
         viewModelScope.launch {
             try {
                 val order = cartRepository.getActiveOrder(userId)
-
-                val activeOrder = order?.takeIf {
-                    it.status == Orders.paid || it.status == Orders.pending
-                }
-
+                Log.d("ORDER_SYNC", "Active order loaded: $order")
                 _state.update {
-                    it.copy(activeOrder = activeOrder)
+                    it.copy(activeOrder = order)
                 }
-
             } catch (e: Exception) {
                 Log.e("CartViewModel", "Error loading active order", e)
-
-                _state.update {
-                    it.copy(activeOrder = null)
-                }
             }
         }
     }
-
 
     fun handleIntent(intent: CartIntent) {
         when (intent) {
@@ -87,6 +110,7 @@ class CartViewModel(
                 itemId = intent.itemId,
                 quantity = intent.quantity
             )
+            is CartIntent.GetOrderInvoice -> getOrderInvoice(intent.orderId)
 
             is CartIntent.ClearCart -> clearCart()
             is CartIntent.LoadCart -> loadCart()
@@ -104,6 +128,18 @@ class CartViewModel(
                 Log.d("CartViewModel", "Loaded ${list.size} notifications")
             } catch (e: Exception) {
                 Log.e("CartViewModel", "Error loading notifications", e)
+            }
+        }
+    }
+
+    private fun getOrderInvoice(orderId: String) {
+        viewModelScope.launch {
+            try {
+                val order = cartRepository.getOrderInvoice(orderId)
+                _invoiceState.value = order
+                Log.d("CartViewModel", "Invoice loaded for order $orderId")
+            } catch (e: Exception) {
+                Log.e("CartViewModel", "Error loading invoice", e)
             }
         }
     }
@@ -176,17 +212,16 @@ class CartViewModel(
         }
     }
 
-    fun markNotificationAsRead(id: String) {
-        viewModelScope.launch {
-            try {
-                notificationRepository.markAsRead(id)
-            } catch (e: Exception) {
-                Log.e("CartViewModel", "Error marking notification as read", e)
-            }
-        }
-    }
+//    fun markNotificationAsRead(id: String) {
+//        viewModelScope.launch {
+//            try {
+//                notificationRepository.markAsRead(id)
+//            } catch (e: Exception) {
+//                Log.e("CartViewModel", "Error marking notification as read", e)
+//            }
+//        }
+//    }
 
-    // Ejemplo de stock bajo
     fun checkLowStock(products: List<ProductPayload>) {
         viewModelScope.launch {
             try {

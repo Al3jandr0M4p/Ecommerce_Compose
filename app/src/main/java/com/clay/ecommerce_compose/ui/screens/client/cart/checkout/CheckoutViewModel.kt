@@ -37,20 +37,21 @@ class CheckoutViewModel(private val orderRepository: OrderRepository, private va
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
-                if (paymentMethod == "Contra-Entrega") {
-                    walletRepository.registerPayment(
-                        amount = cartViewModel.state.value.totalPrice,
-                        reason = "Pago en efectivo",
-                        type = "debit"
-                    )
-                }
-
                 val result = orderRepository.createOrder(
                     paymentMethod = paymentMethod,
                     couponCode = couponCode
                 )
 
                 Log.d("CHECKOUT_VM", "OrderRepository returned result: $result")
+
+                if (paymentMethod == "Contra-Entrega") {
+                    walletRepository.registerPayment(
+                        amount = cartViewModel.state.value.totalPrice,
+                        reason = "Pago en efectivo",
+                        type = "debit",
+                        orderId = result.orderId
+                    )
+                }
 
                 _state.update {
                     it.copy(

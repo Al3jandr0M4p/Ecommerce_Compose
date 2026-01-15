@@ -1,23 +1,14 @@
-package com.clay.ecommerce_compose.ui.screens.register
-
+package com.clay.ecommerce_compose.ui.screens.register.delivery
 
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
@@ -27,12 +18,15 @@ import androidx.compose.material.icons.filled.Person3
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +35,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -55,9 +48,8 @@ import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.ui.components.auth.users.BottomComp
 import kotlinx.coroutines.delay
 
-
 @Composable
-fun RegisterTextFields(
+fun DeliveryRegisterTextFields(
     email: String,
     onEmailChange: (String) -> Unit,
     name: String,
@@ -167,14 +159,11 @@ fun RegisterTextFields(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(
-    viewModel: RegisterViewModel,
-    navController: NavHostController,
-) {
-
-    var showPassword by remember { mutableStateOf(value = false) }
+fun RegisterDelivery(navController: NavHostController, viewModel: RegisterDeliveryViewModel) {
     val state by viewModel.state.collectAsState()
+    var showPassword by remember { mutableStateOf(value = false) }
     val context = LocalContext.current
 
     LaunchedEffect(state.error, state.registered) {
@@ -188,48 +177,45 @@ fun RegisterScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = colorResource(id = R.color.grey))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 28.dp, horizontal = 16.dp)
-            ) {
-                IconButton(onClick = { navController.navigate(route = "login") }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        modifier = Modifier.size(size = 28.dp)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Delivery",
+                        fontSize = 26.sp,
+                        style = MaterialTheme.typography.labelMedium
                     )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.navigate(route = "login") },
+                        modifier = Modifier.Companion.size(size = 32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
                 }
-
-                Text(
-                    text = "Registrarse",
-                    fontSize = 38.sp,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(all = 16.dp)
-                    .fillMaxWidth()
-            ) {
-                RegisterTextFields(
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding,
+            modifier = Modifier.Companion
+                .fillMaxSize()
+                .padding(horizontal = 18.dp)
+        ) {
+            item {
+                DeliveryRegisterTextFields(
                     email = state.email,
                     onEmailChange = {
-                        viewModel.handleIntent(intent = Intent.EmailChanged(email = it))
+                        viewModel.handleIntent(
+                            intent = Intent.EmailChanged(
+                                email = it
+                            )
+                        )
                     },
                     password = state.password,
                     onPasswordChange = {
@@ -295,58 +281,6 @@ fun RegisterScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(height = 120.dp))
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-        ) {
-            Column(
-                modifier = Modifier.Companion
-                    .align(Alignment.BottomStart),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Tienes un negocio",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.labelSmall
-                )
-                Text(
-                    text = "Registralo aqui",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colorResource(id = R.color.focusedPurple),
-                    modifier = Modifier.clickable {
-                        navController.navigate(route = "registerBusiness")
-                    })
-                Spacer(modifier = Modifier.height(height = 20.dp))
-            }
-
-            Column(
-                modifier = Modifier.Companion
-                    .align(Alignment.BottomEnd),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Eres un delivery independiente",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.labelSmall
-                )
-                Text(
-                    text = "Registrate aqui",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colorResource(id = R.color.focusedPurple),
-                    modifier = Modifier.clickable {
-                        navController.navigate(route = "registerDelivery")
-                    })
-                Spacer(modifier = Modifier.height(height = 20.dp))
             }
         }
     }

@@ -62,14 +62,17 @@ fun ChatScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    // Suscribirse al thread para recibir mensajes en tiempo real
     LaunchedEffect(uiState.currentThreadId) {
-        viewModel.handleIntent(
-            intent = ChatIntent.SubscribeToThread(
-                threadId = uiState.currentThreadId!!
+        val threadId = uiState.currentThreadId
+        if (threadId != null) {
+            viewModel.handleIntent(
+                intent = ChatIntent.SubscribeToThread(threadId = threadId)
             )
-        )
+        }
     }
 
+    // Desuscribirse cuando se destruya el composable
     DisposableEffect(Unit) {
         onDispose {
             viewModel.handleIntent(
@@ -78,11 +81,23 @@ fun ChatScreen(
         }
     }
 
+    val threadId = uiState.currentThreadId
+    if (threadId == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     MessagesScreen(
         messages = uiState.currentMessages,
         currentUserId = currentUserId,
         currentThread = uiState.currentThread,
         isLoading = uiState.isLoading,
+        threadId = threadId,
         onSendMessage = { content ->
             viewModel.handleIntent(
                 intent = ChatIntent.SendMessage(
@@ -94,7 +109,6 @@ fun ChatScreen(
         },
         onBackClick = onBack
     )
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,6 +118,7 @@ private fun MessagesScreen(
     currentUserId: String,
     currentThread: ChatThreadView?,
     isLoading: Boolean,
+    threadId: String,
     onSendMessage: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -202,29 +217,35 @@ private fun MessagesScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (isLoading && messages.isEmpty()) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else if (messages.isEmpty()) {
-                Text(
-                    "No hay mensajes aún",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(messages) { message ->
-                        MessageBubble(
-                            message = message,
-                            isCurrentUser = message.senderId == currentUserId
-                        )
+            when {
+                isLoading && messages.isEmpty() -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                messages.isEmpty() && !isLoading -> {
+                    Text(
+                        "No hay mensajes aún",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                else -> {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(messages) { message ->
+                            MessageBubble(
+                                message = message,
+                                isCurrentUser = message.senderId == currentUserId
+                            )
+                        }
                     }
                 }
             }

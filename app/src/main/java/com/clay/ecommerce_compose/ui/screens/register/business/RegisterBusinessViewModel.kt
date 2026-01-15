@@ -73,23 +73,13 @@ class RegisterBusinessViewModel(
 
                 Log.i("BusinessViewModel", "Business $businessProfile")
 
-                if (businessProfile != null) {
-                    Log.d("BusinessViewModel", "Registro exitoso: $businessProfile")
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            isRegistrationSuccessful = true,
-                            businessId = businessProfile.id
-                        )
-                    }
-                } else {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = "No se pudo completar el registro"
-                        )
-                    }
-                    Log.e("BusinessViewModel", "Registro fallido en else $businessProfile")
+                Log.d("BusinessViewModel", "Registro exitoso: $businessProfile")
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        isRegistrationSuccessful = true,
+                        businessId = businessProfile.id
+                    )
                 }
 
             } catch (e: Exception) {

@@ -18,12 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.ui.components.client.cart.TransactionItem
 import com.clay.ecommerce_compose.ui.components.client.header.HeaderActivity
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartIntent
+import com.clay.ecommerce_compose.ui.screens.client.cart.CartViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Activity(walletViewModel: WalletViewModel, transactionsViewModel: TransactionsViewModel) {
+fun Activity(
+    walletViewModel: WalletViewModel,
+    transactionsViewModel: TransactionsViewModel,
+    navController: NavHostController,
+    cartViewModel: CartViewModel
+) {
     val walletState by walletViewModel.walletState.collectAsState()
     val transactionsState by transactionsViewModel.transactionsState.collectAsState()
 
@@ -41,22 +49,18 @@ fun Activity(walletViewModel: WalletViewModel, transactionsViewModel: Transactio
         }
 
         item {
-            Text(text = "Anteriores") // compras anteriores en la app
-        }
-
-        item {
             Text(
                 text = "Historial de pagos",
                 fontSize = 28.sp,
                 style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.Companion.padding(start = 16.dp)
+                modifier = Modifier.padding(start = 16.dp)
             )
         }
 
         if (transactionsState.isLoading) {
             item {
                 Box(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(all = 32.dp),
                     contentAlignment = Alignment.Center
@@ -72,13 +76,15 @@ fun Activity(walletViewModel: WalletViewModel, transactionsViewModel: Transactio
                     text = "No hay transacciones",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.Companion.padding(all = 16.dp)
+                    modifier = Modifier.padding(all = 16.dp)
                 )
             }
         }
 
-        items(transactionsState.transactions) { transaction ->
-            TransactionItem(transaction = transaction)
+        items(items = transactionsState.transactions) { transaction ->
+            TransactionItem(transaction = transaction, onViewInvoice = { orderId ->
+                cartViewModel.handleIntent(intent = CartIntent.GetOrderInvoice(orderId))
+            })
         }
     }
 }

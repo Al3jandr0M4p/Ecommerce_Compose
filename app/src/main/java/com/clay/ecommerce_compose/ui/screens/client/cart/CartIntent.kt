@@ -6,6 +6,7 @@ sealed class CartIntent {
     data class UpdateQuantity(val itemId: Int?, val quantity: Int) : CartIntent()
     data class ApplyCoupon(val code: String) : CartIntent()
     data class SelectPaymentMethod(val method: String) : CartIntent()
+    data class GetOrderInvoice(val orderId: String) : CartIntent()
 
     data object ClearCart : CartIntent()
     data object LoadCart : CartIntent()

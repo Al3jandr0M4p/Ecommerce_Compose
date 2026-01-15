@@ -104,7 +104,7 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
                 horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {}
+                    .clickable { }
                     .padding(horizontal = 14.dp, vertical = 10.dp)
             ) {
                 Icon(
@@ -127,7 +127,9 @@ fun Configuration(navController: NavHostController, configViewModel: ConfigViewM
                 horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {}
+                    .clickable {
+                        navController.navigate(route = "legal")
+                    }
                     .padding(horizontal = 14.dp, vertical = 10.dp)
             ) {
                 Icon(

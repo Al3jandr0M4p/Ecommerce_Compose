@@ -84,6 +84,50 @@ class AuthRepository(private val supabase: SupabaseClient) {
         }
     }
 
+    suspend fun signUpDelivery(email: String, password: String, name: String, lastname: String): Profile? {
+        return try {
+            val fullName = "$name $lastname"
+            val result = supabase.auth.signUpWith(Email) {
+                this.email = email
+                this.password = password
+                data = buildJsonObject {
+                    put("username", JsonPrimitive(fullName))
+                }
+            }
+
+            if (result?.id != null) {
+                val newUserProfile = supabase.from("profiles").insert(
+                    buildJsonObject {
+                        put("id", JsonPrimitive(result.id))
+                        put("role_id", JsonPrimitive(3))
+                    }
+                ) {
+                    select(Columns.list("id", "role_id"))
+                }.decodeSingle<Profile>()
+
+                if (newUserProfile.roleId != null) {
+                    val roleNameObject = supabase.from("roles")
+                        .select(Columns.list("name")) {
+                            filter { eq("id", newUserProfile.roleId) }
+                        }
+                        .decodeSingleOrNull<JsonObject>()
+                    val roleName = roleNameObject?.get("name")?.jsonPrimitive?.contentOrNull
+
+                    newUserProfile.roleName = roleName
+                }
+
+                Log.d("AuthRepository", "Usuario registrado: $newUserProfile")
+                return newUserProfile
+
+            }
+
+            return null
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Error en signUp", e)
+            null
+        }
+    }
+
     suspend fun signIn(email: String, password: String): Profile? {
         return try {
             supabase.auth.signInWith(Email) {
@@ -179,7 +223,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
         ncf: String,
         telefono: String,
         hasDelivery: Boolean
-    ): BusinessProfile? {
+    ): BusinessProfile {
         var sessionUserId: String? = null
         var logoPath: String? = null
 

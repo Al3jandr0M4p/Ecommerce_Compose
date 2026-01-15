@@ -20,7 +20,6 @@ import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.R
 import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
-import com.clay.ecommerce_compose.ui.screens.businesess.BusinessAccountViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.Activity
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.TransactionsViewModel
 import com.clay.ecommerce_compose.ui.screens.client.app_activity.WalletViewModel
@@ -38,7 +37,7 @@ fun UserHomeScreen(
     homeViewModel: HomeViewModel,
     walletViewModel: WalletViewModel,
     transactionsViewModel: TransactionsViewModel,
-    businessAccountViewModel: BusinessAccountViewModel
+    favoritesViewModel: FavoriteViewModel
 ) {
     val businessState by homeViewModel.businessState.collectAsState()
     val cartState by cartViewModel.state.collectAsState()
@@ -64,13 +63,15 @@ fun UserHomeScreen(
                 navController = navController,
                 cartViewModel = cartViewModel,
                 homeViewModel = homeViewModel,
-                businessAccountViewModel = businessAccountViewModel
+                favoritesViewModel = favoritesViewModel,
             )
         },
         Tabs.Activity to {
             Activity(
                 walletViewModel = walletViewModel,
-                transactionsViewModel = transactionsViewModel
+                transactionsViewModel = transactionsViewModel,
+                cartViewModel = cartViewModel,
+                navController = navController
             )
         },
 

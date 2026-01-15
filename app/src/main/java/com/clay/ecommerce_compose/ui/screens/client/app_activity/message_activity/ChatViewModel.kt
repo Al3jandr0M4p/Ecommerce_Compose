@@ -1,11 +1,14 @@
 package com.clay.ecommerce_compose.ui.screens.client.app_activity.message_activity
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clay.ecommerce_compose.data.repository.ChatRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
@@ -107,7 +110,6 @@ data class ChatThreadView(
     val unreadCount: Int = 0
 )
 
-// Para crear un nuevo thread
 @Serializable
 data class CreateThreadRequest(
     @SerialName("thread_type")
@@ -120,7 +122,6 @@ data class CreateThreadRequest(
     val deliveryId: Int? = null
 )
 
-// Para enviar un mensaje
 @Serializable
 data class SendMessageRequest(
     @SerialName("thread_id")
@@ -134,6 +135,8 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+    private var messageObserverJob: Job? = null
 
     fun handleIntent(intent: ChatIntent) {
         when (intent) {
@@ -157,6 +160,7 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
                 deliveryId = intent.deliveryId
             )
             is ChatIntent.SelectThread -> {
+                Log.d("ChatViewModel", "SelectThread: ${intent.thread.id}")
                 _uiState.update {
                     it.copy(
                         currentThread = intent.thread,
@@ -166,9 +170,7 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
                         error = null
                     )
                 }
-
                 loadMessages(intent.thread.id)
-                subscribeToThread(intent.thread.id)
             }
             is ChatIntent.SubscribeToThread -> subscribeToThread(intent.threadId)
             is ChatIntent.UnSubscribeFromThread -> unsubscribeFromThread()
@@ -177,19 +179,21 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
 
     private fun loadThreads() {
         viewModelScope.launch {
+            Log.d("ChatViewModel", "loadThreads: iniciando carga")
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             chatRepository.getUserThreads()
                 .onSuccess { threads ->
+                    Log.d("ChatViewModel", "loadThreads: ${threads.size} threads cargados")
                     _uiState.update {
                         it.copy(
                             threads = threads,
                             isLoading = false
                         )
                     }
-
                 }
                 .onFailure { exception ->
+                    Log.e("ChatViewModel", "loadThreads: error", exception)
                     _uiState.update {
                         it.copy(
                             error = exception.message ?: "Error al cargar conversaciones",
@@ -202,11 +206,12 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
 
     private fun loadMessages(threadId: String) {
         viewModelScope.launch {
+            Log.d("ChatViewModel", "loadMessages: threadId=$threadId")
             _uiState.update { it.copy(isLoading = true, error = null, currentThreadId = threadId) }
 
             chatRepository.getThreadMessages(threadId)
                 .onSuccess { messages ->
-
+                    Log.d("ChatViewModel", "loadMessages: ${messages.size} mensajes cargados")
                     _uiState.update {
                         it.copy(
                             currentMessages = messages,
@@ -215,6 +220,7 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
                     }
                 }
                 .onFailure { e ->
+                    Log.e("ChatViewModel", "loadMessages: error", e)
                     _uiState.update {
                         it.copy(
                             error = e.message ?: "Error al cargar mensajes",
@@ -229,15 +235,14 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
         if (content.isBlank()) return
 
         viewModelScope.launch {
+            Log.d("ChatViewModel", "sendMessage: threadId=$threadId, content=$content")
             chatRepository.sendMessage(threadId, senderId, content)
                 .onSuccess { newMessage ->
-                    _uiState.update { state ->
-                        state.copy(
-                            currentMessages = state.currentMessages + newMessage
-                        )
-                    }
+                    Log.d("ChatViewModel", "sendMessage: mensaje enviado ${newMessage.id}")
+                    // El mensaje se agregará automáticamente por el observer en tiempo real
                 }
                 .onFailure { error ->
+                    Log.e("ChatViewModel", "sendMessage: error", error)
                     _uiState.update {
                         it.copy(error = error.message ?: "Error al enviar mensaje")
                     }
@@ -266,14 +271,34 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
 
     private fun createUserBusinessThread(userId: String, businessId: Int) {
         viewModelScope.launch {
+            Log.d("ChatViewModel", "createUserBusinessThread: userId=$userId, businessId=$businessId")
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             chatRepository.getOrCreateUserBusinessThread(userId, businessId)
                 .onSuccess { thread ->
-                    loadMessages(thread.id)
-                    loadThreads() // Recargar la lista de threads
+                    Log.d("ChatViewModel", "createUserBusinessThread: thread creado/encontrado ${thread.id}")
+
+                    val threadView = convertThreadToView(thread, businessId)
+
+                    // Cargar mensajes primero
+                    val messages = chatRepository.getThreadMessages(thread.id).getOrNull() ?: emptyList()
+                    Log.d("ChatViewModel", "createUserBusinessThread: ${messages.size} mensajes cargados")
+
+                    // Actualizar estado UNA SOLA VEZ con todo listo
+                    _uiState.update {
+                        it.copy(
+                            currentThreadId = thread.id,
+                            currentThread = threadView,
+                            currentMessages = messages,
+                            isLoading = false, // IMPORTANTE: marcar como no cargando
+                        )
+                    }
+
+                    // Recargar lista de threads en segundo plano
+                    loadThreads()
                 }
                 .onFailure { error ->
+                    Log.e("ChatViewModel", "createUserBusinessThread: error", error)
                     _uiState.update {
                         it.copy(
                             error = error.message ?: "Error al crear conversación",
@@ -286,14 +311,34 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
 
     private fun createUserDeliveryThread(userId: String, deliveryId: Int) {
         viewModelScope.launch {
+            Log.d("ChatViewModel", "createUserDeliveryThread: userId=$userId, deliveryId=$deliveryId")
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             chatRepository.getOrCreateUserDeliveryThread(userId, deliveryId)
                 .onSuccess { thread ->
-                    loadMessages(thread.id)
+                    Log.d("ChatViewModel", "createUserDeliveryThread: thread creado/encontrado ${thread.id}")
+
+                    val threadView = convertThreadToView(thread, null, deliveryId)
+
+                    // Cargar mensajes primero
+                    val messages = chatRepository.getThreadMessages(thread.id).getOrNull() ?: emptyList()
+                    Log.d("ChatViewModel", "createUserDeliveryThread: ${messages.size} mensajes cargados")
+
+                    // Actualizar estado UNA SOLA VEZ con todo listo
+                    _uiState.update {
+                        it.copy(
+                            currentThreadId = thread.id,
+                            currentThread = threadView,
+                            currentMessages = messages,
+                            isLoading = false, // IMPORTANTE: marcar como no cargando
+                        )
+                    }
+
+                    // Recargar lista de threads en segundo plano
                     loadThreads()
                 }
                 .onFailure { error ->
+                    Log.e("ChatViewModel", "createUserDeliveryThread: error", error)
                     _uiState.update {
                         it.copy(
                             error = error.message ?: "Error al crear conversación",
@@ -304,33 +349,79 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
         }
     }
 
+    private suspend fun convertThreadToView(
+        thread: ChatThread,
+        businessId: Int? = null,
+        deliveryId: Int? = null
+    ): ChatThreadView {
+        val businessInfo = if (businessId != null) {
+            chatRepository.getBusinessInfo(businessId).getOrNull()
+        } else null
+
+        return ChatThreadView(
+            id = thread.id,
+            threadType = thread.threadType,
+            userId = thread.userId,
+            businessId = thread.businessId,
+            deliveryId = thread.deliveryId,
+            createdAt = thread.createdAt,
+            updatedAt = thread.updatedAt,
+            businessInfo = businessInfo,
+            deliveryInfo = null,
+            userInfo = null,
+            lastMessage = null,
+            unreadCount = 0
+        )
+    }
+
     private fun subscribeToThread(threadId: String) {
+        // Cancelar suscripción anterior
+        messageObserverJob?.cancel()
+
         viewModelScope.launch {
-            unsubscribeFromThread()
+            try {
+                Log.d("ChatViewModel", "subscribeToThread: $threadId")
 
-            chatRepository.subscribeToChannel("messages:$threadId")
+                chatRepository.subscribeToChannel("messages:$threadId")
 
-            // Observar nuevos mensajes en tiempo real
-            chatRepository.observeThreadMessages(threadId)
-                .collect { newMessage ->
-                    _uiState.update { state ->
-                        // Solo agregar si no existe ya
-                        if (state.currentMessages.none { it.id == newMessage.id }) {
-                            state.copy(
-                                currentMessages = state.currentMessages + newMessage
-                            )
-                        } else {
-                            state
+                // Observar nuevos mensajes en tiempo real en un Job separado
+                messageObserverJob = viewModelScope.launch {
+                    chatRepository.observeThreadMessages(threadId)
+                        .catch { e ->
+                            Log.e("ChatViewModel", "Error observando mensajes", e)
                         }
-                    }
+                        .collect { newMessage ->
+                            Log.d("ChatViewModel", "Nuevo mensaje recibido: ${newMessage.id}")
+                            _uiState.update { state ->
+                                // Solo agregar si no existe ya
+                                if (state.currentMessages.none { it.id == newMessage.id }) {
+                                    state.copy(
+                                        currentMessages = state.currentMessages + newMessage
+                                    )
+                                } else {
+                                    state
+                                }
+                            }
+                        }
                 }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error al suscribirse al thread", e)
+            }
         }
     }
 
     private fun unsubscribeFromThread() {
+        messageObserverJob?.cancel()
+        messageObserverJob = null
+
         viewModelScope.launch {
             _uiState.value.currentThreadId?.let { threadId ->
-                chatRepository.unsubscribeFromChannel("messages:$threadId")
+                Log.d("ChatViewModel", "unsubscribeFromThread: $threadId")
+                try {
+                    chatRepository.unsubscribeFromChannel("messages:$threadId")
+                } catch (e: Exception) {
+                    Log.e("ChatViewModel", "Error al desuscribirse", e)
+                }
             }
         }
     }
@@ -339,5 +430,4 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
         super.onCleared()
         unsubscribeFromThread()
     }
-
 }

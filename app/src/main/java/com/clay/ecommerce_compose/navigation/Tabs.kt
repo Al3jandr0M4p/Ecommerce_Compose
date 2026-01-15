@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -22,4 +23,6 @@ sealed class Tabs(
     // Negocio
     object Balance : Tabs(title = "balance", icon = Icons.Filled.Money)
     object Stock : Tabs(title = "inventario", icon = Icons.Filled.Storefront)
+
+    object Report : Tabs(title = "reportes", icon = Icons.Filled.Report)
 }
