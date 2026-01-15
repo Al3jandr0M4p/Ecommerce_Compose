@@ -2,7 +2,6 @@ package com.clay.ecommerce_compose.data.repository
 
 import android.util.Log
 import com.clay.ecommerce_compose.domain.model.BusinessProfile
-import com.clay.ecommerce_compose.domain.model.Profile
 import com.clay.ecommerce_compose.domain.model.RoleIdDto
 import com.clay.ecommerce_compose.domain.model.User
 import com.clay.ecommerce_compose.domain.model.UserToInsert
@@ -14,7 +13,6 @@ import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 

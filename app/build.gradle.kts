@@ -59,8 +59,6 @@ android {
 }
 
 dependencies {
-
-
     implementation("com.google.android.material:material:1.12.0")
 
     // Android Core
@@ -79,7 +77,6 @@ dependencies {
     implementation("androidx.compose.material:material:1.7.8")
     implementation("androidx.navigation:navigation-compose-android:2.9.6")
     implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
-
 
     // Coil
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")

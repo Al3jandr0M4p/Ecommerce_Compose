@@ -1,0 +1,232 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.admin_reports (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  report_type text NOT NULL,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  format text NOT NULL CHECK (format = ANY (ARRAY['PDF'::text, 'Excel'::text, 'CSV'::text])),
+  generated_by uuid,
+  file_url text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_reports_pkey PRIMARY KEY (id),
+  CONSTRAINT admin_reports_generated_by_fkey FOREIGN KEY (generated_by) REFERENCES public.admin_users(id)
+);
+CREATE TABLE public.admin_users (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  email text NOT NULL UNIQUE,
+  role text NOT NULL CHECK (role = ANY (ARRAY['Cliente'::text, 'Negocio'::text, 'Repartidor'::text, 'Admin'::text])),
+  status text NOT NULL DEFAULT 'Activo'::text CHECK (status = ANY (ARRAY['Activo'::text, 'Inactivo'::text])),
+  password_hash text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_users_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.businesses (
+  id integer NOT NULL DEFAULT nextval('businesses_id_seq'::regclass),
+  owner_id uuid NOT NULL,
+  name text NOT NULL,
+  rnc character NOT NULL UNIQUE CHECK (rnc ~ '^[0-9]{9}$'::text),
+  ncf character varying NOT NULL CHECK (ncf::text ~ '^B[0-9]{10}$'::text),
+  opening_time time without time zone,
+  closing_time time without time zone,
+  phone text,
+  description text DEFAULT ''::text,
+  has_delivery boolean DEFAULT false,
+  category text,
+  logo_url text,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  status text NOT NULL DEFAULT 'Aprobado'::text CHECK (status = ANY (ARRAY['ACTIVO'::text, 'INACTIVO'::text, 'SUSPENDIDO'::text, 'Aprobado'::text])),
+  CONSTRAINT businesses_pkey PRIMARY KEY (id),
+  CONSTRAINT businesses_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.cart_items (
+  id integer NOT NULL DEFAULT nextval('cart_items_id_seq'::regclass),
+  user_id uuid,
+  product_id integer,
+  business_id integer,
+  quantity integer NOT NULL DEFAULT 1,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT cart_items_pkey PRIMARY KEY (id),
+  CONSTRAINT cart_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT cart_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
+  CONSTRAINT cart_items_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.businesses(id)
+);
+CREATE TABLE public.chat_threads (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  thread_type text NOT NULL CHECK (thread_type = ANY (ARRAY['user_business'::text, 'user_delivery'::text, 'delivery_business'::text])),
+  user_id uuid,
+  business_id integer,
+  delivery_id uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT chat_threads_pkey PRIMARY KEY (id),
+  CONSTRAINT chat_threads_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT chat_threads_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.businesses(id),
+  CONSTRAINT chat_threads_delivery_id_fkey FOREIGN KEY (delivery_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.coupons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  code text NOT NULL UNIQUE,
+  is_active boolean DEFAULT true,
+  min_subtotal numeric NOT NULL,
+  max_discount numeric NOT NULL,
+  rules jsonb NOT NULL,
+  max_uses integer,
+  used_count integer DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT coupons_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.deliveries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id text NOT NULL,
+  customer_name text NOT NULL,
+  delivery_person text NOT NULL,
+  status text NOT NULL DEFAULT 'PENDING'::text CHECK (status = ANY (ARRAY['PENDING'::text, 'IN_TRANSIT'::text, 'DELIVERED'::text, 'CANCELLED'::text])),
+  address text NOT NULL,
+  phone text NOT NULL,
+  total numeric NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT deliveries_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.messages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  thread_id uuid NOT NULL,
+  sender_id uuid NOT NULL,
+  content text NOT NULL,
+  is_read boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT messages_pkey PRIMARY KEY (id),
+  CONSTRAINT messages_thread_id_fkey FOREIGN KEY (thread_id) REFERENCES public.chat_threads(id),
+  CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.notifications (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  title text NOT NULL,
+  message text NOT NULL,
+  type text NOT NULL,
+  read boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT notifications_pkey PRIMARY KEY (id),
+  CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.order_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  order_id uuid NOT NULL,
+  product_id integer NOT NULL,
+  name text NOT NULL,
+  price numeric NOT NULL,
+  quantity integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT order_items_pkey PRIMARY KEY (id),
+  CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
+);
+CREATE TABLE public.orders (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  subtotal numeric NOT NULL,
+  itbis numeric NOT NULL,
+  service_fee numeric NOT NULL,
+  total numeric NOT NULL,
+  wallet_used numeric DEFAULT 0,
+  status text NOT NULL CHECK (status = ANY (ARRAY['pending'::text, 'paid'::text, 'waiting_delivery'::text, 'on_the_way'::text, 'delivered'::text, 'cancelled'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  payment_method text NOT NULL DEFAULT 'cash'::text,
+  invoice_number text UNIQUE,
+  delivered_at timestamp with time zone,
+  discount numeric DEFAULT 0,
+  delivery_fee numeric NOT NULL DEFAULT 0,
+  CONSTRAINT orders_pkey PRIMARY KEY (id),
+  CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.payments (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  amount numeric NOT NULL,
+  method text NOT NULL CHECK (method = ANY (ARRAY['card'::text, 'transfer'::text, 'wallet'::text, 'google_pay'::text])),
+  status text NOT NULL CHECK (status = ANY (ARRAY['pending'::text, 'paid'::text, 'failed'::text, 'refunded'::text])),
+  provider text,
+  provider_payment_id text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT payments_pkey PRIMARY KEY (id),
+  CONSTRAINT payments_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.product_categories (
+  id integer NOT NULL DEFAULT nextval('product_categories_id_seq'::regclass),
+  business_id integer NOT NULL,
+  name text NOT NULL,
+  description text,
+  parent_category_id integer,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT product_categories_pkey PRIMARY KEY (id),
+  CONSTRAINT product_categories_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.businesses(id),
+  CONSTRAINT product_categories_parent_category_id_fkey FOREIGN KEY (parent_category_id) REFERENCES public.product_categories(id)
+);
+CREATE TABLE public.products (
+  id integer NOT NULL DEFAULT nextval('products_id_seq'::regclass),
+  business_id integer NOT NULL,
+  name text NOT NULL,
+  description text,
+  price numeric NOT NULL,
+  stock integer,
+  image_url text,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  category_id integer,
+  min_stock integer DEFAULT 5,
+  max_stock integer,
+  stock_alert_enabled boolean DEFAULT true,
+  CONSTRAINT products_pkey PRIMARY KEY (id),
+  CONSTRAINT products_business_id_fkey FOREIGN KEY (business_id) REFERENCES public.businesses(id),
+  CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.product_categories(id)
+);
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  role_id integer DEFAULT 1,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id),
+  CONSTRAINT profiles_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id)
+);
+CREATE TABLE public.roles (
+  id integer NOT NULL DEFAULT nextval('roles_id_seq'::regclass),
+  name text NOT NULL UNIQUE,
+  CONSTRAINT roles_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.stock_movements (
+  id integer NOT NULL DEFAULT nextval('stock_movements_id_seq'::regclass),
+  product_id integer NOT NULL,
+  movement_type text NOT NULL CHECK (movement_type = ANY (ARRAY['sale'::text, 'restock'::text, 'adjustment'::text, 'return'::text])),
+  quantity integer NOT NULL,
+  previous_stock integer NOT NULL,
+  new_stock integer NOT NULL,
+  reference_id uuid,
+  notes text,
+  created_by uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT stock_movements_pkey PRIMARY KEY (id),
+  CONSTRAINT stock_movements_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
+  CONSTRAINT stock_movements_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id)
+);
+CREATE TABLE public.wallet_transactions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  amount numeric NOT NULL,
+  type text NOT NULL CHECK (type = ANY (ARRAY['credit'::text, 'debit'::text])),
+  reason text,
+  reference_id uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT wallet_transactions_pkey PRIMARY KEY (id),
+  CONSTRAINT wallet_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.wallets (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  balance numeric NOT NULL DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT wallets_pkey PRIMARY KEY (id),
+  CONSTRAINT wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
