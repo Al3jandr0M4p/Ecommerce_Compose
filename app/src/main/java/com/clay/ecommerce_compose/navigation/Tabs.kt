@@ -19,9 +19,6 @@ sealed class Tabs(
     object Home : Tabs(title = "Inicio", icon = Icons.Filled.Home)
     object Activity : Tabs(title = "Actividad", icon = Icons.Filled.Apps)
     object Configuration : Tabs(title = "Cuenta", icon = Icons.Filled.Person)
-
-    // Negocio
-    object Balance : Tabs(title = "balance", icon = Icons.Filled.Money)
     object Stock : Tabs(title = "inventario", icon = Icons.Filled.Storefront)
 
     object Report : Tabs(title = "reportes", icon = Icons.Filled.Report)

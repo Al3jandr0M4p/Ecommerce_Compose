@@ -5,5 +5,5 @@ sealed class Intent {
     data class PasswordChanged(val password: String) : Intent()
     data class NameChanged(val name: String) : Intent()
     data class LastNameChanged(val lastname: String) : Intent()
-    object Submit : Intent()
+    data object Submit : Intent()
 }

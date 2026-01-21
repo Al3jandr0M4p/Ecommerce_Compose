@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clay.ecommerce_compose.ui.screens.admin.dashboard.DashboardViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.dashboard.DrawerMenuItem
 
 @Composable
@@ -34,7 +35,7 @@ fun DrawerContent(
     onNavigateToBusinesses: () -> Unit,
     onNavigateToDelivery: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onCloseDrawer: () -> Unit
+    dashboardViewModel: DashboardViewModel
 ) {
     ModalDrawerSheet(
         drawerContainerColor = Color.White,
@@ -119,8 +120,7 @@ fun DrawerContent(
             icon = Icons.AutoMirrored.Filled.Logout,
             title = "Cerrar sesión",
             onClick = {
-                onCloseDrawer()
-                // TODO: Implementar cierre de sesión
+                dashboardViewModel.signOut()
             },
             color = Color(0xFFE74C3C)
         )

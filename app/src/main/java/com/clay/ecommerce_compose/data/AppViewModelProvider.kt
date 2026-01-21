@@ -17,6 +17,7 @@ import com.clay.ecommerce_compose.data.repository.OrderRepository
 import com.clay.ecommerce_compose.data.repository.UserRepository
 import com.clay.ecommerce_compose.data.repository.WalletRepository
 import com.clay.ecommerce_compose.domain.usecase.GetCurrentUserSessionUseCase
+import com.clay.ecommerce_compose.ui.screens.admin.dashboard.DashboardViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.negocios.NegocioAdminViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.users.UsersViewModel
@@ -93,6 +94,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(UsersViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return UsersViewModel(userRepository = userRepository) as T
         }
 
@@ -102,6 +104,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return MainViewModel(
                 supabase = SupabaseConfig.client,
                 getCurrentUserSessionUseCase = getCurrentUserSessionUseCase,
@@ -117,6 +120,7 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(ConfigViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return ConfigViewModel(
                 userRepository = userRepository,
                 authRepository = authRepository
@@ -133,10 +137,12 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         }
 
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return HomeViewModel(userRepository = userRepository) as T
         }
 
         if (modelClass.isAssignableFrom(BusinessAccountViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return BusinessAccountViewModel(
                 businessAccountRepository = businessRepository,
                 authRepository = authRepository
@@ -189,6 +195,11 @@ class AppViewModelProvider(private val application: Application) : ViewModelProv
         if (modelClass.isAssignableFrom(RegisterDeliveryViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return RegisterDeliveryViewModel(authRepository = authRepository) as T
+        }
+
+        if (modelClass.isAssignableFrom(DashboardViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return DashboardViewModel(repository = authRepository) as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

@@ -16,6 +16,7 @@ import com.clay.ecommerce_compose.data.AppViewModelProvider
 import com.clay.ecommerce_compose.ui.components.client.business.SearchInShop
 import com.clay.ecommerce_compose.ui.screens.admin.categories.CategoriesScreen
 import com.clay.ecommerce_compose.ui.screens.admin.dashboard.AdminDashboardScreen
+import com.clay.ecommerce_compose.ui.screens.admin.dashboard.DashboardViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryScreen
 import com.clay.ecommerce_compose.ui.screens.admin.delivery.DeliveryViewModel
 import com.clay.ecommerce_compose.ui.screens.admin.orders.OrdersScreen
@@ -104,7 +105,7 @@ fun Navigation(
             )
         }
 
-        composable(route = "userHome") { backStackEntry ->
+        composable(route = "userHome") {
             val configViewModel: ConfigViewModel = viewModel(factory = factory)
             val homeViewModel: HomeViewModel = viewModel(factory = factory)
             val walletViewModel: WalletViewModel = viewModel(factory = factory)
@@ -220,7 +221,7 @@ fun Navigation(
             DeliveryHomeScreen(navController = navController)
         }
 
-        composable(route = "chat") { backStackEntry ->
+        composable(route = "chat") {
             val chatViewModel: ChatViewModel = viewModel(factory = factory)
             val mainViewModel: MainViewModel = viewModel(factory = factory)
 
@@ -242,11 +243,16 @@ fun Navigation(
 
 
         composable(route = "adminHome") {
+            val dashboardViewModel: DashboardViewModel = viewModel(factory = factory)
+
             AdminDashboardScreen(
                 onNavigateToUsers = { navController.navigate("adminUsers") },
                 onNavigateToBusinesses = { navController.navigate("adminBusinesses") },
                 onNavigateToReports = { navController.navigate("adminReports") },
-                onNavigateToDelivery = { navController.navigate("adminDelivery") }
+                onNavigateToDelivery = { navController.navigate("adminDelivery") },
+
+                dashboardViewModel = dashboardViewModel,
+                navController = navController
             )
         }
 

@@ -13,6 +13,7 @@ import com.clay.ecommerce_compose.ui.components.client.header.NotificationType
 import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.Coupon
 import com.clay.ecommerce_compose.ui.screens.client.cart.coupon.CouponType
 import com.clay.ecommerce_compose.ui.screens.register.delivery.State
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,7 @@ class CartViewModel(
 
     init {
         viewModelScope.launch {
+            delay(1000)
             val session = getCurrentUserSession().firstOrNull() ?: return@launch
 
             Log.d("CartViewModel", "User session found: ${session.id}")

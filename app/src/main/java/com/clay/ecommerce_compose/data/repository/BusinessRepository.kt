@@ -82,6 +82,7 @@ class BusinessRepository(
                     businessId?.let { id ->
                         Log.d("BusinessRepository", "Aplicando filtro con id: $id")
                         eq("business_id", id)
+                        eq("is_active", true)
                     }
                 }
             }

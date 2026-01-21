@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.clay.ecommerce_compose.ui.components.admin.drawer.DrawerContent
 import kotlinx.coroutines.launch
 
@@ -29,11 +30,23 @@ fun AdminDashboardScreen(
     onNavigateToUsers: () -> Unit,
     onNavigateToBusinesses: () -> Unit,
     onNavigateToDelivery: () -> Unit,
-    onNavigateToReports: () -> Unit
+    onNavigateToReports: () -> Unit,
+    dashboardViewModel: DashboardViewModel,
+    navController: NavHostController
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val loggedOut by dashboardViewModel.loggedOut
+
+    LaunchedEffect(loggedOut) {
+        if (loggedOut) {
+            navController.navigate("login") {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -55,9 +68,7 @@ fun AdminDashboardScreen(
                     scope.launch { drawerState.close() }
                     onNavigateToReports()
                 },
-                onCloseDrawer = {
-                    scope.launch { drawerState.close() }
-                }
+                dashboardViewModel = dashboardViewModel
             )
         }
     ) {

@@ -20,7 +20,6 @@ import com.clay.ecommerce_compose.navigation.Tabs
 import com.clay.ecommerce_compose.ui.components.bars.MyBottomNavigationBar
 import com.clay.ecommerce_compose.ui.components.bars.MyBusinessTopAppBar
 import com.clay.ecommerce_compose.ui.components.business.configuration.BusinessAdministrationConfiguration
-import com.clay.ecommerce_compose.ui.components.business.economy.BusinessAdministrationBalance
 import com.clay.ecommerce_compose.ui.components.business.fab.Fab
 import com.clay.ecommerce_compose.ui.components.business.home.BusinessAdministrationHome
 import com.clay.ecommerce_compose.ui.components.business.stockConfig.BusinessAdministrationStock
@@ -83,7 +82,7 @@ fun BusinessHomeScreen(
             MyBottomNavigationBar(
                 selectedTab = businessController.selectedTab.value,
                 onTabSelected = { businessController.selectedTab.value = it },
-                tabs = listOf(Tabs.Home, Tabs.Balance, Tabs.Stock, Tabs.Report, Tabs.Configuration)
+                tabs = listOf(Tabs.Home, Tabs.Stock, Tabs.Report, Tabs.Configuration)
             )
         },
         floatingActionButton = {
@@ -105,10 +104,6 @@ fun BusinessHomeScreen(
                         viewModel = viewModel,
                         navController = navController
                     )
-                }
-
-                is Tabs.Balance -> {
-                    BusinessAdministrationBalance()
                 }
 
                 is Tabs.Stock -> {

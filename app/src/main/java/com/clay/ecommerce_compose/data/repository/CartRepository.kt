@@ -84,17 +84,34 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
     }
 
     suspend fun getActiveOrder(userId: String): Order? {
-        val list = supabase.from("orders")
-            .select {
-                filter {
-                    eq("user_id", userId)
-                    isIn("status", listOf("pending", "paid", "waiting_delivery", "on_the_way"))
-                }
-                order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
-            }
-            .decodeList<Order>()
+        return try {
+            Log.d("CART_REPO", "Fetching active order for user: $userId")
 
-        return list.firstOrNull()
+            // Usar OR en lugar de isIn para mejor performance
+            val list = supabase.from("orders")
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                        or {
+                            eq("status", "pending")
+                            eq("status", "paid")
+                            eq("status", "waiting_delivery")
+                            eq("status", "on_the_way")
+                        }
+                    }
+                    order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                    limit(1) // Solo necesitamos la primera
+                }
+                .decodeList<Order>()
+
+            val order = list.firstOrNull()
+            Log.d("CART_REPO", "Active order found: ${order?.id ?: "null"}")
+            order
+
+        } catch (e: Exception) {
+            Log.e("CART_REPO", "Error getting active order", e)
+            null
+        }
     }
 
     suspend fun getOrderInvoice(orderId: String): Order? {
@@ -126,7 +143,7 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
                 emit(null)
             }
             Log.d("ORDER_POLLING", "Waiting 6.5 seconds before next check...")
-            delay(6500L)
+            delay(8000L)
         }
     }
 
@@ -187,8 +204,6 @@ class CartRepository(private val supabase: SupabaseClient, private val httpClien
                         eq("product_id", productId)
                     }
                 }
-
-
 
                 Log.d("CART_REPO", "Quantity updated to $newQuantity")
             } else {
